@@ -1,5 +1,5 @@
+import pg from 'pg';
 import { drizzle } from 'drizzle-orm/node-postgres';
-import { Pool } from 'pg';
 import { User, Service, Requirement, Bid, InsertUser, users, services, requirements, bids, profiles, Profile } from "@shared/schema";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
@@ -42,7 +42,7 @@ export class PostgresStorage implements IStorage {
   sessionStore: session.Store;
 
   constructor() {
-    const pool = new Pool({
+    const pool = new pg.Pool({
       connectionString: process.env.DATABASE_URL,
     });
 
