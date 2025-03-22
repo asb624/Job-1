@@ -3,6 +3,7 @@ import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/hooks/use-auth";
+import { NotificationProvider } from "@/hooks/use-websocket-notifications";
 import { ProtectedRoute } from "./lib/protected-route";
 import { NavBar } from "./components/nav-bar";
 
@@ -32,13 +33,15 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <div className="min-h-screen bg-background">
-          <NavBar />
-          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <Router />
-          </main>
-        </div>
-        <Toaster />
+        <NotificationProvider>
+          <div className="min-h-screen bg-background">
+            <NavBar />
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+              <Router />
+            </main>
+          </div>
+          <Toaster />
+        </NotificationProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
