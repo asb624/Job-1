@@ -4,13 +4,61 @@ import { setupAuth } from "./auth";
 import { setupWebSocket } from "./websocket";
 import { storage } from "./storage";
 import { z } from "zod";
-import { insertServiceSchema, insertRequirementSchema, insertBidSchema } from "@shared/schema";
+import { insertServiceSchema, insertRequirementSchema, insertBidSchema, insertProfileSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   setupAuth(app);
 
   const httpServer = createServer(app);
   setupWebSocket(httpServer);
+
+  // Profile routes
+  app.get("/api/profile", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+
+    try {
+      const profile = await storage.getProfileByUserId(req.user.id);
+      res.json(profile || { userId: req.user.id });
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      res.status(500).json({ message: "Failed to fetch profile" });
+    }
+  });
+
+  app.put("/api/profile", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+
+    const parsed = insertProfileSchema
+      .extend({
+        userId: z.number().optional(),
+      })
+      .safeParse({ ...req.body, userId: req.user.id });
+
+    if (!parsed.success) return res.status(400).json(parsed.error);
+
+    try {
+      const profile = await storage.updateProfile(req.user.id, parsed.data);
+      res.json(profile);
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      res.status(500).json({ message: "Failed to update profile" });
+    }
+  });
+
+  app.post("/api/profile/verify", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+
+    // Add verification logic here.  This is a placeholder.  The specific implementation
+    // depends on how verification documents are handled (e.g., file uploads).
+    try {
+      await storage.verifyProfile(req.user.id, req.body); // Placeholder
+      res.status(200).send("Verification document submitted");
+    } catch (error) {
+      console.error('Error verifying profile:', error);
+      res.status(500).json({ message: "Failed to verify profile" });
+    }
+  });
+
 
   // Services
   app.post("/api/services", async (req, res) => {
