@@ -14,6 +14,7 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUserLastSeen(userId: number): Promise<User>;
 
   // Profile operations
   getProfileByUserId(userId: number): Promise<Profile | undefined>;
@@ -35,6 +36,21 @@ export interface IStorage {
   createBid(bid: Omit<Bid, "id">): Promise<Bid>;
   getBidsForRequirement(requirementId: number): Promise<Bid[]>;
   updateBidStatus(id: number, status: string): Promise<Bid>;
+  
+  // Conversation operations
+  getOrCreateConversation(user1Id: number, user2Id: number): Promise<Conversation>;
+  getConversationsByUserId(userId: number): Promise<Conversation[]>;
+  
+  // Message operations
+  createMessage(message: Omit<Message, "id" | "isRead" | "createdAt"> & { senderId: number }): Promise<Message>;
+  getMessagesByConversationId(conversationId: number): Promise<Message[]>;
+  markMessageAsRead(messageId: number): Promise<Message>;
+  
+  // Notification operations
+  createNotification(notification: Omit<Notification, "id" | "isRead" | "createdAt">): Promise<Notification>;
+  getNotificationsByUserId(userId: number): Promise<Notification[]>;
+  markNotificationAsRead(notificationId: number): Promise<Notification>;
+  markAllNotificationsAsRead(userId: number): Promise<void>;
 }
 
 export class PostgresStorage implements IStorage {
@@ -169,6 +185,118 @@ export class PostgresStorage implements IStorage {
       .where(eq(bids.id, id))
       .returning();
     return result[0];
+  }
+
+  async updateUserLastSeen(userId: number): Promise<User> {
+    const result = await this.db
+      .update(users)
+      .set({ lastSeen: new Date() })
+      .where(eq(users.id, userId))
+      .returning();
+    return result[0];
+  }
+
+  async getOrCreateConversation(user1Id: number, user2Id: number): Promise<Conversation> {
+    // Check if conversation already exists
+    const existingConversation = await this.db
+      .select()
+      .from(conversations)
+      .where(
+        or(
+          and(eq(conversations.user1Id, user1Id), eq(conversations.user2Id, user2Id)),
+          and(eq(conversations.user1Id, user2Id), eq(conversations.user2Id, user1Id))
+        )
+      );
+
+    if (existingConversation.length > 0) {
+      return existingConversation[0];
+    }
+
+    // Create new conversation
+    const result = await this.db
+      .insert(conversations)
+      .values({
+        user1Id: user1Id,
+        user2Id: user2Id,
+      })
+      .returning();
+    return result[0];
+  }
+
+  async getConversationsByUserId(userId: number): Promise<Conversation[]> {
+    return await this.db
+      .select()
+      .from(conversations)
+      .where(
+        or(
+          eq(conversations.user1Id, userId),
+          eq(conversations.user2Id, userId)
+        )
+      );
+  }
+
+  async createMessage(message: Omit<Message, "id" | "isRead" | "createdAt"> & { senderId: number }): Promise<Message> {
+    // Update the conversation's lastMessageAt timestamp
+    await this.db
+      .update(conversations)
+      .set({ lastMessageAt: new Date() })
+      .where(eq(conversations.id, message.conversationId));
+
+    // Insert the new message
+    const result = await this.db
+      .insert(messages)
+      .values(message)
+      .returning();
+    return result[0];
+  }
+
+  async getMessagesByConversationId(conversationId: number): Promise<Message[]> {
+    return await this.db
+      .select()
+      .from(messages)
+      .where(eq(messages.conversationId, conversationId))
+      .orderBy(messages.createdAt);
+  }
+
+  async markMessageAsRead(messageId: number): Promise<Message> {
+    const result = await this.db
+      .update(messages)
+      .set({ isRead: true })
+      .where(eq(messages.id, messageId))
+      .returning();
+    return result[0];
+  }
+
+  async createNotification(notification: Omit<Notification, "id" | "isRead" | "createdAt">): Promise<Notification> {
+    const result = await this.db
+      .insert(notifications)
+      .values(notification)
+      .returning();
+    return result[0];
+  }
+
+  async getNotificationsByUserId(userId: number): Promise<Notification[]> {
+    return await this.db
+      .select()
+      .from(notifications)
+      .where(eq(notifications.userId, userId))
+      .orderBy(desc(notifications.createdAt));
+  }
+
+  async markNotificationAsRead(notificationId: number): Promise<Notification> {
+    const result = await this.db
+      .update(notifications)
+      .set({ isRead: true })
+      .where(eq(notifications.id, notificationId))
+      .returning();
+    return result[0];
+  }
+
+  async markAllNotificationsAsRead(userId: number): Promise<void> {
+    await this.db
+      .update(notifications)
+      .set({ isRead: true })
+      .where(eq(notifications.userId, userId));
   }
 }
 

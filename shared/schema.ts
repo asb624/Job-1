@@ -9,6 +9,7 @@ export const users = pgTable("users", {
   isServiceProvider: boolean("is_service_provider").notNull().default(false),
   avatar: text("avatar"),
   createdAt: timestamp("created_at").defaultNow(),
+  lastSeen: timestamp("last_seen"),
 });
 
 export const profiles = pgTable("profiles", {
@@ -72,6 +73,34 @@ export const reviews = pgTable("reviews", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const conversations = pgTable("conversations", {
+  id: serial("id").primaryKey(),
+  user1Id: integer("user1_id").notNull().references(() => users.id),
+  user2Id: integer("user2_id").notNull().references(() => users.id),
+  lastMessageAt: timestamp("last_message_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const messages = pgTable("messages", {
+  id: serial("id").primaryKey(),
+  conversationId: integer("conversation_id").notNull().references(() => conversations.id),
+  senderId: integer("sender_id").notNull().references(() => users.id),
+  content: text("content").notNull(),
+  isRead: boolean("is_read").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const notifications = pgTable("notifications", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  type: text("type").notNull(), // "message", "bid", "review", etc.
+  referenceId: integer("reference_id"), // ID related to the notification type (messageId, bidId, etc.)
+  isRead: boolean("is_read").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
@@ -113,14 +142,39 @@ export const insertReviewSchema = createInsertSchema(reviews).pick({
   comment: true,
 });
 
+export const insertConversationSchema = createInsertSchema(conversations).pick({
+  user1Id: true,
+  user2Id: true,
+});
+
+export const insertMessageSchema = createInsertSchema(messages).pick({
+  conversationId: true,
+  content: true,
+});
+
+export const insertNotificationSchema = createInsertSchema(notifications).pick({
+  userId: true,
+  title: true,
+  content: true,
+  type: true,
+  referenceId: true,
+});
+
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
+export type InsertConversation = z.infer<typeof insertConversationSchema>;
+export type InsertMessage = z.infer<typeof insertMessageSchema>;
+export type InsertNotification = z.infer<typeof insertNotificationSchema>;
+
 export type User = typeof users.$inferSelect;
 export type Profile = typeof profiles.$inferSelect;
 export type Service = typeof services.$inferSelect;
 export type Requirement = typeof requirements.$inferSelect;
 export type Bid = typeof bids.$inferSelect;
 export type Review = typeof reviews.$inferSelect;
+export type Conversation = typeof conversations.$inferSelect;
+export type Message = typeof messages.$inferSelect;
+export type Notification = typeof notifications.$inferSelect;
 
 export const serviceCategories = [
   "Web Development",
