@@ -4,7 +4,10 @@ import { setupAuth } from "./auth";
 import { setupWebSocket } from "./websocket";
 import { storage } from "./storage";
 import { z } from "zod";
-import { insertServiceSchema, insertRequirementSchema, insertBidSchema, insertProfileSchema } from "@shared/schema";
+import { 
+  insertServiceSchema, insertRequirementSchema, insertBidSchema, 
+  insertProfileSchema, insertMessageSchema, insertNotificationSchema 
+} from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   setupAuth(app);
@@ -123,6 +126,140 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     const bids = await storage.getBidsForRequirement(parseInt(req.params.id));
     res.json(bids);
+  });
+
+  // Conversations & Messages
+  app.post("/api/conversations", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+
+    const { recipientId } = req.body;
+    if (!recipientId) return res.status(400).json({ message: "Recipient ID is required" });
+
+    try {
+      const conversation = await storage.getOrCreateConversation(req.user.id, parseInt(recipientId));
+      res.status(201).json(conversation);
+    } catch (error) {
+      console.error('Error creating conversation:', error);
+      res.status(500).json({ message: "Failed to create conversation" });
+    }
+  });
+
+  app.get("/api/conversations", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+
+    try {
+      // Update user's last seen timestamp
+      await storage.updateUserLastSeen(req.user.id);
+      
+      const conversations = await storage.getConversationsByUserId(req.user.id);
+      res.json(conversations);
+    } catch (error) {
+      console.error('Error fetching conversations:', error);
+      res.status(500).json({ message: "Failed to fetch conversations" });
+    }
+  });
+
+  app.get("/api/conversations/:id/messages", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+
+    try {
+      const messages = await storage.getMessagesByConversationId(parseInt(req.params.id));
+      res.json(messages);
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+      res.status(500).json({ message: "Failed to fetch messages" });
+    }
+  });
+
+  app.post("/api/conversations/:id/messages", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+
+    const parsed = insertMessageSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json(parsed.error);
+
+    try {
+      const message = await storage.createMessage({
+        ...parsed.data,
+        conversationId: parseInt(req.params.id),
+        senderId: req.user.id,
+      });
+
+      // Create a notification for the recipient
+      const conversation = await storage.getOrCreateConversation(req.user.id, req.user.id);
+      const recipientId = conversation.user1Id === req.user.id ? conversation.user2Id : conversation.user1Id;
+      
+      await storage.createNotification({
+        userId: recipientId,
+        title: "New Message",
+        content: `You have a new message from ${req.user.username}`,
+        type: "message",
+        referenceId: message.id,
+      });
+
+      // Broadcast message via WebSocket
+      const wsMessage = {
+        type: 'message',
+        action: 'create',
+        payload: message
+      };
+      
+      // The websocket will handle broadcasting to the right users
+      req.app.emit('websocket', wsMessage);
+
+      res.status(201).json(message);
+    } catch (error) {
+      console.error('Error creating message:', error);
+      res.status(500).json({ message: "Failed to create message" });
+    }
+  });
+
+  app.put("/api/messages/:id/read", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+
+    try {
+      const message = await storage.markMessageAsRead(parseInt(req.params.id));
+      res.json(message);
+    } catch (error) {
+      console.error('Error marking message as read:', error);
+      res.status(500).json({ message: "Failed to mark message as read" });
+    }
+  });
+
+  // Notifications
+  app.get("/api/notifications", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+
+    try {
+      const notifications = await storage.getNotificationsByUserId(req.user.id);
+      res.json(notifications);
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+      res.status(500).json({ message: "Failed to fetch notifications" });
+    }
+  });
+
+  app.put("/api/notifications/:id/read", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+
+    try {
+      const notification = await storage.markNotificationAsRead(parseInt(req.params.id));
+      res.json(notification);
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+      res.status(500).json({ message: "Failed to mark notification as read" });
+    }
+  });
+
+  app.put("/api/notifications/read-all", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+
+    try {
+      await storage.markAllNotificationsAsRead(req.user.id);
+      res.status(200).json({ message: "All notifications marked as read" });
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+      res.status(500).json({ message: "Failed to mark all notifications as read" });
+    }
   });
 
   return httpServer;

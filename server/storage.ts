@@ -1,9 +1,14 @@
 import pg from 'pg';
 import { drizzle } from 'drizzle-orm/node-postgres';
-import { User, Service, Requirement, Bid, InsertUser, users, services, requirements, bids, profiles, Profile } from "@shared/schema";
+import { 
+  User, Service, Requirement, Bid, InsertUser, 
+  users, services, requirements, bids, profiles, Profile,
+  conversations, messages, notifications,
+  Conversation, Message, Notification
+} from "@shared/schema";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
-import { eq } from 'drizzle-orm';
+import { eq, or, and, desc } from 'drizzle-orm';
 
 const PostgresSessionStore = connectPg(session);
 
