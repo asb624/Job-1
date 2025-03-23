@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, foreignKey } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, foreignKey, doublePrecision } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -21,6 +21,15 @@ export const profiles = pgTable("profiles", {
   isVerified: boolean("is_verified").default(false),
   verificationDocuments: text("verification_documents").array(),
   rating: integer("rating").default(0),
+  // Location data
+  address: text("address"),
+  city: text("city"),
+  state: text("state"),
+  country: text("country"),
+  postalCode: text("postal_code"),
+  latitude: doublePrecision("latitude"),
+  longitude: doublePrecision("longitude"),
+  serviceRadius: integer("service_radius"), // in kilometers
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -32,6 +41,16 @@ export const services = pgTable("services", {
   category: text("category").notNull(),
   providerId: integer("provider_id").notNull().references(() => users.id),
   price: integer("price").notNull(),
+  // Location data
+  address: text("address"),
+  city: text("city"),
+  state: text("state"),
+  country: text("country"),
+  postalCode: text("postal_code"),
+  latitude: doublePrecision("latitude"),
+  longitude: doublePrecision("longitude"),
+  serviceRadius: integer("service_radius"), // in kilometers
+  isRemote: boolean("is_remote").default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -43,6 +62,15 @@ export const requirements = pgTable("requirements", {
   userId: integer("user_id").notNull().references(() => users.id),
   budget: integer("budget").notNull(),
   status: text("status").notNull().default("open"),
+  // Location data
+  address: text("address"),
+  city: text("city"),
+  state: text("state"),
+  country: text("country"),
+  postalCode: text("postal_code"),
+  latitude: doublePrecision("latitude"),
+  longitude: doublePrecision("longitude"),
+  isRemote: boolean("is_remote").default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -114,6 +142,15 @@ export const insertProfileSchema = createInsertSchema(profiles).pick({
   bio: true,
   skills: true,
   portfolioLinks: true,
+  // Location data
+  address: true,
+  city: true,
+  state: true,
+  country: true,
+  postalCode: true,
+  latitude: true,
+  longitude: true,
+  serviceRadius: true,
 });
 
 export const insertServiceSchema = createInsertSchema(services).pick({
@@ -121,6 +158,16 @@ export const insertServiceSchema = createInsertSchema(services).pick({
   description: true,
   category: true,
   price: true,
+  // Location data
+  address: true,
+  city: true,
+  state: true,
+  country: true,
+  postalCode: true,
+  latitude: true,
+  longitude: true,
+  serviceRadius: true,
+  isRemote: true,
 });
 
 export const insertRequirementSchema = createInsertSchema(requirements).pick({
