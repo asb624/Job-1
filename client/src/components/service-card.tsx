@@ -13,7 +13,7 @@ export function ServiceCard({ service, onContact }: ServiceCardProps) {
       <CardHeader className="space-y-1">
         <div className="flex items-center justify-between">
           <h3 className="text-2xl font-bold">{service.title}</h3>
-          <span className="text-xl font-semibold">${service.price}</span>
+          <span className="text-xl font-semibold">₹{service.price}</span>
         </div>
         <p className="text-sm text-muted-foreground">{service.category}</p>
       </CardHeader>

@@ -14,7 +14,7 @@ export function RequirementCard({ requirement, onBid }: RequirementCardProps) {
         <div className="flex items-center justify-between">
           <h3 className="text-2xl font-bold">{requirement.title}</h3>
           <div className="flex items-center gap-2">
-            <span className="text-xl font-semibold">${requirement.budget}</span>
+            <span className="text-xl font-semibold">₹{requirement.budget}</span>
             <span className="capitalize px-2 py-1 text-sm rounded-full bg-primary/10 text-primary">
               {requirement.status}
             </span>
