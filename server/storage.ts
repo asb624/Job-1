@@ -41,8 +41,7 @@ function withinRadius(
   lat: number,
   lng: number,
   radius: number,
-  latCol: SQL<unknown>,
-  lngCol: SQL<unknown>
+  tableName: string
 ): SQL<unknown> {
   // This is a simplified approximation using a square boundary
   // For more precise calculations, consider using PostGIS with spatial indexes
@@ -50,8 +49,8 @@ function withinRadius(
   const lngDiff = radius / (111 * Math.cos(lat * Math.PI / 180));
   
   return sql`
-    ${latCol} BETWEEN ${lat - latDiff} AND ${lat + latDiff} AND
-    ${lngCol} BETWEEN ${lng - lngDiff} AND ${lng + lngDiff}
+    ${tableName}.latitude BETWEEN ${lat - latDiff} AND ${lat + latDiff} AND
+    ${tableName}.longitude BETWEEN ${lng - lngDiff} AND ${lng + lngDiff}
   `;
 }
 
@@ -471,6 +470,245 @@ export class PostgresStorage implements IStorage {
       .update(notifications)
       .set({ isRead: true })
       .where(eq(notifications.userId, userId));
+  }
+
+  // Location-based search methods
+  async searchServicesByLocation(lat: number, lng: number, radius: number, isRemote: boolean = false): Promise<Service[]> {
+    // Create the base query
+    let baseQuery = this.db
+      .select({
+        id: services.id,
+        title: services.title,
+        description: services.description,
+        category: services.category,
+        providerId: services.providerId,
+        price: services.price,
+        createdAt: services.createdAt,
+        latitude: services.latitude,
+        longitude: services.longitude,
+        address: services.address,
+        city: services.city,
+        state: services.state,
+        country: services.country,
+        postalCode: services.postalCode,
+        serviceRadius: services.serviceRadius,
+        isRemote: services.isRemote,
+      })
+      .from(services);
+
+    // Include remote services if requested
+    if (isRemote) {
+      return this.db.execute(
+        sql`
+          WITH location_query AS (
+            ${baseQuery}
+          )
+          SELECT * FROM location_query
+          WHERE (isRemote = true OR (
+            latitude IS NOT NULL AND
+            longitude IS NOT NULL AND
+            latitude BETWEEN ${lat - radius/111} AND ${lat + radius/111} AND
+            longitude BETWEEN ${lng - radius/(111 * Math.cos(lat * Math.PI / 180))} AND ${lng + radius/(111 * Math.cos(lat * Math.PI / 180))}
+          ))
+        `
+      );
+    } else {
+      // Only in-person services within radius
+      return this.db.execute(
+        sql`
+          WITH location_query AS (
+            ${baseQuery}
+          )
+          SELECT * FROM location_query
+          WHERE (isRemote = false OR isRemote IS NULL) AND
+            latitude IS NOT NULL AND
+            longitude IS NOT NULL AND
+            latitude BETWEEN ${lat - radius/111} AND ${lat + radius/111} AND
+            longitude BETWEEN ${lng - radius/(111 * Math.cos(lat * Math.PI / 180))} AND ${lng + radius/(111 * Math.cos(lat * Math.PI / 180))}
+        `
+      );
+    }
+
+    const results = await query;
+    
+    // For accurate distance calculations, post-process the results
+    return results
+      .filter(service => 
+        // Skip null coordinates (old records without location data)
+        service.latitude !== null && 
+        service.longitude !== null
+      )
+      .map(service => ({
+        ...service,
+        // Calculate exact distance using Haversine formula
+        distance: calculateDistance(lat, lng, service.latitude!, service.longitude!)
+      }))
+      // Sort by distance
+      .sort((a, b) => (a.distance || Infinity) - (b.distance || Infinity));
+  }
+
+  async searchServicesByCategory(category: string, lat?: number, lng?: number, radius?: number): Promise<Service[]> {
+    let query = this.db
+      .select({
+        id: services.id,
+        title: services.title,
+        description: services.description,
+        category: services.category,
+        providerId: services.providerId,
+        price: services.price,
+        createdAt: services.createdAt,
+        latitude: services.latitude,
+        longitude: services.longitude,
+        address: services.address,
+        city: services.city,
+        state: services.state,
+        country: services.country,
+        postalCode: services.postalCode,
+        serviceRadius: services.serviceRadius,
+        isRemote: services.isRemote,
+      })
+      .from(services)
+      .where(eq(services.category, category));
+
+    // If location parameters are provided, filter by proximity
+    if (lat !== undefined && lng !== undefined && radius !== undefined) {
+      query = query.where(
+        withinRadius(lat, lng, radius, services.latitude, services.longitude)
+      );
+    }
+
+    const results = await query;
+    
+    // If location parameters are provided, calculate and sort by distance
+    if (lat !== undefined && lng !== undefined) {
+      return results
+        .filter(service => 
+          // Skip null coordinates (old records without location data)
+          service.latitude !== null && 
+          service.longitude !== null
+        )
+        .map(service => ({
+          ...service,
+          // Calculate exact distance using Haversine formula
+          distance: calculateDistance(lat, lng, service.latitude!, service.longitude!)
+        }))
+        // Sort by distance
+        .sort((a, b) => (a.distance || Infinity) - (b.distance || Infinity));
+    }
+    
+    // Otherwise, return unsorted results
+    return results;
+  }
+
+  async searchRequirementsByLocation(lat: number, lng: number, radius: number, isRemote: boolean = false): Promise<Requirement[]> {
+    let query = this.db
+      .select({
+        id: requirements.id,
+        title: requirements.title,
+        description: requirements.description,
+        category: requirements.category,
+        userId: requirements.userId,
+        budget: requirements.budget,
+        status: requirements.status,
+        createdAt: requirements.createdAt,
+        latitude: requirements.latitude,
+        longitude: requirements.longitude,
+        address: requirements.address,
+        city: requirements.city,
+        state: requirements.state,
+        country: requirements.country,
+        postalCode: requirements.postalCode,
+        isRemote: requirements.isRemote,
+      })
+      .from(requirements)
+      .where(eq(requirements.status, "open")); // Only open requirements
+
+    // Include remote requirements if requested
+    if (isRemote) {
+      query = query.where(or(
+        sql`${requirements.isRemote} = true`,
+        withinRadius(lat, lng, radius, requirements.latitude, requirements.longitude)
+      ));
+    } else {
+      // Only in-person requirements within radius
+      query = query.where(and(
+        sql`${requirements.isRemote} = false OR ${requirements.isRemote} IS NULL`,
+        withinRadius(lat, lng, radius, requirements.latitude, requirements.longitude)
+      ));
+    }
+
+    const results = await query;
+    
+    // For accurate distance calculations, post-process the results
+    return results
+      .filter(requirement => 
+        // Skip null coordinates (old records without location data)
+        requirement.latitude !== null && 
+        requirement.longitude !== null
+      )
+      .map(requirement => ({
+        ...requirement,
+        // Calculate exact distance using Haversine formula
+        distance: calculateDistance(lat, lng, requirement.latitude!, requirement.longitude!)
+      }))
+      // Sort by distance
+      .sort((a, b) => (a.distance || Infinity) - (b.distance || Infinity));
+  }
+
+  async searchRequirementsByCategory(category: string, lat?: number, lng?: number, radius?: number): Promise<Requirement[]> {
+    let query = this.db
+      .select({
+        id: requirements.id,
+        title: requirements.title,
+        description: requirements.description,
+        category: requirements.category,
+        userId: requirements.userId,
+        budget: requirements.budget,
+        status: requirements.status,
+        createdAt: requirements.createdAt,
+        latitude: requirements.latitude,
+        longitude: requirements.longitude,
+        address: requirements.address,
+        city: requirements.city,
+        state: requirements.state,
+        country: requirements.country,
+        postalCode: requirements.postalCode,
+        isRemote: requirements.isRemote,
+      })
+      .from(requirements)
+      .where(and(
+        eq(requirements.category, category),
+        eq(requirements.status, "open") // Only open requirements
+      ));
+
+    // If location parameters are provided, filter by proximity
+    if (lat !== undefined && lng !== undefined && radius !== undefined) {
+      query = query.where(
+        withinRadius(lat, lng, radius, requirements.latitude, requirements.longitude)
+      );
+    }
+
+    const results = await query;
+    
+    // If location parameters are provided, calculate and sort by distance
+    if (lat !== undefined && lng !== undefined) {
+      return results
+        .filter(requirement => 
+          // Skip null coordinates (old records without location data)
+          requirement.latitude !== null && 
+          requirement.longitude !== null
+        )
+        .map(requirement => ({
+          ...requirement,
+          // Calculate exact distance using Haversine formula
+          distance: calculateDistance(lat, lng, requirement.latitude!, requirement.longitude!)
+        }))
+        // Sort by distance
+        .sort((a, b) => (a.distance || Infinity) - (b.distance || Infinity));
+    }
+    
+    // Otherwise, return unsorted results
+    return results;
   }
 }
 

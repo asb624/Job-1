@@ -101,8 +101,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get("/api/services", async (req, res) => {
-    const services = await storage.getServices();
-    res.json(services);
+    try {
+      // Check if location-based query parameters are provided
+      const { lat, lng, radius, isRemote, category } = req.query;
+      
+      // If both location and category parameters are provided
+      if (lat && lng && radius && category) {
+        const results = await storage.searchServicesByCategory(
+          category as string,
+          parseFloat(lat as string),
+          parseFloat(lng as string),
+          parseFloat(radius as string)
+        );
+        return res.json(results);
+      }
+      
+      // If only location parameters are provided
+      if (lat && lng && radius) {
+        const results = await storage.searchServicesByLocation(
+          parseFloat(lat as string),
+          parseFloat(lng as string),
+          parseFloat(radius as string),
+          isRemote === 'true'
+        );
+        return res.json(results);
+      }
+      
+      // If only category parameter is provided
+      if (category) {
+        const results = await storage.searchServicesByCategory(category as string);
+        return res.json(results);
+      }
+      
+      // Default: get all services
+      const services = await storage.getServices();
+      res.json(services);
+    } catch (error) {
+      console.error('Error fetching services:', error);
+      res.status(500).json({ message: "Failed to fetch services" });
+    }
   });
 
   // Requirements
@@ -141,8 +178,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get("/api/requirements", async (req, res) => {
-    const requirements = await storage.getRequirements();
-    res.json(requirements);
+    try {
+      // Check if location-based query parameters are provided
+      const { lat, lng, radius, isRemote, category } = req.query;
+      
+      // If both location and category parameters are provided
+      if (lat && lng && radius && category) {
+        const results = await storage.searchRequirementsByCategory(
+          category as string,
+          parseFloat(lat as string),
+          parseFloat(lng as string),
+          parseFloat(radius as string)
+        );
+        return res.json(results);
+      }
+      
+      // If only location parameters are provided
+      if (lat && lng && radius) {
+        const results = await storage.searchRequirementsByLocation(
+          parseFloat(lat as string),
+          parseFloat(lng as string),
+          parseFloat(radius as string),
+          isRemote === 'true'
+        );
+        return res.json(results);
+      }
+      
+      // If only category parameter is provided
+      if (category) {
+        const results = await storage.searchRequirementsByCategory(category as string);
+        return res.json(results);
+      }
+      
+      // Default: get all requirements
+      const requirements = await storage.getRequirements();
+      res.json(requirements);
+    } catch (error) {
+      console.error('Error fetching requirements:', error);
+      res.status(500).json({ message: "Failed to fetch requirements" });
+    }
   });
 
   // Bids
@@ -339,6 +413,107 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error marking all notifications as read:', error);
       res.status(500).json({ message: "Failed to mark all notifications as read" });
+    }
+  });
+  
+  // Dedicated location-based search endpoints
+  app.get("/api/services/search/location", async (req, res) => {
+    try {
+      const { lat, lng, radius, isRemote } = req.query;
+      
+      if (!lat || !lng || !radius) {
+        return res.status(400).json({ message: "Missing required parameters: lat, lng, and radius are required" });
+      }
+      
+      const results = await storage.searchServicesByLocation(
+        parseFloat(lat as string),
+        parseFloat(lng as string),
+        parseFloat(radius as string),
+        isRemote === 'true'
+      );
+      
+      res.json(results);
+    } catch (error) {
+      console.error("Error in location-based service search:", error);
+      res.status(500).json({ message: "Error processing location-based search" });
+    }
+  });
+  
+  app.get("/api/requirements/search/location", async (req, res) => {
+    try {
+      const { lat, lng, radius, isRemote } = req.query;
+      
+      if (!lat || !lng || !radius) {
+        return res.status(400).json({ message: "Missing required parameters: lat, lng, and radius are required" });
+      }
+      
+      const results = await storage.searchRequirementsByLocation(
+        parseFloat(lat as string),
+        parseFloat(lng as string),
+        parseFloat(radius as string),
+        isRemote === 'true'
+      );
+      
+      res.json(results);
+    } catch (error) {
+      console.error("Error in location-based requirement search:", error);
+      res.status(500).json({ message: "Error processing location-based search" });
+    }
+  });
+  
+  app.get("/api/services/search/category", async (req, res) => {
+    try {
+      const { category, lat, lng, radius } = req.query;
+      
+      if (!category) {
+        return res.status(400).json({ message: "Missing required parameter: category" });
+      }
+      
+      let results;
+      
+      if (lat && lng && radius) {
+        results = await storage.searchServicesByCategory(
+          category as string,
+          parseFloat(lat as string),
+          parseFloat(lng as string),
+          parseFloat(radius as string)
+        );
+      } else {
+        results = await storage.searchServicesByCategory(category as string);
+      }
+      
+      res.json(results);
+    } catch (error) {
+      console.error("Error in category-based service search:", error);
+      res.status(500).json({ message: "Error processing category-based search" });
+    }
+  });
+  
+  app.get("/api/requirements/search/category", async (req, res) => {
+    try {
+      const { category, lat, lng, radius } = req.query;
+      
+      if (!category) {
+        return res.status(400).json({ message: "Missing required parameter: category" });
+      }
+      
+      let results;
+      
+      if (lat && lng && radius) {
+        results = await storage.searchRequirementsByCategory(
+          category as string,
+          parseFloat(lat as string),
+          parseFloat(lng as string),
+          parseFloat(radius as string)
+        );
+      } else {
+        results = await storage.searchRequirementsByCategory(category as string);
+      }
+      
+      res.json(results);
+    } catch (error) {
+      console.error("Error in category-based requirement search:", error);
+      res.status(500).json({ message: "Error processing category-based search" });
     }
   });
 
