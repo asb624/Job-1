@@ -175,6 +175,15 @@ export const insertRequirementSchema = createInsertSchema(requirements).pick({
   description: true,
   category: true,
   budget: true,
+  // Location data
+  address: true,
+  city: true,
+  state: true,
+  country: true,
+  postalCode: true,
+  latitude: true,
+  longitude: true,
+  isRemote: true,
 });
 
 export const insertBidSchema = createInsertSchema(bids).pick({

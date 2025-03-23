@@ -76,6 +76,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       ...parsed.data,
       providerId: req.user.id,
       createdAt: new Date(),
+      // Safely add nullable location fields with default values
+      address: parsed.data.address || null,
+      city: parsed.data.city || null,
+      state: parsed.data.state || null,
+      country: parsed.data.country || null,
+      postalCode: parsed.data.postalCode || null,
+      latitude: parsed.data.latitude || null,
+      longitude: parsed.data.longitude || null,
+      serviceRadius: parsed.data.serviceRadius || null,
+      isRemote: parsed.data.isRemote || false,
     });
     
     // Broadcast service creation via WebSocket
@@ -107,6 +117,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       userId: req.user.id,
       status: "open",
       createdAt: new Date(),
+      // Safely add nullable location fields with default values
+      address: parsed.data.address || null,
+      city: parsed.data.city || null,
+      state: parsed.data.state || null,
+      country: parsed.data.country || null,
+      postalCode: parsed.data.postalCode || null,
+      latitude: parsed.data.latitude || null,
+      longitude: parsed.data.longitude || null,
+      isRemote: parsed.data.isRemote || false,
     });
     
     // Broadcast requirement creation via WebSocket
@@ -140,6 +159,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       providerId: req.user.id,
       status: "pending",
       createdAt: new Date(),
+      message: parsed.data.message || null,
     });
     
     try {
