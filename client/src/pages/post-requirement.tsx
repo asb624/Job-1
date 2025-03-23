@@ -125,7 +125,7 @@ export default function PostRequirement() {
               name="budget"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Budget ($)</FormLabel>
+                  <FormLabel>Budget (₹)</FormLabel>
                   <FormControl>
                     <Input
                       type="number"

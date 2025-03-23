@@ -85,7 +85,7 @@ export default function Dashboard() {
                 name="amount"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Bid Amount ($)</FormLabel>
+                    <FormLabel>Bid Amount (₹)</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
