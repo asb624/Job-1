@@ -13,6 +13,7 @@ import Dashboard from "@/pages/dashboard";
 import PostRequirement from "@/pages/post-requirement";
 import PostService from "@/pages/post-service";
 import Profile from "@/pages/profile"; 
+import MessagesPage from "@/pages/messages";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -24,6 +25,7 @@ function Router() {
       <ProtectedRoute path="/post-requirement" component={PostRequirement} />
       <ProtectedRoute path="/post-service" component={PostService} />
       <ProtectedRoute path="/profile" component={Profile} /> 
+      <ProtectedRoute path="/messages" component={MessagesPage} />
       <Route component={NotFound} />
     </Switch>
   );

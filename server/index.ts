@@ -40,6 +40,23 @@ app.use((req, res, next) => {
   try {
     const server = await registerRoutes(app);
 
+    // Set up WebSocket event listener on app
+    app.on('websocket', (message) => {
+      // This event will be emitted from routes when they need to broadcast via WebSocket
+      console.log('WebSocket broadcast event:', message.type);
+      
+      // The WebSocket server has already attached these methods to the server object
+      if (server.hasOwnProperty('broadcast')) {
+        if (message.type === 'notification' && message.payload.userId) {
+          (server as any).sendToUser(message.payload.userId, message);
+        } else if (['bid', 'requirement'].includes(message.type)) {
+          (server as any).broadcastToRelevantUsers(message);
+        } else {
+          (server as any).broadcast(message);
+        }
+      }
+    });
+
     // Global error handler
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
       console.error('Error:', err);
