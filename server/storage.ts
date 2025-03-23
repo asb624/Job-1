@@ -8,9 +8,52 @@ import {
 } from "@shared/schema";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
-import { eq, or, and, desc } from 'drizzle-orm';
+import { eq, or, and, desc, sql, SQL } from 'drizzle-orm';
 
 const PostgresSessionStore = connectPg(session);
+
+// Utility function to calculate distance between two points using Haversine formula
+function calculateDistance(
+  lat1: number, 
+  lon1: number, 
+  lat2: number, 
+  lon2: number
+): number {
+  // Radius of the Earth in kilometers
+  const R = 6371; 
+  
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  const distance = R * c; // Distance in kilometers
+  
+  return distance;
+}
+
+// SQL helper to filter records by proximity
+function withinRadius(
+  lat: number,
+  lng: number,
+  radius: number,
+  latCol: SQL<unknown>,
+  lngCol: SQL<unknown>
+): SQL<unknown> {
+  // This is a simplified approximation using a square boundary
+  // For more precise calculations, consider using PostGIS with spatial indexes
+  const latDiff = radius / 111; // 1 degree of latitude is approximately 111 km
+  const lngDiff = radius / (111 * Math.cos(lat * Math.PI / 180));
+  
+  return sql`
+    ${latCol} BETWEEN ${lat - latDiff} AND ${lat + latDiff} AND
+    ${lngCol} BETWEEN ${lng - lngDiff} AND ${lng + lngDiff}
+  `;
+}
 
 export interface IStorage {
   sessionStore: session.Store;
@@ -30,6 +73,8 @@ export interface IStorage {
   createService(service: Omit<Service, "id">): Promise<Service>;
   getServices(): Promise<Service[]>;
   getServicesByProvider(providerId: number): Promise<Service[]>;
+  searchServicesByLocation(lat: number, lng: number, radius: number, isRemote?: boolean): Promise<Service[]>;
+  searchServicesByCategory(category: string, lat?: number, lng?: number, radius?: number): Promise<Service[]>;
 
   // Requirement operations
   createRequirement(requirement: Omit<Requirement, "id">): Promise<Requirement>;
@@ -37,6 +82,8 @@ export interface IStorage {
   getRequirements(): Promise<Requirement[]>;
   getRequirementsByUser(userId: number): Promise<Requirement[]>;
   updateRequirementStatus(id: number, status: string): Promise<Requirement>;
+  searchRequirementsByLocation(lat: number, lng: number, radius: number, isRemote?: boolean): Promise<Requirement[]>;
+  searchRequirementsByCategory(category: string, lat?: number, lng?: number, radius?: number): Promise<Requirement[]>;
 
   // Bid operations
   createBid(bid: Omit<Bid, "id">): Promise<Bid>;
@@ -146,11 +193,57 @@ export class PostgresStorage implements IStorage {
   }
 
   async getServices(): Promise<Service[]> {
-    return await this.db.select().from(services);
+    // Only select columns that definitely exist until migration is complete
+    const results = await this.db.select({
+      id: services.id,
+      title: services.title,
+      description: services.description,
+      category: services.category,
+      providerId: services.providerId,
+      price: services.price,
+      createdAt: services.createdAt,
+    }).from(services);
+    
+    // Add default null values for location fields
+    return results.map(service => ({
+      ...service,
+      address: null,
+      city: null,
+      state: null,
+      country: null,
+      postalCode: null,
+      latitude: null,
+      longitude: null,
+      serviceRadius: null,
+      isRemote: null
+    }));
   }
 
   async getServicesByProvider(providerId: number): Promise<Service[]> {
-    return await this.db.select().from(services).where(eq(services.providerId, providerId));
+    // Only select columns that definitely exist until migration is complete
+    const results = await this.db.select({
+      id: services.id,
+      title: services.title,
+      description: services.description,
+      category: services.category,
+      providerId: services.providerId,
+      price: services.price,
+      createdAt: services.createdAt,
+    }).from(services).where(eq(services.providerId, providerId));
+    
+    // Add default null values for location fields
+    return results.map(service => ({
+      ...service,
+      address: null,
+      city: null,
+      state: null,
+      country: null,
+      postalCode: null,
+      latitude: null,
+      longitude: null,
+      serviceRadius: null,
+      isRemote: null
+    }));
   }
 
   async createRequirement(requirement: Omit<Requirement, "id">): Promise<Requirement> {
@@ -159,16 +252,86 @@ export class PostgresStorage implements IStorage {
   }
   
   async getRequirement(id: number): Promise<Requirement | undefined> {
-    const result = await this.db.select().from(requirements).where(eq(requirements.id, id));
-    return result[0];
+    // Only select columns that definitely exist until migration is complete
+    const result = await this.db.select({
+      id: requirements.id,
+      title: requirements.title,
+      description: requirements.description,
+      category: requirements.category,
+      userId: requirements.userId,
+      budget: requirements.budget,
+      status: requirements.status,
+      createdAt: requirements.createdAt,
+    }).from(requirements).where(eq(requirements.id, id));
+    
+    if (!result.length) return undefined;
+    
+    // Add default null values for location fields
+    return {
+      ...result[0],
+      address: null,
+      city: null,
+      state: null,
+      country: null,
+      postalCode: null,
+      latitude: null,
+      longitude: null,
+      isRemote: null
+    };
   }
 
   async getRequirements(): Promise<Requirement[]> {
-    return await this.db.select().from(requirements);
+    // Only select columns that definitely exist until migration is complete
+    const results = await this.db.select({
+      id: requirements.id,
+      title: requirements.title,
+      description: requirements.description,
+      category: requirements.category,
+      userId: requirements.userId,
+      budget: requirements.budget,
+      status: requirements.status,
+      createdAt: requirements.createdAt,
+    }).from(requirements);
+    
+    // Add default null values for location fields
+    return results.map(requirement => ({
+      ...requirement,
+      address: null,
+      city: null,
+      state: null,
+      country: null,
+      postalCode: null,
+      latitude: null,
+      longitude: null,
+      isRemote: null
+    }));
   }
 
   async getRequirementsByUser(userId: number): Promise<Requirement[]> {
-    return await this.db.select().from(requirements).where(eq(requirements.userId, userId));
+    // Only select columns that definitely exist until migration is complete
+    const results = await this.db.select({
+      id: requirements.id,
+      title: requirements.title,
+      description: requirements.description,
+      category: requirements.category,
+      userId: requirements.userId,
+      budget: requirements.budget,
+      status: requirements.status,
+      createdAt: requirements.createdAt,
+    }).from(requirements).where(eq(requirements.userId, userId));
+    
+    // Add default null values for location fields
+    return results.map(requirement => ({
+      ...requirement,
+      address: null,
+      city: null,
+      state: null,
+      country: null,
+      postalCode: null,
+      latitude: null,
+      longitude: null,
+      isRemote: null
+    }));
   }
 
   async updateRequirementStatus(id: number, status: string): Promise<Requirement> {
