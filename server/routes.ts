@@ -75,7 +75,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const service = await storage.createService({
       ...parsed.data,
       providerId: req.user.id,
+      createdAt: new Date(),
     });
+    
+    // Broadcast service creation via WebSocket
+    const wsMessage = {
+      type: 'service',
+      action: 'create',
+      payload: service
+    };
+    
+    req.app.emit('websocket', wsMessage);
+    
     res.status(201).json(service);
   });
 
@@ -95,7 +106,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       ...parsed.data,
       userId: req.user.id,
       status: "open",
+      createdAt: new Date(),
     });
+    
+    // Broadcast requirement creation via WebSocket
+    const wsMessage = {
+      type: 'requirement',
+      action: 'create',
+      payload: requirement
+    };
+    
+    req.app.emit('websocket', wsMessage);
+    
     res.status(201).json(requirement);
   });
 
@@ -117,7 +139,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
       ...parsed.data,
       providerId: req.user.id,
       status: "pending",
+      createdAt: new Date(),
     });
+    
+    try {
+      // Create a notification for the requirement owner
+      const requirement = await storage.getRequirement(parsed.data.requirementId);
+      if (requirement) {
+        await storage.createNotification({
+          userId: requirement.userId,
+          title: "New Bid",
+          content: `A service provider has placed a bid on your requirement: ${requirement.title}`,
+          type: "bid",
+          referenceId: bid.id,
+        });
+  
+        // Broadcast bid via WebSocket
+        const wsMessage = {
+          type: 'bid',
+          action: 'create',
+          payload: {
+            ...bid,
+            userId: requirement.userId, // Include the requirement owner's ID for targeting
+          }
+        };
+        
+        req.app.emit('websocket', wsMessage);
+      }
+    } catch (error) {
+      console.error('Error processing bid notification:', error);
+      // We still return the bid even if notification fails
+    }
+    
     res.status(201).json(bid);
   });
 
@@ -184,8 +237,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         senderId: req.user.id,
       });
 
-      // Create a notification for the recipient
-      const conversation = await storage.getOrCreateConversation(req.user.id, req.user.id);
+      // Get the conversation details
+      const conversations = await storage.getConversationsByUserId(req.user.id);
+      const conversation = conversations.find(conv => conv.id === parseInt(req.params.id));
+
+      if (!conversation) {
+        throw new Error("Conversation not found");
+      }
+      
+      // Determine the recipient ID (the other user in the conversation)
       const recipientId = conversation.user1Id === req.user.id ? conversation.user2Id : conversation.user1Id;
       
       await storage.createNotification({

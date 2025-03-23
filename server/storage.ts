@@ -33,6 +33,7 @@ export interface IStorage {
 
   // Requirement operations
   createRequirement(requirement: Omit<Requirement, "id">): Promise<Requirement>;
+  getRequirement(id: number): Promise<Requirement | undefined>;
   getRequirements(): Promise<Requirement[]>;
   getRequirementsByUser(userId: number): Promise<Requirement[]>;
   updateRequirementStatus(id: number, status: string): Promise<Requirement>;
@@ -154,6 +155,11 @@ export class PostgresStorage implements IStorage {
 
   async createRequirement(requirement: Omit<Requirement, "id">): Promise<Requirement> {
     const result = await this.db.insert(requirements).values(requirement).returning();
+    return result[0];
+  }
+  
+  async getRequirement(id: number): Promise<Requirement | undefined> {
+    const result = await this.db.select().from(requirements).where(eq(requirements.id, id));
     return result[0];
   }
 
