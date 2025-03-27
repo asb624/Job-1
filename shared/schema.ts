@@ -233,10 +233,9 @@ export type Message = typeof messages.$inferSelect;
 export type Notification = typeof notifications.$inferSelect;
 
 export const serviceCategories = [
-  "Web Development",
-  "Mobile Development",
-  "Design",
-  "Writing",
-  "Marketing",
-  "Business",
+  "Household Work",
+  "Agriculture",
+  "Shop Staff",
+  "Salon Service",
+  "Medical Staff",
 ] as const;

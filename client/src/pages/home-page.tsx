@@ -1,5 +1,5 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Service, Requirement, Conversation } from "@shared/schema";
+import { Service, Requirement } from "@shared/schema";
 import { ServiceCard } from "@/components/service-card";
 import { RequirementCard } from "@/components/requirement-card";
 import { useAuth } from "@/hooks/use-auth";
@@ -26,10 +26,7 @@ export default function HomePage() {
   // Create a new conversation with a service provider
   const createConversationMutation = useMutation({
     mutationFn: async (providerId: number) => {
-      return apiRequest<Conversation>("/api/conversations", {
-        method: "POST",
-        body: JSON.stringify({ recipientId: providerId }),
-      });
+      return apiRequest("POST", "/api/conversations", { recipientId: providerId });
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
