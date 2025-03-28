@@ -9,13 +9,13 @@ interface RequirementCardProps {
 
 export function RequirementCard({ requirement, onSelect }: RequirementCardProps) {
   return (
-    <Card className="w-full">
+    <Card className="w-full card bg-white hover:bg-blue-50">
       <CardHeader className="space-y-1">
         <div className="flex items-center justify-between">
-          <h3 className="text-2xl font-bold">{requirement.title}</h3>
+          <h3 className="text-2xl font-bold text-primary">{requirement.title}</h3>
           <div className="flex items-center gap-2">
-            <span className="text-xl font-semibold">₹{requirement.budget}</span>
-            <span className="capitalize px-2 py-1 text-sm rounded-full bg-primary/10 text-primary">
+            <span className="text-xl font-semibold bg-blue-100 px-2 py-1 rounded-md">₹{requirement.budget}</span>
+            <span className="capitalize px-2 py-1 text-sm rounded-full bg-primary/10 text-primary border border-primary/20">
               {requirement.status}
             </span>
           </div>
@@ -27,7 +27,7 @@ export function RequirementCard({ requirement, onSelect }: RequirementCardProps)
       </CardContent>
       <CardFooter>
         {onSelect && requirement.status === "open" && (
-          <Button className="w-full" onClick={onSelect}>
+          <Button className="w-full btn-transition bg-primary/90 hover:bg-primary" onClick={onSelect}>
             Select
           </Button>
         )}
