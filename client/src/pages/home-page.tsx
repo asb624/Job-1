@@ -9,11 +9,14 @@ import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { ServiceMap } from "@/components/map/service-map";
+import { useState } from "react";
 
 export default function HomePage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [, navigate] = useLocation();
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
 
   const { data: services } = useQuery<Service[]>({
     queryKey: ["/api/services"],
@@ -93,16 +96,42 @@ export default function HomePage() {
           <TabsTrigger value="requirements">Requirements</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="services">
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {services?.map((service) => (
-              <ServiceCard
-                key={service.id}
-                service={service}
-                onContact={user ? () => handleContactProvider(service) : undefined}
-              />
-            ))}
+        <TabsContent value="services" className="space-y-6">
+          <div className="flex justify-end mb-4">
+            <div className="bg-secondary rounded-lg p-1 flex gap-1">
+              <Button
+                variant={viewMode === 'list' ? 'default' : 'ghost'}
+                size="sm" 
+                onClick={() => setViewMode('list')}
+              >
+                List View
+              </Button>
+              <Button
+                variant={viewMode === 'map' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('map')}
+              >
+                Map View
+              </Button>
+            </div>
           </div>
+
+          {viewMode === 'map' ? (
+            <ServiceMap 
+              services={services || []} 
+              onContactProvider={user ? handleContactProvider : undefined} 
+            />
+          ) : (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {services?.map((service) => (
+                <ServiceCard
+                  key={service.id}
+                  service={service}
+                  onContact={user ? () => handleContactProvider(service) : undefined}
+                />
+              ))}
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="requirements">
