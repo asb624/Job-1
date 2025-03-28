@@ -1,0 +1,144 @@
+{
+  "app": {
+    "title": "सर्विस मार्केट",
+    "tagline": "कुशल पेशेवरों से जुड़ें या अपना अगला प्रोजेक्ट खोजें"
+  },
+  "navigation": {
+    "home": "होम",
+    "dashboard": "डैशबोर्ड",
+    "messages": "संदेश",
+    "profile": "प्रोफाइल",
+    "postService": "सेवा पोस्ट करें",
+    "postRequirement": "आवश्यकता पोस्ट करें",
+    "login": "लॉगिन",
+    "register": "रजिस्टर",
+    "logout": "लॉगआउट"
+  },
+  "auth": {
+    "loginTitle": "अपने अकाउंट में लॉगिन करें",
+    "registerTitle": "एक अकाउंट बनाएं",
+    "username": "उपयोगकर्ता नाम",
+    "password": "पासवर्ड",
+    "confirmPassword": "पासवर्ड की पुष्टि करें",
+    "isServiceProvider": "मैं एक सेवा प्रदाता हूं",
+    "loginButton": "लॉगिन",
+    "registerButton": "रजिस्टर",
+    "noAccount": "क्या आपका कोई अकाउंट नहीं है?",
+    "hasAccount": "क्या आपका पहले से ही एक अकाउंट है?"
+  },
+  "services": {
+    "title": "उपलब्ध सेवाएं",
+    "category": "श्रेणी",
+    "price": "मूल्य",
+    "location": "स्थान",
+    "contact": "संपर्क",
+    "remote": "रिमोट",
+    "listView": "लिस्ट देखें",
+    "mapView": "नक्शा देखें",
+    "viewDetails": "विवरण देखें",
+    "categories": {
+      "householdWork": "घरेलू काम",
+      "agriculture": "कृषि",
+      "shopStaff": "दुकान कर्मचारी",
+      "salonService": "सैलून सेवा",
+      "medicalStaff": "मेडिकल स्टाफ"
+    }
+  },
+  "requirements": {
+    "title": "आवश्यकताएं",
+    "budget": "बजट",
+    "status": "स्थिति",
+    "bid": "बोली",
+    "open": "खुला",
+    "inProgress": "प्रगति पर",
+    "completed": "पूरा हुआ"
+  },
+  "map": {
+    "yourLocation": "आपका स्थान"
+  },
+  "postService": {
+    "title": "एक नई सेवा पोस्ट करें",
+    "serviceTitle": "सेवा का शीर्षक",
+    "description": "विवरण",
+    "category": "श्रेणी",
+    "price": "मूल्य",
+    "location": "स्थान",
+    "address": "पता",
+    "city": "शहर",
+    "state": "राज्य",
+    "country": "देश",
+    "postalCode": "पिन कोड",
+    "latitude": "अक्षांश",
+    "longitude": "देशांतर",
+    "serviceRadius": "सेवा त्रिज्या (किमी)",
+    "isRemote": "यह सेवा दूरस्थ रूप से प्रदान की जा सकती है",
+    "pickLocation": "नक्शे पर स्थान चुनें",
+    "submit": "सेवा पोस्ट करें",
+    "titlePlaceholder": "उदा. पेशेवर वेब विकास",
+    "descriptionPlaceholder": "अपनी सेवा का विस्तार से वर्णन करें...",
+    "categoryPlaceholder": "एक श्रेणी चुनें",
+    "pricePlaceholder": "अपना मूल्य दर्ज करें",
+    "addressPlaceholder": "सड़क का पता",
+    "cityPlaceholder": "शहर",
+    "statePlaceholder": "राज्य",
+    "countryPlaceholder": "देश",
+    "postalCodePlaceholder": "पिन कोड",
+    "serviceRadiusPlaceholder": "आप कितनी दूर तक यात्रा करने के लिए तैयार हैं (किमी)"
+  },
+  "postRequirement": {
+    "title": "एक नई आवश्यकता पोस्ट करें",
+    "requirementTitle": "आवश्यकता का शीर्षक",
+    "description": "विवरण",
+    "category": "श्रेणी",
+    "budget": "बजट",
+    "location": "स्थान",
+    "address": "पता",
+    "city": "शहर",
+    "state": "राज्य",
+    "country": "देश",
+    "postalCode": "पिन कोड",
+    "latitude": "अक्षांश",
+    "longitude": "देशांतर",
+    "isRemote": "यह आवश्यकता दूरस्थ रूप से पूरी की जा सकती है",
+    "submit": "आवश्यकता पोस्ट करें"
+  },
+  "messages": {
+    "title": "संदेश",
+    "conversations": "बातचीत",
+    "noConversations": "अभी तक कोई बातचीत नहीं",
+    "startConversation": "बातचीत शुरू करने के लिए किसी सेवा प्रदाता से संपर्क करें",
+    "typeMessage": "संदेश लिखें...",
+    "send": "भेजें",
+    "noMessages": "इस बातचीत में अभी तक कोई संदेश नहीं है"
+  },
+  "profile": {
+    "title": "प्रोफाइल",
+    "bio": "परिचय",
+    "skills": "कौशल",
+    "portfolioLinks": "पोर्टफोलियो लिंक",
+    "location": "स्थान",
+    "rating": "रेटिंग",
+    "verified": "सत्यापित",
+    "notVerified": "असत्यापित",
+    "updateProfile": "प्रोफाइल अपडेट करें",
+    "verifyProfile": "प्रोफाइल सत्यापित करें"
+  },
+  "language": {
+    "title": "भाषा",
+    "en": "English",
+    "hi": "हिन्दी (Hindi)",
+    "ta": "தமிழ் (Tamil)",
+    "bn": "বাংলা (Bengali)",
+    "te": "తెలుగు (Telugu)"
+  },
+  "common": {
+    "loading": "लोड हो रहा है...",
+    "error": "एक त्रुटि हुई",
+    "success": "सफलता",
+    "cancel": "रद्द करें",
+    "save": "सहेजें",
+    "delete": "हटाएं",
+    "edit": "संपादित करें",
+    "close": "बंद करें"
+  }
+}

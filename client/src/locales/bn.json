@@ -1,0 +1,144 @@
+{
+  "app": {
+    "title": "সার্ভিস মার্কেট",
+    "tagline": "দক্ষ পেশাদারদের সাথে সংযোগ করুন বা আপনার পরবর্তী প্রকল্প খুঁজুন"
+  },
+  "navigation": {
+    "home": "হোম",
+    "dashboard": "ড্যাশবোর্ড",
+    "messages": "বার্তা",
+    "profile": "প্রোফাইল",
+    "postService": "পরিষেবা পোস্ট করুন",
+    "postRequirement": "প্রয়োজনীয়তা পোস্ট করুন",
+    "login": "লগইন",
+    "register": "নিবন্ধন",
+    "logout": "লগআউট"
+  },
+  "auth": {
+    "loginTitle": "আপনার অ্যাকাউন্টে লগইন করুন",
+    "registerTitle": "একটি অ্যাকাউন্ট তৈরি করুন",
+    "username": "ব্যবহারকারীর নাম",
+    "password": "পাসওয়ার্ড",
+    "confirmPassword": "পাসওয়ার্ড নিশ্চিত করুন",
+    "isServiceProvider": "আমি একজন সেবা প্রদানকারী",
+    "loginButton": "লগইন",
+    "registerButton": "নিবন্ধন",
+    "noAccount": "কোন অ্যাকাউন্ট নেই?",
+    "hasAccount": "ইতিমধ্যে একটি অ্যাকাউন্ট আছে?"
+  },
+  "services": {
+    "title": "উপলব্ধ পরিষেবা",
+    "category": "বিভাগ",
+    "price": "মূল্য",
+    "location": "অবস্থান",
+    "contact": "যোগাযোগ",
+    "remote": "দূরবর্তী",
+    "listView": "তালিকা দৃশ্য",
+    "mapView": "মানচিত্র দৃশ্য",
+    "viewDetails": "বিস্তারিত দেখুন",
+    "categories": {
+      "householdWork": "গৃহস্থালি কাজ",
+      "agriculture": "কৃষি",
+      "shopStaff": "দোকান কর্মী",
+      "salonService": "স্যালুন সেবা",
+      "medicalStaff": "মেডিকেল স্টাফ"
+    }
+  },
+  "requirements": {
+    "title": "প্রয়োজনীয়তা",
+    "budget": "বাজেট",
+    "status": "অবস্থা",
+    "bid": "দর",
+    "open": "খোলা",
+    "inProgress": "চলমান",
+    "completed": "সম্পন্ন"
+  },
+  "map": {
+    "yourLocation": "আপনার অবস্থান"
+  },
+  "postService": {
+    "title": "একটি নতুন পরিষেবা পোস্ট করুন",
+    "serviceTitle": "পরিষেবার শিরোনাম",
+    "description": "বিবরণ",
+    "category": "বিভাগ",
+    "price": "মূল্য",
+    "location": "অবস্থান",
+    "address": "ঠিকানা",
+    "city": "শহর",
+    "state": "রাজ্য",
+    "country": "দেশ",
+    "postalCode": "পোস্টাল কোড",
+    "latitude": "অক্ষাংশ",
+    "longitude": "দ্রাঘিমাংশ",
+    "serviceRadius": "সেবা ব্যাসার্ধ (কিমি)",
+    "isRemote": "এই পরিষেবা দূরবর্তীভাবে প্রদান করা যেতে পারে",
+    "pickLocation": "মানচিত্রে অবস্থান বেছে নিন",
+    "submit": "পরিষেবা পোস্ট করুন",
+    "titlePlaceholder": "উদাঃ পেশাদার ওয়েব ডেভেলপমেন্ট",
+    "descriptionPlaceholder": "আপনার পরিষেবা বিস্তারিতভাবে বর্ণনা করুন...",
+    "categoryPlaceholder": "একটি বিভাগ নির্বাচন করুন",
+    "pricePlaceholder": "আপনার মূল্য লিখুন",
+    "addressPlaceholder": "রাস্তার ঠিকানা",
+    "cityPlaceholder": "শহর",
+    "statePlaceholder": "রাজ্য",
+    "countryPlaceholder": "দেশ",
+    "postalCodePlaceholder": "পোস্টাল কোড",
+    "serviceRadiusPlaceholder": "আপনি কতদূর ভ্রমণ করতে ইচ্ছুক (কিমি)"
+  },
+  "postRequirement": {
+    "title": "একটি নতুন প্রয়োজনীয়তা পোস্ট করুন",
+    "requirementTitle": "প্রয়োজনীয়তার শিরোনাম",
+    "description": "বিবরণ",
+    "category": "বিভাগ",
+    "budget": "বাজেট",
+    "location": "অবস্থান",
+    "address": "ঠিকানা",
+    "city": "শহর",
+    "state": "রাজ্য",
+    "country": "দেশ",
+    "postalCode": "পোস্টাল কোড",
+    "latitude": "অক্ষাংশ",
+    "longitude": "দ্রাঘিমাংশ",
+    "isRemote": "এই প্রয়োজনীয়তা দূরবর্তীভাবে পূরণ করা যেতে পারে",
+    "submit": "প্রয়োজনীয়তা পোস্ট করুন"
+  },
+  "messages": {
+    "title": "বার্তা",
+    "conversations": "কথোপকথন",
+    "noConversations": "এখনও কোন কথোপকথন নেই",
+    "startConversation": "কথোপকথন শুরু করতে একজন সেবা প্রদানকারীর সাথে যোগাযোগ করুন",
+    "typeMessage": "একটি বার্তা টাইপ করুন...",
+    "send": "পাঠান",
+    "noMessages": "এই কথোপকথনে এখনও কোন বার্তা নেই"
+  },
+  "profile": {
+    "title": "প্রোফাইল",
+    "bio": "জীবনী",
+    "skills": "দক্ষতা",
+    "portfolioLinks": "পোর্টফোলিও লিংক",
+    "location": "অবস্থান",
+    "rating": "রেটিং",
+    "verified": "যাচাইকৃত",
+    "notVerified": "যাচাই করা হয়নি",
+    "updateProfile": "প্রোফাইল আপডেট করুন",
+    "verifyProfile": "প্রোফাইল যাচাই করুন"
+  },
+  "language": {
+    "title": "ভাষা",
+    "en": "English",
+    "hi": "हिन्दी (Hindi)",
+    "ta": "தமிழ் (Tamil)",
+    "bn": "বাংলা (Bengali)",
+    "te": "తెలుగు (Telugu)"
+  },
+  "common": {
+    "loading": "লোড হচ্ছে...",
+    "error": "একটি ত্রুটি ঘটেছে",
+    "success": "সফলতা",
+    "cancel": "বাতিল",
+    "save": "সংরক্ষণ",
+    "delete": "মুছুন",
+    "edit": "সম্পাদনা",
+    "close": "বন্ধ"
+  }
+}

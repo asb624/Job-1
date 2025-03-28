@@ -1,0 +1,144 @@
+{
+  "app": {
+    "title": "Service Market",
+    "tagline": "Connect with skilled professionals or find your next project"
+  },
+  "navigation": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "messages": "Messages",
+    "profile": "Profile",
+    "postService": "Post Service",
+    "postRequirement": "Post Requirement",
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout"
+  },
+  "auth": {
+    "loginTitle": "Login to your account",
+    "registerTitle": "Create an account",
+    "username": "Username",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "isServiceProvider": "I am a service provider",
+    "loginButton": "Login",
+    "registerButton": "Register",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?"
+  },
+  "services": {
+    "title": "Available Services",
+    "category": "Category",
+    "price": "Price",
+    "location": "Location",
+    "contact": "Contact",
+    "remote": "Remote",
+    "listView": "List View",
+    "mapView": "Map View",
+    "viewDetails": "View Details",
+    "categories": {
+      "householdWork": "Household Work",
+      "agriculture": "Agriculture",
+      "shopStaff": "Shop Staff",
+      "salonService": "Salon Service",
+      "medicalStaff": "Medical Staff"
+    }
+  },
+  "requirements": {
+    "title": "Requirements",
+    "budget": "Budget",
+    "status": "Status",
+    "bid": "Bid",
+    "open": "Open",
+    "inProgress": "In Progress",
+    "completed": "Completed"
+  },
+  "map": {
+    "yourLocation": "Your Location"
+  },
+  "postService": {
+    "title": "Post a New Service",
+    "serviceTitle": "Service Title",
+    "description": "Description",
+    "category": "Category",
+    "price": "Price",
+    "location": "Location",
+    "address": "Address",
+    "city": "City",
+    "state": "State",
+    "country": "Country",
+    "postalCode": "Postal Code",
+    "latitude": "Latitude",
+    "longitude": "Longitude",
+    "serviceRadius": "Service Radius (km)",
+    "isRemote": "This service can be provided remotely",
+    "pickLocation": "Pick location on map",
+    "submit": "Post Service",
+    "titlePlaceholder": "E.g. Professional Web Development",
+    "descriptionPlaceholder": "Describe your service in detail...",
+    "categoryPlaceholder": "Select a category",
+    "pricePlaceholder": "Enter your price",
+    "addressPlaceholder": "Street address",
+    "cityPlaceholder": "City",
+    "statePlaceholder": "State",
+    "countryPlaceholder": "Country",
+    "postalCodePlaceholder": "Postal Code",
+    "serviceRadiusPlaceholder": "How far you're willing to travel (km)"
+  },
+  "postRequirement": {
+    "title": "Post a New Requirement",
+    "requirementTitle": "Requirement Title",
+    "description": "Description",
+    "category": "Category",
+    "budget": "Budget",
+    "location": "Location",
+    "address": "Address",
+    "city": "City",
+    "state": "State",
+    "country": "Country",
+    "postalCode": "Postal Code",
+    "latitude": "Latitude",
+    "longitude": "Longitude",
+    "isRemote": "This requirement can be fulfilled remotely",
+    "submit": "Post Requirement"
+  },
+  "messages": {
+    "title": "Messages",
+    "conversations": "Conversations",
+    "noConversations": "No conversations yet",
+    "startConversation": "Contact a service provider to start a conversation",
+    "typeMessage": "Type a message...",
+    "send": "Send",
+    "noMessages": "No messages in this conversation yet"
+  },
+  "profile": {
+    "title": "Profile",
+    "bio": "Bio",
+    "skills": "Skills",
+    "portfolioLinks": "Portfolio Links",
+    "location": "Location",
+    "rating": "Rating",
+    "verified": "Verified",
+    "notVerified": "Not Verified",
+    "updateProfile": "Update Profile",
+    "verifyProfile": "Verify Profile"
+  },
+  "language": {
+    "title": "Language",
+    "en": "English",
+    "hi": "हिन्दी (Hindi)",
+    "ta": "தமிழ் (Tamil)",
+    "bn": "বাংলা (Bengali)",
+    "te": "తెలుగు (Telugu)"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "success": "Success",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close"
+  }
+}

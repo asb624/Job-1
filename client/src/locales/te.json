@@ -1,0 +1,144 @@
+{
+  "app": {
+    "title": "సర్వీస్ మార్కెట్",
+    "tagline": "నిపుణులైన వృత్తి నిపుణులతో కనెక్ట్ అవ్వండి లేదా మీ తదుపరి ప్రాజెక్ట్ను కనుగొనండి"
+  },
+  "navigation": {
+    "home": "హోమ్",
+    "dashboard": "డాష్‌బోర్డ్",
+    "messages": "సందేశాలు",
+    "profile": "ప్రొఫైల్",
+    "postService": "సేవను పోస్ట్ చేయండి",
+    "postRequirement": "అవసరాన్ని పోస్ట్ చేయండి",
+    "login": "లాగిన్",
+    "register": "రిజిస్టర్",
+    "logout": "లాగౌట్"
+  },
+  "auth": {
+    "loginTitle": "మీ ఖాతాకు లాగిన్ చేయండి",
+    "registerTitle": "ఖాతాను సృష్టించండి",
+    "username": "వినియోగదారు పేరు",
+    "password": "పాస్‌వర్డ్",
+    "confirmPassword": "పాస్‌వర్డ్‌ని నిర్ధారించండి",
+    "isServiceProvider": "నేను సేవా ప్రదాత",
+    "loginButton": "లాగిన్",
+    "registerButton": "రిజిస్టర్",
+    "noAccount": "ఖాతా లేదా?",
+    "hasAccount": "ఇప్పటికే ఖాతా ఉందా?"
+  },
+  "services": {
+    "title": "అందుబాటులో ఉన్న సేవలు",
+    "category": "వర్గం",
+    "price": "ధర",
+    "location": "స్థానం",
+    "contact": "సంప్రదించండి",
+    "remote": "రిమోట్",
+    "listView": "జాబితా వీక్షణ",
+    "mapView": "మ్యాప్ వీక్షణ",
+    "viewDetails": "వివరాలను చూడండి",
+    "categories": {
+      "householdWork": "గృహ పని",
+      "agriculture": "వ్యవసాయం",
+      "shopStaff": "షాప్ సిబ్బంది",
+      "salonService": "సలూన్ సేవ",
+      "medicalStaff": "వైద్య సిబ్బంది"
+    }
+  },
+  "requirements": {
+    "title": "అవసరాలు",
+    "budget": "బడ్జెట్",
+    "status": "స్థితి",
+    "bid": "బిడ్",
+    "open": "ఓపెన్",
+    "inProgress": "ప్రగతిలో ఉంది",
+    "completed": "పూర్తి అయింది"
+  },
+  "map": {
+    "yourLocation": "మీ స్థానం"
+  },
+  "postService": {
+    "title": "కొత్త సేవను పోస్ట్ చేయండి",
+    "serviceTitle": "సేవ శీర్షిక",
+    "description": "వివరణ",
+    "category": "వర్గం",
+    "price": "ధర",
+    "location": "స్థానం",
+    "address": "చిరునామా",
+    "city": "నగరం",
+    "state": "రాష్ట్రం",
+    "country": "దేశం",
+    "postalCode": "పోస్టల్ కోడ్",
+    "latitude": "అక్షాంశం",
+    "longitude": "రేఖాంశం",
+    "serviceRadius": "సేవా వ్యాసార్ధం (కిమీ)",
+    "isRemote": "ఈ సేవ రిమోట్‌గా అందించబడుతుంది",
+    "pickLocation": "మ్యాప్‌లో స్థానాన్ని ఎంచుకోండి",
+    "submit": "సేవను పోస్ట్ చేయండి",
+    "titlePlaceholder": "ఉదా. ప్రొఫెషనల్ వెబ్ డెవలప్‌మెంట్",
+    "descriptionPlaceholder": "మీ సేవను వివరంగా వివరించండి...",
+    "categoryPlaceholder": "వర్గాన్ని ఎంచుకోండి",
+    "pricePlaceholder": "మీ ధర నమోదు చేయండి",
+    "addressPlaceholder": "వీధి చిరునామా",
+    "cityPlaceholder": "నగరం",
+    "statePlaceholder": "రాష్ట్రం",
+    "countryPlaceholder": "దేశం",
+    "postalCodePlaceholder": "పోస్టల్ కోడ్",
+    "serviceRadiusPlaceholder": "మీరు ఎంత దూరం ప్రయాణించడానికి సిద్ధంగా ఉన్నారు (కిమీ)"
+  },
+  "postRequirement": {
+    "title": "కొత్త అవసరాన్ని పోస్ట్ చేయండి",
+    "requirementTitle": "అవసరం శీర్షిక",
+    "description": "వివరణ",
+    "category": "వర్గం",
+    "budget": "బడ్జెట్",
+    "location": "స్థానం",
+    "address": "చిరునామా",
+    "city": "నగరం",
+    "state": "రాష్ట్రం",
+    "country": "దేశం",
+    "postalCode": "పోస్టల్ కోడ్",
+    "latitude": "అక్షాంశం",
+    "longitude": "రేఖాంశం",
+    "isRemote": "ఈ అవసరం రిమోట్‌గా పూర్తి చేయవచ్చు",
+    "submit": "అవసరాన్ని పోస్ట్ చేయండి"
+  },
+  "messages": {
+    "title": "సందేశాలు",
+    "conversations": "సంభాషణలు",
+    "noConversations": "ఇంకా సంభాషణలు లేవు",
+    "startConversation": "సంభాషణను ప్రారంభించడానికి సేవా ప్రదాతను సంప్రదించండి",
+    "typeMessage": "సందేశాన్ని టైప్ చేయండి...",
+    "send": "పంపండి",
+    "noMessages": "ఈ సంభాషణలో ఇంకా సందేశాలు లేవు"
+  },
+  "profile": {
+    "title": "ప్రొఫైల్",
+    "bio": "బయో",
+    "skills": "నైపుణ్యాలు",
+    "portfolioLinks": "పోర్ట్‌ఫోలియో లింక్‌లు",
+    "location": "స్థానం",
+    "rating": "రేటింగ్",
+    "verified": "ధృవీకరించబడింది",
+    "notVerified": "ధృవీకరించబడలేదు",
+    "updateProfile": "ప్రొఫైల్‌ను నవీకరించండి",
+    "verifyProfile": "ప్రొఫైల్‌ను ధృవీకరించండి"
+  },
+  "language": {
+    "title": "భాష",
+    "en": "English",
+    "hi": "हिन्दी (Hindi)",
+    "ta": "தமிழ் (Tamil)",
+    "bn": "বাংলা (Bengali)",
+    "te": "తెలుగు (Telugu)"
+  },
+  "common": {
+    "loading": "లోడ్ అవుతోంది...",
+    "error": "ఒక లోపం సంభవించింది",
+    "success": "విజయం",
+    "cancel": "రద్దు చేయండి",
+    "save": "సేవ్ చేయండి",
+    "delete": "తొలగించండి",
+    "edit": "సవరించండి",
+    "close": "మూసివేయండి"
+  }
+}

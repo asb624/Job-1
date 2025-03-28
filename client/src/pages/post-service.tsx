@@ -17,6 +17,7 @@ import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import { Icon } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { useTranslation } from "react-i18next";
 
 // Default icon for the map marker
 const defaultIcon = new Icon({
@@ -77,6 +78,7 @@ export default function PostService() {
   const [_, setLocation] = useLocation();
   const { toast } = useToast();
   const [showMap, setShowMap] = useState(false);
+  const { t } = useTranslation();
 
   const form = useForm({
     resolver: zodResolver(insertServiceSchema),
@@ -105,14 +107,14 @@ export default function PostService() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/services"] });
       toast({
-        title: "Service Posted",
-        description: "Your service has been posted successfully.",
+        title: t('common.success'),
+        description: t('postService.submit') + " " + t('common.success').toLowerCase(),
       });
       setLocation("/dashboard");
     },
     onError: (error: Error) => {
       toast({
-        title: "Failed to post service",
+        title: t('common.error'),
         description: error.message,
         variant: "destructive",
       });
@@ -122,9 +124,9 @@ export default function PostService() {
   return (
     <Card className="max-w-2xl mx-auto">
       <CardHeader>
-        <CardTitle>Post a Service</CardTitle>
+        <CardTitle>{t('postService.title')}</CardTitle>
         <CardDescription>
-          Describe the service you offer and set your price
+          {t('postService.description')}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -138,9 +140,9 @@ export default function PostService() {
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Title</FormLabel>
+                  <FormLabel>{t('postService.serviceTitle')}</FormLabel>
                   <FormControl>
-                    <Input placeholder="E.g. Professional Web Development" {...field} />
+                    <Input placeholder={t('postService.titlePlaceholder')} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -152,10 +154,10 @@ export default function PostService() {
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>{t('postService.description')}</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Describe your service in detail..."
+                      placeholder={t('postService.descriptionPlaceholder')}
                       className="min-h-[120px]"
                       {...field}
                     />
@@ -170,17 +172,17 @@ export default function PostService() {
               name="category"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Category</FormLabel>
+                  <FormLabel>{t('postService.category')}</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a category" />
+                        <SelectValue placeholder={t('postService.categoryPlaceholder')} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       {serviceCategories.map((category) => (
                         <SelectItem key={category} value={category}>
-                          {category}
+                          {t(`services.categories.${category.toLowerCase().replace(/\s+/g, '')}`)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -195,12 +197,12 @@ export default function PostService() {
               name="price"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Price (₹)</FormLabel>
+                  <FormLabel>{t('postService.price')} (₹)</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
                       min="0"
-                      placeholder="Enter your price"
+                      placeholder={t('postService.pricePlaceholder')}
                       {...field}
                       onChange={(e) => field.onChange(parseInt(e.target.value))}
                     />
@@ -223,10 +225,10 @@ export default function PostService() {
                   </FormControl>
                   <div className="space-y-1 leading-none">
                     <FormLabel>
-                      Remote Service
+                      {t('services.remote')}
                     </FormLabel>
                     <p className="text-sm text-muted-foreground">
-                      Check this if your service can be provided remotely
+                      {t('postService.isRemote')}
                     </p>
                   </div>
                 </FormItem>
@@ -241,9 +243,9 @@ export default function PostService() {
                     name="address"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Address</FormLabel>
+                        <FormLabel>{t('postService.address')}</FormLabel>
                         <FormControl>
-                          <Input placeholder="Street address" {...field} />
+                          <Input placeholder={t('postService.addressPlaceholder')} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -254,9 +256,9 @@ export default function PostService() {
                     name="city"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>City</FormLabel>
+                        <FormLabel>{t('postService.city')}</FormLabel>
                         <FormControl>
-                          <Input placeholder="City" {...field} />
+                          <Input placeholder={t('postService.cityPlaceholder')} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -270,9 +272,9 @@ export default function PostService() {
                     name="state"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>State</FormLabel>
+                        <FormLabel>{t('postService.state')}</FormLabel>
                         <FormControl>
-                          <Input placeholder="State" {...field} />
+                          <Input placeholder={t('postService.statePlaceholder')} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -283,9 +285,9 @@ export default function PostService() {
                     name="country"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Country</FormLabel>
+                        <FormLabel>{t('postService.country')}</FormLabel>
                         <FormControl>
-                          <Input placeholder="Country" {...field} />
+                          <Input placeholder={t('postService.countryPlaceholder')} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -296,9 +298,9 @@ export default function PostService() {
                     name="postalCode"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Postal Code</FormLabel>
+                        <FormLabel>{t('postService.postalCode')}</FormLabel>
                         <FormControl>
-                          <Input placeholder="Postal Code" {...field} />
+                          <Input placeholder={t('postService.postalCodePlaceholder')} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -311,12 +313,12 @@ export default function PostService() {
                   name="serviceRadius"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Service Radius (km)</FormLabel>
+                      <FormLabel>{t('postService.serviceRadius')}</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
                           min="1"
-                          placeholder="How far you're willing to travel (km)"
+                          placeholder={t('postService.serviceRadiusPlaceholder')}
                           {...field}
                           onChange={(e) => field.onChange(parseInt(e.target.value))}
                         />
@@ -328,14 +330,14 @@ export default function PostService() {
 
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <FormLabel>Location on Map</FormLabel>
+                    <FormLabel>{t('postService.location')}</FormLabel>
                     <Button 
                       type="button" 
                       variant="outline" 
                       size="sm"
                       onClick={() => setShowMap(!showMap)}
                     >
-                      {showMap ? "Hide Map" : "Show Map"}
+                      {showMap ? t('common.close') : t('postService.pickLocation')}
                     </Button>
                   </div>
                   
@@ -354,7 +356,7 @@ export default function PostService() {
                       name="latitude"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Latitude</FormLabel>
+                          <FormLabel>{t('postService.latitude')}</FormLabel>
                           <FormControl>
                             <Input {...field} disabled={showMap} />
                           </FormControl>
@@ -367,7 +369,7 @@ export default function PostService() {
                       name="longitude"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Longitude</FormLabel>
+                          <FormLabel>{t('postService.longitude')}</FormLabel>
                           <FormControl>
                             <Input {...field} disabled={showMap} />
                           </FormControl>
@@ -385,7 +387,7 @@ export default function PostService() {
               className="w-full"
               disabled={createServiceMutation.isPending}
             >
-              Post Service
+              {t('postService.submit')}
             </Button>
           </form>
         </Form>

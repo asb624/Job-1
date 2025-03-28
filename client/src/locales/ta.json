@@ -1,0 +1,144 @@
+{
+  "app": {
+    "title": "சேவை சந்தை",
+    "tagline": "திறமையான தொழில்முறை நிபுணர்களுடன் இணைந்து உங்கள் அடுத்த திட்டத்தைக் கண்டறியுங்கள்"
+  },
+  "navigation": {
+    "home": "முகப்பு",
+    "dashboard": "டாஷ்போர்டு",
+    "messages": "செய்திகள்",
+    "profile": "சுயவிவரம்",
+    "postService": "சேவையை பதிவேற்றவும்",
+    "postRequirement": "தேவையை பதிவேற்றவும்",
+    "login": "உள்நுழைய",
+    "register": "பதிவு செய்ய",
+    "logout": "வெளியேறு"
+  },
+  "auth": {
+    "loginTitle": "உங்கள் கணக்கில் உள்நுழையவும்",
+    "registerTitle": "கணக்கை உருவாக்கவும்",
+    "username": "பயனர்பெயர்",
+    "password": "கடவுச்சொல்",
+    "confirmPassword": "கடவுச்சொல்லை உறுதிப்படுத்தவும்",
+    "isServiceProvider": "நான் ஒரு சேவை வழங்குநர்",
+    "loginButton": "உள்நுழைய",
+    "registerButton": "பதிவு செய்ய",
+    "noAccount": "கணக்கு இல்லையா?",
+    "hasAccount": "ஏற்கனவே கணக்கு உள்ளதா?"
+  },
+  "services": {
+    "title": "கிடைக்கும் சேவைகள்",
+    "category": "வகை",
+    "price": "விலை",
+    "location": "இடம்",
+    "contact": "தொடர்பு",
+    "remote": "தொலைதூர",
+    "listView": "பட்டியல் காட்சி",
+    "mapView": "வரைபட காட்சி",
+    "viewDetails": "விவரங்களைக் காண",
+    "categories": {
+      "householdWork": "வீட்டு வேலை",
+      "agriculture": "விவசாயம்",
+      "shopStaff": "கடை ஊழியர்கள்",
+      "salonService": "அழகு நிலைய சேவை",
+      "medicalStaff": "மருத்துவ ஊழியர்கள்"
+    }
+  },
+  "requirements": {
+    "title": "தேவைகள்",
+    "budget": "பட்ஜெட்",
+    "status": "நிலை",
+    "bid": "ஏலம்",
+    "open": "திறந்த",
+    "inProgress": "முன்னேற்றத்தில்",
+    "completed": "முடிந்தது"
+  },
+  "map": {
+    "yourLocation": "உங்கள் இருப்பிடம்"
+  },
+  "postService": {
+    "title": "புதிய சேவையைப் பதிவேற்றவும்",
+    "serviceTitle": "சேவை தலைப்பு",
+    "description": "விளக்கம்",
+    "category": "வகை",
+    "price": "விலை",
+    "location": "இடம்",
+    "address": "முகவரி",
+    "city": "நகரம்",
+    "state": "மாநிலம்",
+    "country": "நாடு",
+    "postalCode": "அஞ்சல் குறியீடு",
+    "latitude": "அகலாங்கு",
+    "longitude": "நெட்டாங்கு",
+    "serviceRadius": "சேவை ஆரம் (கி.மீ)",
+    "isRemote": "இந்த சேவையை தொலைதூரத்தில் இருந்து வழங்க முடியும்",
+    "pickLocation": "வரைபடத்தில் இடத்தைத் தேர்ந்தெடுக்கவும்",
+    "submit": "சேவையை பதிவேற்றவும்",
+    "titlePlaceholder": "எ.கா. தொழில்முறை இணையதள மேம்பாடு",
+    "descriptionPlaceholder": "உங்கள் சேவையை விரிவாக விவரிக்கவும்...",
+    "categoryPlaceholder": "ஒரு வகையைத் தேர்ந்தெடுக்கவும்",
+    "pricePlaceholder": "உங்கள் விலையை உள்ளிடவும்",
+    "addressPlaceholder": "தெரு முகவரி",
+    "cityPlaceholder": "நகரம்",
+    "statePlaceholder": "மாநிலம்",
+    "countryPlaceholder": "நாடு",
+    "postalCodePlaceholder": "அஞ்சல் குறியீடு",
+    "serviceRadiusPlaceholder": "நீங்கள் எவ்வளவு தூரம் பயணம் செய்ய தயாராக இருக்கிறீர்கள் (கி.மீ)"
+  },
+  "postRequirement": {
+    "title": "புதிய தேவையைப் பதிவேற்றவும்",
+    "requirementTitle": "தேவை தலைப்பு",
+    "description": "விளக்கம்",
+    "category": "வகை",
+    "budget": "பட்ஜெட்",
+    "location": "இடம்",
+    "address": "முகவரி",
+    "city": "நகரம்",
+    "state": "மாநிலம்",
+    "country": "நாடு",
+    "postalCode": "அஞ்சல் குறியீடு",
+    "latitude": "அகலாங்கு",
+    "longitude": "நெட்டாங்கு",
+    "isRemote": "இந்த தேவையை தொலைதூரத்தில் இருந்து நிறைவேற்ற முடியும்",
+    "submit": "தேவையை பதிவேற்றவும்"
+  },
+  "messages": {
+    "title": "செய்திகள்",
+    "conversations": "உரையாடல்கள்",
+    "noConversations": "இதுவரை உரையாடல்கள் இல்லை",
+    "startConversation": "உரையாடலைத் தொடங்க சேவை வழங்குநரைத் தொடர்பு கொள்ளவும்",
+    "typeMessage": "செய்தியை உள்ளிடவும்...",
+    "send": "அனுப்பு",
+    "noMessages": "இந்த உரையாடலில் இதுவரை செய்திகள் இல்லை"
+  },
+  "profile": {
+    "title": "சுயவிவரம்",
+    "bio": "சுயவிவரம்",
+    "skills": "திறன்கள்",
+    "portfolioLinks": "போர்ட்ஃபோலியோ இணைப்புகள்",
+    "location": "இடம்",
+    "rating": "மதிப்பீடு",
+    "verified": "சரிபார்க்கப்பட்டது",
+    "notVerified": "சரிபார்க்கப்படவில்லை",
+    "updateProfile": "சுயவிவரத்தைப் புதுப்பிக்கவும்",
+    "verifyProfile": "சுயவிவரத்தை சரிபார்க்கவும்"
+  },
+  "language": {
+    "title": "மொழி",
+    "en": "English",
+    "hi": "हिन्दी (Hindi)",
+    "ta": "தமிழ் (Tamil)",
+    "bn": "বাংলা (Bengali)",
+    "te": "తెలుగు (Telugu)"
+  },
+  "common": {
+    "loading": "ஏற்றுகிறது...",
+    "error": "பிழை ஏற்பட்டது",
+    "success": "வெற்றி",
+    "cancel": "ரத்து செய்",
+    "save": "சேமி",
+    "delete": "நீக்கு",
+    "edit": "திருத்து",
+    "close": "மூடு"
+  }
+}
