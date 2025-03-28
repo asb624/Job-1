@@ -3,6 +3,15 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --primary-teal: 170 82% 39%;
+    --primary-light: 170 70% 94%;
+    --primary-dark: 170 82% 32%;
+    --emerald: 160 84% 39%;
+    --emerald-light: 160 70% 94%;
+    --emerald-dark: 160 84% 32%;
+  }
+
   * {
     @apply border-border;
     transition: all 0.2s ease-in-out;
@@ -10,30 +19,60 @@
 
   body {
     @apply font-sans antialiased text-foreground;
-    background: linear-gradient(135deg, #f0f8ff 0%, #e6f0ff 50%, #d9e6ff 100%);
+    background: linear-gradient(135deg, #f8fffc 0%, #effff9 50%, #e6fcf7 100%);
     min-height: 100vh;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-teal-800;
   }
 }
 
 @layer components {
   .card {
-    @apply hover:shadow-md transition-all duration-300 hover:translate-y-[-2px];
+    @apply rounded-xl hover:shadow-md transition-all duration-300 hover:translate-y-[-2px];
   }
   
   .btn-transition {
-    @apply transition-all duration-300 hover:shadow-lg transform hover:scale-105;
+    @apply transition-all duration-300 hover:shadow-lg transform hover:scale-[1.02];
   }
   
   .nav-link {
-    @apply relative transition-colors duration-300 hover:text-primary;
+    @apply relative transition-colors duration-300 hover:text-teal-50;
   }
   
   .nav-link::after {
     content: '';
-    @apply absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300;
+    @apply absolute bottom-0 left-0 w-0 h-0.5 bg-teal-50 transition-all duration-300;
   }
   
   .nav-link:hover::after {
     @apply w-full;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    @apply w-2;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-teal-50;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-teal-300 rounded-full;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-teal-400;
+  }
+
+  /* Form element styles */
+  input, textarea, select {
+    @apply focus:border-teal-500 focus:ring-teal-500/20;
+  }
+
+  .custom-shadow {
+    box-shadow: 0 4px 20px -2px rgba(22, 163, 148, 0.15);
   }
 }

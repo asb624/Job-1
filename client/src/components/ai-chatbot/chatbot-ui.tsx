@@ -195,7 +195,8 @@ export function ChatbotUI() {
       {!isOpen && (
         <Button
           onClick={toggleChatbot}
-          className="fixed right-4 bottom-4 rounded-full w-14 h-14 shadow-lg bg-gradient-to-r from-blue-600 to-blue-400 hover:from-blue-700 hover:to-blue-500"
+          className="fixed right-5 bottom-5 rounded-full w-14 h-14 shadow-lg bg-gradient-to-r from-teal-600 to-emerald-500
+                   hover:shadow-xl hover:from-teal-700 hover:to-emerald-600 transition-all duration-300 transform hover:scale-105"
           aria-label={t('chatbot.open', 'Open AI Assistant')}
         >
           <MessageSquare className="w-6 h-6" />
@@ -204,11 +205,14 @@ export function ChatbotUI() {
       
       {/* Chatbot dialog */}
       {isOpen && (
-        <Card className="fixed right-4 bottom-4 w-[350px] md:w-[400px] max-w-[95vw] h-[500px] max-h-[80vh] shadow-xl overflow-hidden flex flex-col z-50 border-blue-100">
-          <CardHeader className="py-3 px-4 bg-gradient-to-r from-blue-600 to-blue-400 text-white flex flex-row justify-between items-center">
+        <Card className="fixed right-5 bottom-5 w-[350px] md:w-[400px] max-w-[95vw] h-[500px] max-h-[80vh] 
+                       shadow-2xl overflow-hidden flex flex-col z-50 border-teal-100 rounded-2xl">
+          <CardHeader className="py-3 px-4 bg-gradient-to-r from-teal-600 to-emerald-500 text-white flex flex-row justify-between items-center">
             <div className="flex items-center gap-2">
-              <Avatar className="h-8 w-8 bg-white">
-                <MessageSquare className="h-4 w-4 text-blue-500" />
+              <Avatar className="h-9 w-9 bg-white/20 backdrop-blur border-2 border-white/40">
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <MessageSquare className="h-4 w-4 text-white" />
+                </div>
               </Avatar>
               <div>
                 <h3 className="text-sm font-semibold">{t('chatbot.title', 'JobLo Assistant')}</h3>
@@ -217,24 +221,24 @@ export function ChatbotUI() {
             </div>
             <Button 
               variant="ghost" 
-              className="h-8 w-8 p-0 rounded-full text-white hover:bg-blue-500"
+              className="h-8 w-8 p-0 rounded-full text-white hover:bg-white/20 transition-colors duration-300"
               onClick={toggleChatbot}
             >
               <X className="h-4 w-4" />
             </Button>
           </CardHeader>
           
-          <CardContent className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-blue-50 to-white">
+          <CardContent className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-teal-50/50 to-white">
             {messages.map((message) => (
               <div 
                 key={message.id} 
                 className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div 
-                  className={`max-w-[80%] p-3 rounded-lg ${
+                  className={`max-w-[80%] p-3 rounded-lg shadow-sm ${
                     message.sender === 'user'
-                      ? 'bg-blue-500 text-white rounded-tr-none'
-                      : 'bg-white border border-blue-100 rounded-tl-none'
+                      ? 'bg-gradient-to-r from-teal-600 to-emerald-500 text-white rounded-tr-none'
+                      : 'bg-white border border-teal-100 rounded-tl-none'
                   }`}
                 >
                   <p className="text-sm">{message.text}</p>
@@ -247,12 +251,12 @@ export function ChatbotUI() {
             
             {/* Suggested responses */}
             {suggestions.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-2">
+              <div className="flex flex-wrap gap-2 mt-3">
                 {suggestions.map((suggestion, index) => (
                   <Badge 
                     key={index}
                     variant="secondary"
-                    className="cursor-pointer hover:bg-blue-100 transition-colors duration-200 bg-white border border-blue-100"
+                    className="cursor-pointer hover:bg-teal-100 transition-colors duration-200 bg-white border border-teal-100 text-teal-700 px-3 py-1.5 rounded-full"
                     onClick={() => handleSuggestionClick(suggestion)}
                   >
                     {suggestion}
@@ -264,14 +268,14 @@ export function ChatbotUI() {
             <div ref={messageEndRef} />
           </CardContent>
           
-          <CardFooter className="p-2 border-t bg-white">
+          <CardFooter className="p-2 border-t border-teal-100 bg-white">
             <form onSubmit={handleSubmit} className="flex w-full items-center gap-2">
               <Input
                 type="text"
                 placeholder={t('chatbot.inputPlaceholder', 'Type your message...')}
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
-                className="flex-1"
+                className="flex-1 border-teal-100 focus:border-teal-300 rounded-full"
                 ref={inputRef}
               />
               
@@ -281,7 +285,11 @@ export function ChatbotUI() {
                   variant="ghost"
                   size="icon"
                   onClick={toggleListening}
-                  className={`rounded-full ${isListening ? 'text-red-500' : ''}`}
+                  className={`rounded-full transition-colors duration-300 ${
+                    isListening 
+                      ? 'text-red-500 bg-red-50' 
+                      : 'text-teal-600 hover:bg-teal-50'
+                  }`}
                 >
                   {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
                 </Button>
@@ -293,7 +301,11 @@ export function ChatbotUI() {
                   variant="ghost"
                   size="icon"
                   onClick={toggleSpeaking}
-                  className="rounded-full"
+                  className={`rounded-full transition-colors duration-300 ${
+                    isSpeaking 
+                      ? 'text-teal-600 bg-teal-50' 
+                      : 'text-gray-500 hover:bg-teal-50 hover:text-teal-600'
+                  }`}
                 >
                   {isSpeaking ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}
                 </Button>
@@ -303,7 +315,9 @@ export function ChatbotUI() {
                 type="submit" 
                 size="icon"
                 disabled={!inputText.trim()}
-                className="rounded-full bg-blue-500 hover:bg-blue-600"
+                className="rounded-full bg-gradient-to-r from-teal-600 to-emerald-500 
+                         hover:from-teal-700 hover:to-emerald-600 shadow-sm hover:shadow-md
+                         transition-all duration-300 disabled:opacity-50"
               >
                 <Send className="h-5 w-5" />
               </Button>

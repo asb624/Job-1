@@ -84,17 +84,24 @@ export default function HomePage() {
 
   return (
     <div className="space-y-8">
-      <div className="bg-gradient-to-r from-blue-600 to-blue-400 text-white py-12 px-4 rounded-lg shadow-lg mb-8 transform transition-all duration-500 hover:shadow-xl">
-        <div className="text-center space-y-4 max-w-3xl mx-auto">
-          <h1 className="text-4xl font-bold">Welcome to JobLo</h1>
-          <p className="text-xl">
+      <div className="relative overflow-hidden bg-gradient-to-r from-teal-600 to-emerald-400 text-white py-16 px-6 rounded-md shadow-xl mb-8 transform transition-all duration-500 hover:shadow-2xl">
+        {/* Background decorative patterns */}
+        <div className="absolute top-0 left-0 w-full h-full opacity-10">
+          <div className="absolute top-10 left-10 w-32 h-32 rounded-full border-4 border-white"></div>
+          <div className="absolute bottom-10 right-10 w-48 h-48 rounded-full border-4 border-white"></div>
+          <div className="absolute top-1/2 right-1/4 w-20 h-20 rounded-full border-4 border-white"></div>
+        </div>
+        
+        <div className="relative text-center space-y-6 max-w-3xl mx-auto">
+          <h1 className="text-5xl font-bold tracking-tight">Welcome to JobLo</h1>
+          <p className="text-xl font-light">
             Connect with skilled professionals or find your next project
           </p>
-          <div className="flex justify-center gap-4 mt-6">
-            <Button className="bg-white text-blue-600 hover:bg-blue-50 btn-transition">
+          <div className="flex flex-wrap justify-center gap-5 mt-8">
+            <Button className="bg-white text-teal-600 hover:bg-teal-50 transform hover:-translate-y-1 transition-all duration-300 px-6 py-2.5 font-medium rounded-md">
               {user?.isServiceProvider ? "Find Projects" : "Find Services"}
             </Button>
-            <Button variant="outline" className="bg-transparent border-white text-white hover:bg-blue-500 btn-transition">
+            <Button variant="outline" className="bg-transparent border-2 border-white text-white hover:bg-teal-500 transform hover:-translate-y-1 transition-all duration-300 px-6 py-2.5 font-medium rounded-md">
               Learn More
             </Button>
           </div>
@@ -102,19 +109,29 @@ export default function HomePage() {
       </div>
 
       <Tabs defaultValue="services">
-        <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 bg-blue-50">
-          <TabsTrigger value="services" className="data-[state=active]:bg-blue-100 data-[state=active]:text-blue-800">Available Services</TabsTrigger>
-          <TabsTrigger value="requirements" className="data-[state=active]:bg-blue-100 data-[state=active]:text-blue-800">Requirements</TabsTrigger>
+        <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 bg-teal-50 rounded-xl border border-teal-100 p-1">
+          <TabsTrigger 
+            value="services" 
+            className="data-[state=active]:bg-teal-600 data-[state=active]:text-white text-teal-700 rounded-lg transition-all duration-300"
+          >
+            Available Services
+          </TabsTrigger>
+          <TabsTrigger 
+            value="requirements" 
+            className="data-[state=active]:bg-teal-600 data-[state=active]:text-white text-teal-700 rounded-lg transition-all duration-300"
+          >
+            Requirements
+          </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="services" className="space-y-6">
+        <TabsContent value="services" className="space-y-6 pt-6">
           <div className="flex justify-end mb-4">
-            <div className="bg-blue-100 rounded-full p-1 flex gap-1 shadow-sm transition-all duration-300 hover:shadow-md">
+            <div className="bg-teal-50 rounded-xl p-1.5 flex gap-2 shadow-sm transition-all duration-300 hover:shadow-md border border-teal-100">
               <Button
                 variant="ghost"
                 size="sm" 
                 onClick={() => setViewMode('list')}
-                className={`rounded-full ${viewMode === 'list' ? 'bg-blue-500 text-white hover:bg-blue-600' : 'text-blue-700 hover:bg-blue-200'} transition-all duration-300`}
+                className={`rounded-lg ${viewMode === 'list' ? 'bg-teal-600 text-white hover:bg-teal-700' : 'text-teal-700 hover:bg-teal-100'} transition-all duration-300 font-medium`}
               >
                 List View
               </Button>
@@ -122,7 +139,7 @@ export default function HomePage() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setViewMode('map')}
-                className={`rounded-full ${viewMode === 'map' ? 'bg-blue-500 text-white hover:bg-blue-600' : 'text-blue-700 hover:bg-blue-200'} transition-all duration-300`}
+                className={`rounded-lg ${viewMode === 'map' ? 'bg-teal-600 text-white hover:bg-teal-700' : 'text-teal-700 hover:bg-teal-100'} transition-all duration-300 font-medium`}
               >
                 Map View
               </Button>

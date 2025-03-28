@@ -43,21 +43,37 @@ export function LanguageSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="flex items-center gap-1 text-white hover:bg-blue-400">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="flex items-center gap-1.5 text-white hover:bg-teal-500/50 rounded-full px-3 transition-all duration-300"
+        >
           <Globe className="h-4 w-4" />
-          <span className="hidden md:inline">{getCurrentLanguageLabel()}</span>
+          <span className="hidden md:inline text-sm font-medium">{getCurrentLanguageLabel()}</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="border-blue-100 bg-gradient-to-b from-blue-50 to-white">
-        {languages.map((lang) => (
-          <DropdownMenuItem
-            key={lang.code}
-            onClick={() => changeLanguage(lang.code)}
-            className={`${i18n.language === lang.code ? 'bg-blue-100 text-blue-700 font-medium' : 'hover:bg-blue-50'} cursor-pointer transition-colors duration-150`}
-          >
-            {lang.label}
-          </DropdownMenuItem>
-        ))}
+      <DropdownMenuContent 
+        align="end" 
+        className="border-teal-100 shadow-lg rounded-xl overflow-hidden w-48"
+      >
+        <div className="bg-gradient-to-r from-teal-600 to-emerald-500 py-2 px-3 text-white text-sm font-medium">
+          {t('language.select')}
+        </div>
+        <div className="max-h-60 overflow-y-auto py-1">
+          {languages.map((lang) => (
+            <DropdownMenuItem
+              key={lang.code}
+              onClick={() => changeLanguage(lang.code)}
+              className={`${
+                i18n.language === lang.code 
+                  ? 'bg-teal-50 text-teal-700 font-medium border-l-4 border-teal-500' 
+                  : 'hover:bg-teal-50 border-l-4 border-transparent'
+              } cursor-pointer transition-all duration-200 px-4`}
+            >
+              {lang.label}
+            </DropdownMenuItem>
+          ))}
+        </div>
       </DropdownMenuContent>
     </DropdownMenu>
   );
