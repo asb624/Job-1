@@ -9,6 +9,10 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Mic, MicOff, Send, X, Volume2, VolumeX, MessageSquare } from 'lucide-react';
 
+// Add the i18n instance to window for the chatbot service
+import i18n from '@/lib/i18n';
+(window as any).i18n = i18n;
+
 type Message = {
   id: string;
   text: string;

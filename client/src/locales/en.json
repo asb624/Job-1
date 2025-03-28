@@ -177,5 +177,41 @@
   "Find Services": "Find Services",
   "Learn More": "Learn More",
   "No services available at the moment": "No services available at the moment",
-  "No requirements available at the moment": "No requirements available at the moment"
+  "No requirements available at the moment": "No requirements available at the moment",
+  "chatbot": {
+    "greeting": "Hello! I'm JobLo's assistant. How can I help you today?",
+    "title": "JobLo Assistant",
+    "subtitle": "Ask me anything about JobLo",
+    "inputPlaceholder": "Type your message...",
+    "open": "Open AI Assistant",
+    "suggestion": {
+      "findWorkers": "How do I find workers?",
+      "postService": "How do I post a service?",
+      "viewJobs": "What jobs are available?"
+    },
+    "error": "Sorry, I encountered an error. Please try again.",
+    "responses": {
+      "greeting1": "Hello! How can I help you with JobLo today?",
+      "greeting2": "Hi there! Looking for services or workers?",
+      "greeting3": "Greetings! How may I assist you with your job needs?",
+      "greeting4": "Hello! I'm JobLo's assistant. What can I help you with?",
+      "goodbye1": "Goodbye! Have a great day!",
+      "goodbye2": "Thank you for chatting. Feel free to return if you need help!",
+      "goodbye3": "Bye for now. Hope to assist you again soon!",
+      "goodbye4": "See you later. Remember JobLo is here when you need help!"
+    },
+    "suggestions": {
+      "hire": "I need to hire someone",
+      "findWork": "I'm looking for work",
+      "howItWorks": "How does JobLo work?",
+      "yesQuestion": "Yes, another question",
+      "noMore": "No, that's all",
+      "writeRequirement": "How to write a good requirement",
+      "details": "What details should I include?",
+      "payment": "How much should I pay?",
+      "createListing": "How to create a service listing",
+      "attractiveProfile": "How to make my profile attractive",
+      "getSelected": "How do I get selected?"
+    }
+  }
 }

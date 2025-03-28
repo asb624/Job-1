@@ -230,11 +230,49 @@ export class ChatbotService {
   
   // Use the i18next translation function
   private getTranslation(text: string): string {
-    // Import the i18n instance at class level would create circular dependencies
-    // So we access it via window as it's configured globally
-    if ((window as any).i18n && (window as any).i18n.t) {
-      return (window as any).i18n.t(text);
+    // Instead of accessing window.i18n directly, we'll use predefined translation keys
+    // This approach better aligns with the i18n structure used in the UI
+    
+    // Map common responses to their translation keys
+    const translationMap: Record<string, string> = {
+      // Greeting responses
+      "Hello! How can I help you with JobLo today?": "chatbot.responses.greeting1",
+      "Hi there! Looking for services or workers?": "chatbot.responses.greeting2",
+      "Greetings! How may I assist you with your job needs?": "chatbot.responses.greeting3",
+      "Hello! I'm JobLo's assistant. What can I help you with?": "chatbot.responses.greeting4",
+      
+      // Goodbye responses
+      "Goodbye! Have a great day!": "chatbot.responses.goodbye1",
+      "Thank you for chatting. Feel free to return if you need help!": "chatbot.responses.goodbye2",
+      "Bye for now. Hope to assist you again soon!": "chatbot.responses.goodbye3",
+      "See you later. Remember JobLo is here when you need help!": "chatbot.responses.goodbye4",
+      
+      // Suggestions
+      "I need to hire someone": "chatbot.suggestions.hire",
+      "I'm looking for work": "chatbot.suggestions.findWork",
+      "How does JobLo work?": "chatbot.suggestions.howItWorks",
+      "Yes, another question": "chatbot.suggestions.yesQuestion",
+      "No, that's all": "chatbot.suggestions.noMore",
+      "How to write a good requirement": "chatbot.suggestions.writeRequirement",
+      "What details should I include?": "chatbot.suggestions.details",
+      "How much should I pay?": "chatbot.suggestions.payment",
+      "How to create a service listing": "chatbot.suggestions.createListing",
+      "How to make my profile attractive": "chatbot.suggestions.attractiveProfile",
+      "How do I get selected?": "chatbot.suggestions.getSelected"
+    };
+    
+    // If we have a defined translation key, use it
+    if (translationMap[text]) {
+      if ((window as any).i18n && (window as any).i18n.t) {
+        return (window as any).i18n.t(translationMap[text], text);
+      }
     }
+    
+    // Otherwise, just use the text as is
+    if ((window as any).i18n && (window as any).i18n.t) {
+      return (window as any).i18n.t(text, text);
+    }
+    
     return text;
   }
 }
