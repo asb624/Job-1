@@ -84,24 +84,24 @@ export default function HomePage() {
 
   return (
     <div className="space-y-8">
-      <div className="relative overflow-hidden bg-gradient-to-r from-teal-600 to-emerald-400 text-white py-16 px-6 rounded-md shadow-xl mb-8 transform transition-all duration-500 hover:shadow-2xl">
-        {/* Background decorative patterns */}
-        <div className="absolute top-0 left-0 w-full h-full opacity-10">
+      <div className="relative overflow-hidden bg-gradient-to-r from-teal-600 to-emerald-400 text-white py-10 sm:py-16 px-4 sm:px-6 rounded-md shadow-xl mb-6 sm:mb-8 transform transition-all duration-500 hover:shadow-2xl">
+        {/* Background decorative patterns - hidden on small screens */}
+        <div className="absolute top-0 left-0 w-full h-full opacity-10 hidden sm:block">
           <div className="absolute top-10 left-10 w-32 h-32 rounded-full border-4 border-white"></div>
           <div className="absolute bottom-10 right-10 w-48 h-48 rounded-full border-4 border-white"></div>
           <div className="absolute top-1/2 right-1/4 w-20 h-20 rounded-full border-4 border-white"></div>
         </div>
         
-        <div className="relative text-center space-y-6 max-w-3xl mx-auto">
-          <h1 className="text-5xl font-bold tracking-tight">Welcome to JobLo</h1>
-          <p className="text-xl font-light">
+        <div className="relative text-center space-y-4 sm:space-y-6 max-w-3xl mx-auto">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight leading-tight">Welcome to Job Bazaar</h1>
+          <p className="text-lg sm:text-xl font-light">
             Connect with skilled professionals or find your next project
           </p>
-          <div className="flex flex-wrap justify-center gap-5 mt-8">
-            <Button className="bg-white text-teal-600 hover:bg-teal-50 transform hover:-translate-y-1 transition-all duration-300 px-6 py-2.5 font-medium rounded-md">
+          <div className="flex flex-col sm:flex-row justify-center items-center gap-3 sm:gap-5 mt-6 sm:mt-8">
+            <Button className="w-full sm:w-auto bg-white text-teal-600 hover:bg-teal-50 transform hover:-translate-y-1 transition-all duration-300 px-6 py-2.5 font-medium rounded-md">
               {user?.isServiceProvider ? "Find Projects" : "Find Services"}
             </Button>
-            <Button variant="outline" className="bg-transparent border-2 border-white text-white hover:bg-teal-500 transform hover:-translate-y-1 transition-all duration-300 px-6 py-2.5 font-medium rounded-md">
+            <Button variant="outline" className="w-full sm:w-auto mt-2 sm:mt-0 bg-transparent border-2 border-white text-white hover:bg-teal-500 transform hover:-translate-y-1 transition-all duration-300 px-6 py-2.5 font-medium rounded-md">
               Learn More
             </Button>
           </div>
@@ -109,29 +109,29 @@ export default function HomePage() {
       </div>
 
       <Tabs defaultValue="services">
-        <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 bg-teal-50 rounded-xl border border-teal-100 p-1">
+        <TabsList className="grid w-full max-w-[90%] sm:max-w-md mx-auto grid-cols-2 bg-teal-50 rounded-xl border border-teal-100 p-1">
           <TabsTrigger 
             value="services" 
-            className="data-[state=active]:bg-teal-600 data-[state=active]:text-white text-teal-700 rounded-lg transition-all duration-300"
+            className="data-[state=active]:bg-teal-600 data-[state=active]:text-white text-teal-700 rounded-lg transition-all duration-300 text-sm sm:text-base px-2 py-1.5"
           >
             Available Services
           </TabsTrigger>
           <TabsTrigger 
             value="requirements" 
-            className="data-[state=active]:bg-teal-600 data-[state=active]:text-white text-teal-700 rounded-lg transition-all duration-300"
+            className="data-[state=active]:bg-teal-600 data-[state=active]:text-white text-teal-700 rounded-lg transition-all duration-300 text-sm sm:text-base px-2 py-1.5"
           >
             Requirements
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="services" className="space-y-6 pt-6">
-          <div className="flex justify-end mb-4">
+        <TabsContent value="services" className="space-y-4 sm:space-y-6 pt-4 sm:pt-6">
+          <div className="flex justify-center sm:justify-end mb-3 sm:mb-4">
             <div className="bg-teal-50 rounded-xl p-1.5 flex gap-2 shadow-sm transition-all duration-300 hover:shadow-md border border-teal-100">
               <Button
                 variant="ghost"
                 size="sm" 
                 onClick={() => setViewMode('list')}
-                className={`rounded-lg ${viewMode === 'list' ? 'bg-teal-600 text-white hover:bg-teal-700' : 'text-teal-700 hover:bg-teal-100'} transition-all duration-300 font-medium`}
+                className={`rounded-lg ${viewMode === 'list' ? 'bg-teal-600 text-white hover:bg-teal-700' : 'text-teal-700 hover:bg-teal-100'} transition-all duration-300 font-medium text-xs sm:text-sm px-2 sm:px-3`}
               >
                 List View
               </Button>
@@ -139,7 +139,7 @@ export default function HomePage() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setViewMode('map')}
-                className={`rounded-lg ${viewMode === 'map' ? 'bg-teal-600 text-white hover:bg-teal-700' : 'text-teal-700 hover:bg-teal-100'} transition-all duration-300 font-medium`}
+                className={`rounded-lg ${viewMode === 'map' ? 'bg-teal-600 text-white hover:bg-teal-700' : 'text-teal-700 hover:bg-teal-100'} transition-all duration-300 font-medium text-xs sm:text-sm px-2 sm:px-3`}
               >
                 Map View
               </Button>
@@ -147,12 +147,14 @@ export default function HomePage() {
           </div>
 
           {viewMode === 'map' ? (
-            <ServiceMap 
-              services={services || []} 
-              onContactProvider={user ? handleContactProvider : undefined} 
-            />
+            <div className="rounded-xl overflow-hidden border border-teal-100 shadow-md">
+              <ServiceMap 
+                services={services || []} 
+                onContactProvider={user ? handleContactProvider : undefined} 
+              />
+            </div>
           ) : (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {services?.map((service) => (
                 <ServiceCard
                   key={service.id}
@@ -160,12 +162,17 @@ export default function HomePage() {
                   onContact={user ? () => handleContactProvider(service) : undefined}
                 />
               ))}
+              {(services?.length || 0) === 0 && (
+                <div className="col-span-1 sm:col-span-2 lg:col-span-3 py-10 text-center">
+                  <p className="text-teal-600 font-medium">No services available at the moment</p>
+                </div>
+              )}
             </div>
           )}
         </TabsContent>
 
         <TabsContent value="requirements">
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 pt-4">
             {requirements?.map((requirement) => (
               <RequirementCard
                 key={requirement.id}
@@ -173,6 +180,11 @@ export default function HomePage() {
                 onSelect={user?.isServiceProvider ? () => handleSelectRequirement(requirement) : undefined}
               />
             ))}
+            {(requirements?.length || 0) === 0 && (
+              <div className="col-span-1 sm:col-span-2 lg:col-span-3 py-10 text-center">
+                <p className="text-teal-600 font-medium">No requirements available at the moment</p>
+              </div>
+            )}
           </div>
         </TabsContent>
       </Tabs>
