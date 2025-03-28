@@ -1,6 +1,6 @@
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Service, Requirement, Bid } from "@shared/schema";
+import { Service, Requirement, Bid as Selection } from "@shared/schema";
 import { ServiceCard } from "@/components/service-card";
 import { RequirementCard } from "@/components/requirement-card";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertBidSchema } from "@shared/schema";
+import { insertBidSchema as insertSelectionSchema } from "@shared/schema";
 import { subscribeToMessages } from "@/lib/websocket";
 import { useEffect } from "react";
 
@@ -25,7 +25,7 @@ export default function Dashboard() {
   // Setup realtime updates
   useEffect(() => {
     subscribeToMessages((message) => {
-      if (message.type === "bid" || message.type === "status") {
+      if (message.type === "selection" || message.type === "status") {
         queryClient.invalidateQueries({ queryKey: ["/api/requirements"] });
       }
     });
@@ -42,23 +42,25 @@ export default function Dashboard() {
     enabled: !user?.isServiceProvider,
   });
 
-  const createBidMutation = useMutation({
+  const createSelectionMutation = useMutation({
     mutationFn: async (data: any) => {
+      // We're using "selections" in our UI, but the backend still uses "bids"
       const res = await apiRequest("POST", "/api/bids", data);
       return res.json();
     },
     onSuccess: (_, variables) => {
+      // Note: API still uses "bids", though our UI uses "selections"
       queryClient.invalidateQueries({ queryKey: ["/api/requirements", variables.requirementId, "bids"] });
       toast({
-        title: "Bid Submitted",
-        description: "Your bid has been submitted successfully.",
+        title: "Selection Submitted",
+        description: "Your selection has been submitted successfully.",
       });
     },
   });
 
-  const BidDialog = ({ requirement }: { requirement: Requirement }) => {
+  const SelectionDialog = ({ requirement }: { requirement: Requirement }) => {
     const form = useForm({
-      resolver: zodResolver(insertBidSchema),
+      resolver: zodResolver(insertSelectionSchema),
       defaultValues: {
         requirementId: requirement.id,
         amount: 0,
@@ -69,15 +71,15 @@ export default function Dashboard() {
     return (
       <Dialog>
         <DialogTrigger asChild>
-          <Button className="w-full">Place Bid</Button>
+          <Button className="w-full">Select</Button>
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Place a Bid</DialogTitle>
+            <DialogTitle>Select This Requirement</DialogTitle>
           </DialogHeader>
           <Form {...form}>
             <form
-              onSubmit={form.handleSubmit((data) => createBidMutation.mutate(data))}
+              onSubmit={form.handleSubmit((data) => createSelectionMutation.mutate(data))}
               className="space-y-4"
             >
               <FormField
@@ -85,7 +87,7 @@ export default function Dashboard() {
                 name="amount"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Bid Amount (₹)</FormLabel>
+                    <FormLabel>Offer Amount (₹)</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
@@ -111,8 +113,8 @@ export default function Dashboard() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full" disabled={createBidMutation.isPending}>
-                Submit Bid
+              <Button type="submit" className="w-full" disabled={createSelectionMutation.isPending}>
+                Submit Selection
               </Button>
             </form>
           </Form>
@@ -144,10 +146,15 @@ export default function Dashboard() {
               <h3 className="text-xl font-semibold">Your Requirements</h3>
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {requirements?.map((requirement) => (
-                  <RequirementCard
-                    key={requirement.id}
-                    requirement={requirement}
-                  />
+                  <div key={requirement.id}>
+                    <RequirementCard
+                      key={requirement.id}
+                      requirement={requirement}
+                    />
+                    {user?.isServiceProvider && requirement.status === "open" && (
+                      <SelectionDialog requirement={requirement} />
+                    )}
+                  </div>
                 ))}
               </div>
             </div>

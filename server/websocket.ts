@@ -3,7 +3,7 @@ import { Server } from "http";
 
 // Define message types for type safety
 type WebSocketMessage = {
-  type: 'bid' | 'service' | 'requirement' | 'notification';
+  type: 'selection' | 'service' | 'requirement' | 'notification';
   action: 'create' | 'update' | 'delete';
   payload: any;
 };
@@ -46,8 +46,8 @@ export function setupWebSocket(server: Server) {
         const message = JSON.parse(data.toString()) as WebSocketMessage;
 
         switch (message.type) {
-          case 'bid':
-            // Handle bid notifications
+          case 'selection':
+            // Handle selection notifications
             broadcastToRelevantUsers(message);
             break;
           case 'service':
@@ -104,7 +104,7 @@ export function setupWebSocket(server: Server) {
     }
   }
 
-  // Helper function to broadcast to users involved in a bid
+  // Helper function to broadcast to users involved in a selection
   function broadcastToRelevantUsers(message: WebSocketMessage) {
     const { providerId, userId } = message.payload;
     if (providerId) sendToUser(providerId, message);

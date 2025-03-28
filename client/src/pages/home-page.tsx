@@ -63,12 +63,12 @@ export default function HomePage() {
     createConversationMutation.mutate(service.providerId);
   };
 
-  // Handler for bidding on a requirement (placeholder for now)
-  const handleBidRequirement = (requirement: Requirement) => {
+  // Handler for selecting a requirement (placeholder for now)
+  const handleSelectRequirement = (requirement: Requirement) => {
     if (!user) {
       toast({
         title: "Login required",
-        description: "You need to login to place bids",
+        description: "You need to login to select this requirement",
         variant: "destructive",
       });
       navigate("/auth");
@@ -76,15 +76,15 @@ export default function HomePage() {
     }
     
     toast({
-      title: "Bid feature coming soon",
-      description: "The bid functionality will be implemented soon",
+      title: "Selection feature coming soon",
+      description: "The selection functionality will be implemented soon",
     });
   };
 
   return (
     <div className="space-y-8">
       <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold">Welcome to ServiceMarket</h1>
+        <h1 className="text-4xl font-bold">Welcome to JobLo</h1>
         <p className="text-xl text-muted-foreground">
           Connect with skilled professionals or find your next project
         </p>
@@ -140,7 +140,7 @@ export default function HomePage() {
               <RequirementCard
                 key={requirement.id}
                 requirement={requirement}
-                onBid={user?.isServiceProvider ? () => handleBidRequirement(requirement) : undefined}
+                onSelect={user?.isServiceProvider ? () => handleSelectRequirement(requirement) : undefined}
               />
             ))}
           </div>

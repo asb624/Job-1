@@ -4,10 +4,10 @@ import { Requirement } from "@shared/schema";
 
 interface RequirementCardProps {
   requirement: Requirement;
-  onBid?: () => void;
+  onSelect?: () => void;
 }
 
-export function RequirementCard({ requirement, onBid }: RequirementCardProps) {
+export function RequirementCard({ requirement, onSelect }: RequirementCardProps) {
   return (
     <Card className="w-full">
       <CardHeader className="space-y-1">
@@ -26,9 +26,9 @@ export function RequirementCard({ requirement, onBid }: RequirementCardProps) {
         <p className="text-sm text-gray-600">{requirement.description}</p>
       </CardContent>
       <CardFooter>
-        {onBid && requirement.status === "open" && (
-          <Button className="w-full" onClick={onBid}>
-            Place Bid
+        {onSelect && requirement.status === "open" && (
+          <Button className="w-full" onClick={onSelect}>
+            Select
           </Button>
         )}
       </CardFooter>
