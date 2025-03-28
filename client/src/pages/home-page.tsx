@@ -12,12 +12,14 @@ import { Button } from "@/components/ui/button";
 import { ServiceMap } from "@/components/map/service-map";
 import { useState } from "react";
 import { ChatbotUI } from "@/components/ai-chatbot/chatbot-ui";
+import { useTranslation } from "react-i18next";
 
 export default function HomePage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [, navigate] = useLocation();
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+  const { t } = useTranslation();
 
   const { data: services } = useQuery<Service[]>({
     queryKey: ["/api/services"],
@@ -93,16 +95,16 @@ export default function HomePage() {
         </div>
         
         <div className="relative text-center space-y-4 sm:space-y-6 max-w-3xl mx-auto">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight leading-tight">Welcome to Job Bazaar</h1>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight leading-tight">{t("app.title")}</h1>
           <p className="text-lg sm:text-xl font-light">
-            Connect with skilled professionals or find your next project
+            {t("app.tagline")}
           </p>
           <div className="flex flex-col sm:flex-row justify-center items-center gap-3 sm:gap-5 mt-6 sm:mt-8">
             <Button className="w-full sm:w-auto bg-white text-teal-600 hover:bg-teal-50 transform hover:-translate-y-1 transition-all duration-300 px-6 py-2.5 font-medium rounded-md">
-              {user?.isServiceProvider ? "Find Projects" : "Find Services"}
+              {user?.isServiceProvider ? t("Find Projects") : t("Find Services")}
             </Button>
             <Button variant="outline" className="w-full sm:w-auto mt-2 sm:mt-0 bg-transparent border-2 border-white text-white hover:bg-teal-500 transform hover:-translate-y-1 transition-all duration-300 px-6 py-2.5 font-medium rounded-md">
-              Learn More
+              {t("Learn More")}
             </Button>
           </div>
         </div>
@@ -114,13 +116,13 @@ export default function HomePage() {
             value="services" 
             className="data-[state=active]:bg-teal-600 data-[state=active]:text-white text-teal-700 rounded-lg transition-all duration-300 text-sm sm:text-base px-2 py-1.5"
           >
-            Available Services
+            {t("services.title")}
           </TabsTrigger>
           <TabsTrigger 
             value="requirements" 
             className="data-[state=active]:bg-teal-600 data-[state=active]:text-white text-teal-700 rounded-lg transition-all duration-300 text-sm sm:text-base px-2 py-1.5"
           >
-            Requirements
+            {t("requirements.title")}
           </TabsTrigger>
         </TabsList>
 
@@ -133,7 +135,7 @@ export default function HomePage() {
                 onClick={() => setViewMode('list')}
                 className={`rounded-lg ${viewMode === 'list' ? 'bg-teal-600 text-white hover:bg-teal-700' : 'text-teal-700 hover:bg-teal-100'} transition-all duration-300 font-medium text-xs sm:text-sm px-2 sm:px-3`}
               >
-                List View
+                {t("services.listView")}
               </Button>
               <Button
                 variant="ghost"
@@ -141,7 +143,7 @@ export default function HomePage() {
                 onClick={() => setViewMode('map')}
                 className={`rounded-lg ${viewMode === 'map' ? 'bg-teal-600 text-white hover:bg-teal-700' : 'text-teal-700 hover:bg-teal-100'} transition-all duration-300 font-medium text-xs sm:text-sm px-2 sm:px-3`}
               >
-                Map View
+                {t("services.mapView")}
               </Button>
             </div>
           </div>
@@ -164,7 +166,7 @@ export default function HomePage() {
               ))}
               {(services?.length || 0) === 0 && (
                 <div className="col-span-1 sm:col-span-2 lg:col-span-3 py-10 text-center">
-                  <p className="text-teal-600 font-medium">No services available at the moment</p>
+                  <p className="text-teal-600 font-medium">{t("No services available at the moment")}</p>
                 </div>
               )}
             </div>
@@ -182,7 +184,7 @@ export default function HomePage() {
             ))}
             {(requirements?.length || 0) === 0 && (
               <div className="col-span-1 sm:col-span-2 lg:col-span-3 py-10 text-center">
-                <p className="text-teal-600 font-medium">No requirements available at the moment</p>
+                <p className="text-teal-600 font-medium">{t("No requirements available at the moment")}</p>
               </div>
             )}
           </div>

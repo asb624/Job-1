@@ -170,6 +170,12 @@
     "save": "Save",
     "delete": "Delete",
     "edit": "Edit",
-    "close": "Close"
-  }
+    "close": "Close",
+    "learnMore": "Learn More"
+  },
+  "Find Projects": "Find Projects",
+  "Find Services": "Find Services",
+  "Learn More": "Learn More",
+  "No services available at the moment": "No services available at the moment",
+  "No requirements available at the moment": "No requirements available at the moment"
 }
