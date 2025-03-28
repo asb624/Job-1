@@ -21,7 +21,17 @@ export function LanguageSwitcher() {
     { code: 'te', label: t('language.te') },
     { code: 'pa', label: t('language.pa') },
     { code: 'hr', label: t('language.hr') },
-    { code: 'mr', label: t('language.mr') }
+    { code: 'mr', label: t('language.mr') },
+    { code: 'gu', label: t('language.gu') },
+    { code: 'ml', label: t('language.ml') },
+    { code: 'kn', label: t('language.kn') },
+    { code: 'or', label: t('language.or') },
+    { code: 'as', label: t('language.as') },
+    { code: 'kok', label: t('language.kok') },
+    { code: 'ks', label: t('language.ks') },
+    { code: 'sd', label: t('language.sd') },
+    { code: 'mni', label: t('language.mni') },
+    { code: 'brx', label: t('language.brx') }
   ];
 
   const getCurrentLanguageLabel = () => {

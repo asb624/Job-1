@@ -11,6 +11,16 @@ import teTranslation from '../locales/te.json';
 import paTranslation from '../locales/pa.json';
 import hrTranslation from '../locales/hr.json';
 import mrTranslation from '../locales/mr.json';
+import guTranslation from '../locales/gu.json';
+import mlTranslation from '../locales/ml.json';
+import knTranslation from '../locales/kn.json';
+import orTranslation from '../locales/or.json';
+import asTranslation from '../locales/as.json';
+import kokTranslation from '../locales/kok.json';
+import ksTranslation from '../locales/ks.json';
+import sdTranslation from '../locales/sd.json';
+import mniTranslation from '../locales/mni.json';
+import brxTranslation from '../locales/brx.json';
 
 // Determine the initial language
 const getSavedLanguage = () => {
@@ -52,6 +62,36 @@ i18n
       },
       mr: {
         translation: mrTranslation
+      },
+      gu: {
+        translation: guTranslation
+      },
+      ml: {
+        translation: mlTranslation
+      },
+      kn: {
+        translation: knTranslation
+      },
+      or: {
+        translation: orTranslation
+      },
+      as: {
+        translation: asTranslation
+      },
+      kok: {
+        translation: kokTranslation
+      },
+      ks: {
+        translation: ksTranslation
+      },
+      sd: {
+        translation: sdTranslation
+      },
+      mni: {
+        translation: mniTranslation
+      },
+      brx: {
+        translation: brxTranslation
       }
     },
     lng: getSavedLanguage() || 'en', // Use saved language or default to English
