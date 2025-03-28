@@ -331,14 +331,49 @@ export default function PostService() {
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <FormLabel>{t('postService.location')}</FormLabel>
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => setShowMap(!showMap)}
-                    >
-                      {showMap ? t('common.close') : t('postService.pickLocation')}
-                    </Button>
+                    <div className="flex space-x-2">
+                      <Button 
+                        type="button" 
+                        variant="secondary" 
+                        size="sm"
+                        onClick={() => {
+                          if ('geolocation' in navigator) {
+                            navigator.geolocation.getCurrentPosition(
+                              (position) => {
+                                const { latitude, longitude } = position.coords;
+                                form.setValue("latitude", latitude as any);
+                                form.setValue("longitude", longitude as any);
+                                setShowMap(true);
+                              },
+                              (error) => {
+                                console.error("Error getting location:", error);
+                                toast({
+                                  title: t('common.error'),
+                                  description: "Could not get your location. Please allow location access or enter coordinates manually.",
+                                  variant: "destructive",
+                                });
+                              }
+                            );
+                          } else {
+                            toast({
+                              title: t('common.error'),
+                              description: "Geolocation is not supported by your browser",
+                              variant: "destructive",
+                            });
+                          }
+                        }}
+                      >
+                        {t('postService.useMyLocation', 'Use My Location')}
+                      </Button>
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setShowMap(!showMap)}
+                      >
+                        {showMap ? t('common.close') : t('postService.pickLocation')}
+                      </Button>
+                    </div>
                   </div>
                   
                   {showMap && (

@@ -77,6 +77,7 @@
     "serviceRadius": "Service Radius (km)",
     "isRemote": "This service can be provided remotely",
     "pickLocation": "Pick location on map",
+    "useMyLocation": "Use My Location",
     "submit": "Post Service",
     "titlePlaceholder": "E.g. Professional Web Development",
     "descriptionPlaceholder": "Describe your service in detail...",
@@ -87,14 +88,19 @@
     "statePlaceholder": "State",
     "countryPlaceholder": "Country",
     "postalCodePlaceholder": "Postal Code",
-    "serviceRadiusPlaceholder": "How far you're willing to travel (km)"
+    "serviceRadiusPlaceholder": "How far you're willing to travel (km)",
+    "locationError": "Could not get your location. Please allow location access or enter coordinates manually."
   },
   "postRequirement": {
     "title": "Post a New Requirement",
+    "titleLabel": "Title",
     "requirementTitle": "Requirement Title",
     "description": "Description",
+    "descriptionLabel": "Description",
     "category": "Category",
+    "categoryLabel": "Category",
     "budget": "Budget",
+    "budgetLabel": "Budget",
     "location": "Location",
     "address": "Address",
     "city": "City",
@@ -104,7 +110,14 @@
     "latitude": "Latitude",
     "longitude": "Longitude",
     "isRemote": "This requirement can be fulfilled remotely",
-    "submit": "Post Requirement"
+    "submit": "Post Requirement",
+    "titlePlaceholder": "E.g. Need a Housemaid for Cleaning",
+    "descriptionPlaceholder": "Provide detailed requirements...",
+    "categoryPlaceholder": "Select a category",
+    "budgetPlaceholder": "Enter your budget",
+    "useMyLocation": "Use My Location",
+    "pickLocation": "Pick on Map",
+    "successMessage": "Your requirement has been posted successfully."
   },
   "messages": {
     "title": "Messages",
