@@ -18,7 +18,10 @@ export function LanguageSwitcher() {
     { code: 'hi', label: t('language.hi') },
     { code: 'ta', label: t('language.ta') },
     { code: 'bn', label: t('language.bn') },
-    { code: 'te', label: t('language.te') }
+    { code: 'te', label: t('language.te') },
+    { code: 'pa', label: t('language.pa') },
+    { code: 'hr', label: t('language.hr') },
+    { code: 'mr', label: t('language.mr') }
   ];
 
   const getCurrentLanguageLabel = () => {

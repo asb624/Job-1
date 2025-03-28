@@ -8,6 +8,9 @@ import hiTranslation from '../locales/hi.json';
 import taTranslation from '../locales/ta.json';
 import bnTranslation from '../locales/bn.json';
 import teTranslation from '../locales/te.json';
+import paTranslation from '../locales/pa.json';
+import hrTranslation from '../locales/hr.json';
+import mrTranslation from '../locales/mr.json';
 
 // Determine the initial language
 const getSavedLanguage = () => {
@@ -40,6 +43,15 @@ i18n
       },
       te: {
         translation: teTranslation
+      },
+      pa: {
+        translation: paTranslation
+      },
+      hr: {
+        translation: hrTranslation
+      },
+      mr: {
+        translation: mrTranslation
       }
     },
     lng: getSavedLanguage() || 'en', // Use saved language or default to English

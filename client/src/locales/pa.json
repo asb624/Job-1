@@ -1,0 +1,147 @@
+{
+  "app": {
+    "title": "ਸਰਵਿਸ ਮਾਰਕੀਟ",
+    "tagline": "ਕੁਸ਼ਲ ਪੇਸ਼ੇਵਰਾਂ ਨਾਲ ਜੁੜੋ ਜਾਂ ਆਪਣਾ ਅਗਲਾ ਪ੍ਰੋਜੈਕਟ ਲੱਭੋ"
+  },
+  "navigation": {
+    "home": "ਹੋਮ",
+    "dashboard": "ਡੈਸ਼ਬੋਰਡ",
+    "messages": "ਸੁਨੇਹੇ",
+    "profile": "ਪ੍ਰੋਫਾਈਲ",
+    "postService": "ਸੇਵਾ ਪੋਸਟ ਕਰੋ",
+    "postRequirement": "ਲੋੜ ਪੋਸਟ ਕਰੋ",
+    "login": "ਲੌਗਇਨ",
+    "register": "ਰਜਿਸਟਰ",
+    "logout": "ਲੌਗਆਊਟ"
+  },
+  "auth": {
+    "loginTitle": "ਆਪਣੇ ਖਾਤੇ 'ਚ ਲੌਗਇਨ ਕਰੋ",
+    "registerTitle": "ਖਾਤਾ ਬਣਾਓ",
+    "username": "ਯੂਜ਼ਰਨੇਮ",
+    "password": "ਪਾਸਵਰਡ",
+    "confirmPassword": "ਪਾਸਵਰਡ ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ",
+    "isServiceProvider": "ਮੈਂ ਇੱਕ ਸੇਵਾ ਪ੍ਰਦਾਤਾ ਹਾਂ",
+    "loginButton": "ਲੌਗਇਨ",
+    "registerButton": "ਰਜਿਸਟਰ",
+    "noAccount": "ਕੋਈ ਖਾਤਾ ਨਹੀਂ ਹੈ?",
+    "hasAccount": "ਪਹਿਲਾਂ ਤੋਂ ਹੀ ਖਾਤਾ ਹੈ?"
+  },
+  "services": {
+    "title": "ਉਪਲਬਧ ਸੇਵਾਵਾਂ",
+    "category": "ਸ਼੍ਰੇਣੀ",
+    "price": "ਕੀਮਤ",
+    "location": "ਸਥਾਨ",
+    "contact": "ਸੰਪਰਕ",
+    "remote": "ਦੂਰਸਥ",
+    "listView": "ਸੂਚੀ ਦਰਿਸ਼",
+    "mapView": "ਨਕਸ਼ਾ ਦਰਿਸ਼",
+    "viewDetails": "ਵੇਰਵੇ ਵੇਖੋ",
+    "categories": {
+      "householdWork": "ਘਰੇਲੂ ਕੰਮ",
+      "agriculture": "ਖੇਤੀਬਾੜੀ",
+      "shopStaff": "ਦੁਕਾਨ ਸਟਾਫ",
+      "salonService": "ਸੈਲੂਨ ਸੇਵਾ",
+      "medicalStaff": "ਮੈਡੀਕਲ ਸਟਾਫ"
+    }
+  },
+  "requirements": {
+    "title": "ਲੋੜਾਂ",
+    "budget": "ਬਜਟ",
+    "status": "ਸਥਿਤੀ",
+    "bid": "ਬੋਲੀ",
+    "open": "ਖੁੱਲ੍ਹਾ",
+    "inProgress": "ਚੱਲ ਰਿਹਾ ਹੈ",
+    "completed": "ਪੂਰਾ ਹੋਇਆ"
+  },
+  "map": {
+    "yourLocation": "ਤੁਹਾਡਾ ਸਥਾਨ"
+  },
+  "postService": {
+    "title": "ਨਵੀਂ ਸੇਵਾ ਪੋਸਟ ਕਰੋ",
+    "serviceTitle": "ਸੇਵਾ ਦਾ ਸਿਰਲੇਖ",
+    "description": "ਵਰਣਨ",
+    "category": "ਸ਼੍ਰੇਣੀ",
+    "price": "ਕੀਮਤ",
+    "location": "ਸਥਾਨ",
+    "address": "ਪਤਾ",
+    "city": "ਸ਼ਹਿਰ",
+    "state": "ਰਾਜ",
+    "country": "ਦੇਸ਼",
+    "postalCode": "ਡਾਕ ਕੋਡ",
+    "latitude": "ਅਕਸ਼ਾਂਸ਼",
+    "longitude": "ਦੇਸ਼ਾਂਤਰ",
+    "serviceRadius": "ਸੇਵਾ ਦਾਇਰਾ (ਕਿਮੀ)",
+    "isRemote": "ਇਹ ਸੇਵਾ ਦੂਰੋਂ ਮੁਹੱਈਆ ਕੀਤੀ ਜਾ ਸਕਦੀ ਹੈ",
+    "pickLocation": "ਨਕਸ਼ੇ 'ਤੇ ਸਥਾਨ ਚੁਣੋ",
+    "submit": "ਸੇਵਾ ਪੋਸਟ ਕਰੋ",
+    "titlePlaceholder": "ਉਦਾ. ਪੇਸ਼ੇਵਰ ਵੈੱਬ ਡਿਵੈਲਪਮੈਂਟ",
+    "descriptionPlaceholder": "ਆਪਣੀ ਸੇਵਾ ਦਾ ਵਿਸਥਾਰ ਨਾਲ ਵਰਣਨ ਕਰੋ...",
+    "categoryPlaceholder": "ਸ਼੍ਰੇਣੀ ਚੁਣੋ",
+    "pricePlaceholder": "ਆਪਣੀ ਕੀਮਤ ਦਾਖਲ ਕਰੋ",
+    "addressPlaceholder": "ਗਲੀ ਪਤਾ",
+    "cityPlaceholder": "ਸ਼ਹਿਰ",
+    "statePlaceholder": "ਰਾਜ",
+    "countryPlaceholder": "ਦੇਸ਼",
+    "postalCodePlaceholder": "ਡਾਕ ਕੋਡ",
+    "serviceRadiusPlaceholder": "ਤੁਸੀਂ ਕਿੰਨੀ ਦੂਰ ਯਾਤਰਾ ਕਰਨ ਲਈ ਤਿਆਰ ਹੋ (ਕਿਮੀ)"
+  },
+  "postRequirement": {
+    "title": "ਨਵੀਂ ਲੋੜ ਪੋਸਟ ਕਰੋ",
+    "requirementTitle": "ਲੋੜ ਦਾ ਸਿਰਲੇਖ",
+    "description": "ਵਰਣਨ",
+    "category": "ਸ਼੍ਰੇਣੀ",
+    "budget": "ਬਜਟ",
+    "location": "ਸਥਾਨ",
+    "address": "ਪਤਾ",
+    "city": "ਸ਼ਹਿਰ",
+    "state": "ਰਾਜ",
+    "country": "ਦੇਸ਼",
+    "postalCode": "ਡਾਕ ਕੋਡ",
+    "latitude": "ਅਕਸ਼ਾਂਸ਼",
+    "longitude": "ਦੇਸ਼ਾਂਤਰ",
+    "isRemote": "ਇਹ ਲੋੜ ਦੂਰੋਂ ਪੂਰੀ ਕੀਤੀ ਜਾ ਸਕਦੀ ਹੈ",
+    "submit": "ਲੋੜ ਪੋਸਟ ਕਰੋ"
+  },
+  "messages": {
+    "title": "ਸੁਨੇਹੇ",
+    "conversations": "ਗੱਲਬਾਤ",
+    "noConversations": "ਅਜੇ ਤੱਕ ਕੋਈ ਗੱਲਬਾਤ ਨਹੀਂ",
+    "startConversation": "ਗੱਲਬਾਤ ਸ਼ੁਰੂ ਕਰਨ ਲਈ ਸੇਵਾ ਪ੍ਰਦਾਤਾ ਨਾਲ ਸੰਪਰਕ ਕਰੋ",
+    "typeMessage": "ਸੁਨੇਹਾ ਟਾਈਪ ਕਰੋ...",
+    "send": "ਭੇਜੋ",
+    "noMessages": "ਇਸ ਗੱਲਬਾਤ ਵਿੱਚ ਅਜੇ ਤੱਕ ਕੋਈ ਸੁਨੇਹੇ ਨਹੀਂ ਹਨ"
+  },
+  "profile": {
+    "title": "ਪ੍ਰੋਫਾਈਲ",
+    "bio": "ਜੀਵਨੀ",
+    "skills": "ਹੁਨਰ",
+    "portfolioLinks": "ਪੋਰਟਫੋਲੀਓ ਲਿੰਕ",
+    "location": "ਸਥਾਨ",
+    "rating": "ਰੇਟਿੰਗ",
+    "verified": "ਪ੍ਰਮਾਣਿਤ",
+    "notVerified": "ਪ੍ਰਮਾਣਿਤ ਨਹੀਂ",
+    "updateProfile": "ਪ੍ਰੋਫਾਈਲ ਅਪਡੇਟ ਕਰੋ",
+    "verifyProfile": "ਪ੍ਰੋਫਾਈਲ ਪ੍ਰਮਾਣਿਤ ਕਰੋ"
+  },
+  "language": {
+    "title": "ਭਾਸ਼ਾ",
+    "en": "English",
+    "hi": "हिन्दी (Hindi)",
+    "ta": "தமிழ் (Tamil)",
+    "bn": "বাংলা (Bengali)",
+    "te": "తెలుగు (Telugu)",
+    "pa": "ਪੰਜਾਬੀ (Punjabi)",
+    "hr": "हरियाणवी (Haryanvi)",
+    "mr": "मारवाड़ी (Marwari)"
+  },
+  "common": {
+    "loading": "ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ...",
+    "error": "ਇੱਕ ਗਲਤੀ ਹੋਈ ਹੈ",
+    "success": "ਸਫਲਤਾ",
+    "cancel": "ਰੱਦ ਕਰੋ",
+    "save": "ਸੇਵ ਕਰੋ",
+    "delete": "ਮਿਟਾਓ",
+    "edit": "ਸੰਪਾਦਿਤ",
+    "close": "ਬੰਦ ਕਰੋ"
+  }
+}

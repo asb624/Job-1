@@ -1,0 +1,147 @@
+{
+  "app": {
+    "title": "सर्विस मार्केट",
+    "tagline": "कुशल पेशेवरां से जुड़ो या आपरो अगलो प्रोजेक्ट खोजो"
+  },
+  "navigation": {
+    "home": "होम",
+    "dashboard": "डैशबोर्ड",
+    "messages": "संदेसा",
+    "profile": "प्रोफाइल",
+    "postService": "सेवा पोस्ट करो",
+    "postRequirement": "जरूरत पोस्ट करो",
+    "login": "लॉगिन",
+    "register": "रजिस्टर",
+    "logout": "लॉगआउट"
+  },
+  "auth": {
+    "loginTitle": "आपरे खाता में लॉगिन करो",
+    "registerTitle": "खातो बणाओ",
+    "username": "यूजरनेम",
+    "password": "पासवर्ड",
+    "confirmPassword": "पासवर्ड की पुष्टि करो",
+    "isServiceProvider": "म्हूं एक सेवा प्रदाता हूं",
+    "loginButton": "लॉगिन",
+    "registerButton": "रजिस्टर",
+    "noAccount": "कोई खातो कोनी?",
+    "hasAccount": "पैले से इ खातो है?"
+  },
+  "services": {
+    "title": "उपलब्ध सेवावां",
+    "category": "श्रेणी",
+    "price": "मोल",
+    "location": "ठिकाणो",
+    "contact": "संपर्क",
+    "remote": "रिमोट",
+    "listView": "सूची दृश्य",
+    "mapView": "नक्शो दृश्य",
+    "viewDetails": "विवरण देखो",
+    "categories": {
+      "householdWork": "घरेलू काम",
+      "agriculture": "खेतीबाड़ी",
+      "shopStaff": "दुकान स्टाफ",
+      "salonService": "सैलून सेवा",
+      "medicalStaff": "मेडिकल स्टाफ"
+    }
+  },
+  "requirements": {
+    "title": "जरूरतां",
+    "budget": "बजट",
+    "status": "स्थिति",
+    "bid": "बोली",
+    "open": "खुली",
+    "inProgress": "चाल रही है",
+    "completed": "पूरी हो गी"
+  },
+  "map": {
+    "yourLocation": "आपरो ठिकाणो"
+  },
+  "postService": {
+    "title": "नई सेवा पोस्ट करो",
+    "serviceTitle": "सेवा शीर्षक",
+    "description": "विवरण",
+    "category": "श्रेणी",
+    "price": "मोल",
+    "location": "ठिकाणो",
+    "address": "पतो",
+    "city": "शहर",
+    "state": "राज्य",
+    "country": "देश",
+    "postalCode": "पोस्टल कोड",
+    "latitude": "अक्षांश",
+    "longitude": "देशांतर",
+    "serviceRadius": "सेवा दायरो (किमी)",
+    "isRemote": "यो सेवा दूर से प्रदान की जा सकै है",
+    "pickLocation": "नक्शे पे ठिकाणो चुणो",
+    "submit": "सेवा पोस्ट करो",
+    "titlePlaceholder": "उदा. पेशेवर वेब डेवलपमेंट",
+    "descriptionPlaceholder": "आपरी सेवा रो विस्तार से वर्णन करो...",
+    "categoryPlaceholder": "श्रेणी चुणो",
+    "pricePlaceholder": "आपरो मोल दर्ज करो",
+    "addressPlaceholder": "गली पतो",
+    "cityPlaceholder": "शहर",
+    "statePlaceholder": "राज्य",
+    "countryPlaceholder": "देश",
+    "postalCodePlaceholder": "पोस्टल कोड",
+    "serviceRadiusPlaceholder": "थे कितरी दूर यात्रा करने ने तैयार हो (किमी)"
+  },
+  "postRequirement": {
+    "title": "नई जरूरत पोस्ट करो",
+    "requirementTitle": "जरूरत शीर्षक",
+    "description": "विवरण",
+    "category": "श्रेणी",
+    "budget": "बजट",
+    "location": "ठिकाणो",
+    "address": "पतो",
+    "city": "शहर",
+    "state": "राज्य",
+    "country": "देश",
+    "postalCode": "पोस्टल कोड",
+    "latitude": "अक्षांश",
+    "longitude": "देशांतर",
+    "isRemote": "यो जरूरत दूर से पूरी की जा सकै है",
+    "submit": "जरूरत पोस्ट करो"
+  },
+  "messages": {
+    "title": "संदेसा",
+    "conversations": "बातचीत",
+    "noConversations": "अब तक कोई बातचीत कोनी",
+    "startConversation": "बातचीत सुरू करने खातिर सेवा प्रदाता से संपर्क करो",
+    "typeMessage": "संदेसो टाइप करो...",
+    "send": "भेजो",
+    "noMessages": "इस बातचीत में अब तक कोई संदेसा कोनी है"
+  },
+  "profile": {
+    "title": "प्रोफाइल",
+    "bio": "जीवनी",
+    "skills": "हुनर",
+    "portfolioLinks": "पोर्टफोलियो लिंक",
+    "location": "ठिकाणो",
+    "rating": "रेटिंग",
+    "verified": "सत्यापित",
+    "notVerified": "सत्यापित कोनी",
+    "updateProfile": "प्रोफाइल अपडेट करो",
+    "verifyProfile": "प्रोफाइल सत्यापित करो"
+  },
+  "language": {
+    "title": "भाषा",
+    "en": "English",
+    "hi": "हिन्दी (Hindi)",
+    "ta": "தமிழ் (Tamil)",
+    "bn": "বাংলা (Bengali)",
+    "te": "తెలుగు (Telugu)",
+    "pa": "ਪੰਜਾਬੀ (Punjabi)",
+    "hr": "हरियाणवी (Haryanvi)",
+    "mr": "मारवाड़ी (Marwari)"
+  },
+  "common": {
+    "loading": "लोड हो रियो है...",
+    "error": "एक गलती हो गी",
+    "success": "सफलता",
+    "cancel": "रद्द करो",
+    "save": "सहेजो",
+    "delete": "मिटाओ",
+    "edit": "संपादित करो",
+    "close": "बंद करो"
+  }
+}

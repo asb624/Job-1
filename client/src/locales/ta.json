@@ -129,7 +129,10 @@
     "hi": "हिन्दी (Hindi)",
     "ta": "தமிழ் (Tamil)",
     "bn": "বাংলা (Bengali)",
-    "te": "తెలుగు (Telugu)"
+    "te": "తెలుగు (Telugu)",
+    "pa": "ਪੰਜਾਬੀ (Punjabi)",
+    "hr": "हरियाणवी (Haryanvi)",
+    "mr": "मारवाड़ी (Marwari)"
   },
   "common": {
     "loading": "ஏற்றுகிறது...",
