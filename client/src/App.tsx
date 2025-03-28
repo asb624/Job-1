@@ -14,6 +14,7 @@ import PostRequirement from "@/pages/post-requirement";
 import PostService from "@/pages/post-service";
 import Profile from "@/pages/profile"; 
 import MessagesPage from "@/pages/messages";
+import OnboardingPage from "@/pages/onboarding";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -21,6 +22,7 @@ function Router() {
     <Switch>
       <Route path="/" component={HomePage} />
       <Route path="/auth" component={AuthPage} />
+      <Route path="/onboarding" component={OnboardingPage} />
       <ProtectedRoute path="/dashboard" component={Dashboard} />
       <ProtectedRoute path="/post-requirement" component={PostRequirement} />
       <ProtectedRoute path="/post-service" component={PostService} />
