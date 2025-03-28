@@ -30,34 +30,111 @@ export class ChatbotService {
   }
 
   public async getResponse(message: string): Promise<ChatbotResponse> {
+    console.log("ChatbotService: Processing message:", message);
+    
+    // Ensure we have a message
+    if (!message || message.trim() === '') {
+      console.log("ChatbotService: Empty message received");
+      return this.getDefaultResponse();
+    }
+    
     const lowerMessage = message.toLowerCase().trim();
+    console.log("ChatbotService: Lowercase message:", lowerMessage);
+    
+    // Completely revamped message processing
+    
+    // Special common cases - direct keyword matching
+    if (lowerMessage.includes('post service') || lowerMessage.includes('how') && lowerMessage.includes('service') || 
+        lowerMessage.includes('सेवा') && lowerMessage.includes('पोस्ट')) {
+      console.log("ChatbotService: Matched 'post service' pattern");
+      return {
+        text: this.getTranslation('To post a service, click on "Post Service" in the navigation bar. Fill out the form with your service details, including title, description, category, price, and location. This helps clients find you easily.'),
+        suggestions: [
+          this.getTranslation('What makes a good service post?'),
+          this.getTranslation('How to set the right price'),
+          this.getTranslation('Can I edit my service later?')
+        ]
+      };
+    }
+    
+    if (lowerMessage.includes('find worker') || lowerMessage.includes('hire') || 
+        lowerMessage.includes('कर्मचारी') || lowerMessage.includes('भर्ती')) {
+      console.log("ChatbotService: Matched 'find worker' pattern");
+      return {
+        text: this.getTranslation('To hire workers, you can post a requirement by clicking the "Post Requirement" button in the navigation bar. Describe your needs, budget, and location, and service providers will contact you.'),
+        suggestions: [
+          this.getTranslation('How to write a good requirement'),
+          this.getTranslation('What details should I include?'),
+          this.getTranslation('How much should I pay?')
+        ]
+      };
+    }
+    
+    if (lowerMessage.includes('find job') || lowerMessage.includes('looking for job') || lowerMessage.includes('need work') || 
+        lowerMessage.includes('नौकरी') || lowerMessage.includes('काम')) {
+      console.log("ChatbotService: Matched 'find job' pattern");
+      return {
+        text: this.getTranslation('To find work, you can register as a service provider and post your services or browse open requirements. You can also apply to requirements that match your skills.'),
+        suggestions: [
+          this.getTranslation('How to create a service listing'),
+          this.getTranslation('How to make my profile attractive'),
+          this.getTranslation('How do I get selected?')
+        ]
+      };
+    }
+    
+    if (lowerMessage.includes('payment') || lowerMessage.includes('pay') || lowerMessage.includes('money') || 
+        lowerMessage.includes('salary') || lowerMessage.includes('भुगतान') || lowerMessage.includes('पैसा')) {
+      console.log("ChatbotService: Matched 'payment' pattern");
+      return {
+        text: this.getTranslation('Payments on JobLo are currently arranged directly between providers and clients. When posting a service or requirement, you can specify your price or budget. We recommend discussing payment terms clearly in the messaging system before finalizing.'),
+        suggestions: [
+          this.getTranslation('What are typical rates?'),
+          this.getTranslation('Is there payment protection?'),
+          this.getTranslation('Can I pay through the app?')
+        ]
+      };
+    }
+    
+    // Now try the category-based detection
     
     // Handle greetings
     if (this.greetings.some(g => lowerMessage.includes(g))) {
+      console.log("ChatbotService: Matched greeting pattern");
       return this.getGreetingResponse();
     }
     
     // Handle goodbyes
     if (this.goodbyes.some(g => lowerMessage.includes(g))) {
+      console.log("ChatbotService: Matched goodbye pattern");
       return this.getGoodbyeResponse();
     }
     
     // Handle thanks
     if (this.thanks.some(t => lowerMessage.includes(t))) {
+      console.log("ChatbotService: Matched thanks pattern");
       return this.getThankYouResponse();
     }
     
     // Handle job-related queries
     if (this.jobRelatedKeywords.some(k => lowerMessage.includes(k))) {
+      console.log("ChatbotService: Matched job-related pattern");
       return this.getJobRelatedResponse(lowerMessage);
     }
     
     // Handle questions
     if (this.questions.some(q => lowerMessage.startsWith(q))) {
+      console.log("ChatbotService: Matched question pattern");
       return this.getQuestionResponse(lowerMessage);
     }
     
     // Default response
+    console.log("ChatbotService: No pattern matched, using default response");
+    return this.getDefaultResponse();
+  }
+  
+  // Default response extracted to a separate method for reuse
+  private getDefaultResponse(): ChatbotResponse {
     return {
       text: this.getTranslation('I\'m not sure I understand. Can you rephrase or ask about jobs, services, or requirements?'),
       suggestions: [
