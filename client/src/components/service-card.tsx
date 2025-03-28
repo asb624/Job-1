@@ -2,6 +2,7 @@ import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button";
 import { Service } from "@shared/schema";
 import { MapPin, Clock, Tag, Star } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface ServiceCardProps {
   service: Service & { averageRating?: number };
@@ -9,6 +10,8 @@ interface ServiceCardProps {
 }
 
 export function ServiceCard({ service, onContact }: ServiceCardProps) {
+  const { t } = useTranslation();
+  
   return (
     <Card className="w-full relative overflow-hidden bg-white hover:shadow-lg transition-all duration-300 border border-teal-100 group rounded-xl">
       {/* Top accent bar */}
@@ -49,7 +52,9 @@ export function ServiceCard({ service, onContact }: ServiceCardProps) {
           )}
           <div className="flex items-center gap-1 bg-teal-50 px-2 py-1 rounded-full">
             <Clock size={12} className="sm:h-3.5 sm:w-3.5" />
-            <span className="text-[10px] sm:text-xs">{service.isRemote ? "Remote Available" : "In-person Only"}</span>
+            <span className="text-[10px] sm:text-xs">
+              {service.isRemote ? t('services.remote') : t('services.inPersonOnly', 'In-person Only')}
+            </span>
           </div>
         </div>
       </CardContent>
@@ -62,7 +67,7 @@ export function ServiceCard({ service, onContact }: ServiceCardProps) {
                      hover:-translate-y-0.5 rounded-lg py-1.5 sm:py-2 text-sm" 
             onClick={onContact}
           >
-            Contact Provider
+            {t('services.contact')}
           </Button>
         )}
       </CardFooter>

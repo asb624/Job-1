@@ -33,6 +33,7 @@
     "location": "Location",
     "contact": "Contact",
     "remote": "Remote",
+    "inPersonOnly": "In-person Only",
     "listView": "List View",
     "mapView": "Map View",
     "viewDetails": "View Details",
@@ -51,10 +52,13 @@
     "bid": "Select",
     "open": "Open",
     "inProgress": "In Progress",
-    "completed": "Completed"
+    "completed": "Completed",
+    "posted": "Posted",
+    "remoteAllowed": "Remote Allowed"
   },
   "map": {
-    "yourLocation": "Your Location"
+    "yourLocation": "Your Location",
+    "serviceMap": "Service Map"
   },
   "postService": {
     "title": "Post a New Service",
@@ -125,6 +129,7 @@
   },
   "language": {
     "title": "Language",
+    "select": "Select Language",
     "en": "English",
     "hi": "हिन्दी (Hindi)",
     "ta": "தமிழ் (Tamil)",
@@ -132,7 +137,17 @@
     "te": "తెలుగు (Telugu)",
     "pa": "ਪੰਜਾਬੀ (Punjabi)",
     "hr": "हरियाणवी (Haryanvi)",
-    "mr": "मारवाड़ी (Marwari)"
+    "mr": "मारवाड़ी (Marwari)",
+    "gu": "ગુજરાતી (Gujarati)",
+    "ml": "മലയാളം (Malayalam)",
+    "kn": "ಕನ್ನಡ (Kannada)",
+    "or": "ଓଡ଼ିଆ (Odia)",
+    "as": "অসমীয়া (Assamese)",
+    "kok": "कोंकणी (Konkani)",
+    "ks": "کٲشُر (Kashmiri)",
+    "sd": "سنڌي (Sindhi)",
+    "mni": "মৈতৈলোন্ (Manipuri)",
+    "brx": "बड़ो (Bodo)"
   },
   "common": {
     "loading": "Loading...",

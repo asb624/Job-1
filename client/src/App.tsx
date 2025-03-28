@@ -6,6 +6,8 @@ import { AuthProvider } from "@/hooks/use-auth";
 import { NotificationProvider } from "@/hooks/use-websocket-notifications";
 import { ProtectedRoute } from "./lib/protected-route";
 import { NavBar } from "./components/nav-bar";
+import { I18nextProvider } from "react-i18next";
+import i18n from "./lib/i18n";
 
 import HomePage from "@/pages/home-page";
 import AuthPage from "@/pages/auth-page";
@@ -35,19 +37,21 @@ function Router() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <NotificationProvider>
-          <div className="min-h-screen bg-background">
-            <NavBar />
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-              <Router />
-            </main>
-          </div>
-          <Toaster />
-        </NotificationProvider>
-      </AuthProvider>
-    </QueryClientProvider>
+    <I18nextProvider i18n={i18n}>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <NotificationProvider>
+            <div className="min-h-screen bg-background">
+              <NavBar />
+              <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <Router />
+              </main>
+            </div>
+            <Toaster />
+          </NotificationProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    </I18nextProvider>
   );
 }
 

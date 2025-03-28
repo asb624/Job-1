@@ -6,6 +6,7 @@ import { Service } from '@shared/schema';
 import { Card, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
 import { useLocation } from 'wouter';
+import { useTranslation } from 'react-i18next';
 
 // Fix for default icon issue in Leaflet with webpack/vite
 const defaultIcon = new Icon({
@@ -70,6 +71,7 @@ function MapBoundsSetter({
 }
 
 export function ServiceMap({ services, onContactProvider }: ServiceMapProps) {
+  const { t } = useTranslation();
   const [, setLocation] = useLocation();
   const [mapCenter, setMapCenter] = useState<[number, number]>([20.5937, 78.9629]); // Default to center of India
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
@@ -114,7 +116,7 @@ export function ServiceMap({ services, onContactProvider }: ServiceMapProps) {
     <Card className="w-full h-[500px] overflow-hidden shadow-lg card">
       <CardContent className="p-0 h-full relative">
         <div className="absolute top-0 left-0 w-full bg-gradient-to-r from-blue-100 to-blue-50 py-2 px-4 z-[1000] shadow-sm">
-          <h3 className="text-primary font-medium">Service Map</h3>
+          <h3 className="text-primary font-medium">{t('map.serviceMap', 'Service Map')}</h3>
         </div>
         <MapContainer 
           center={mapCenter} 
@@ -137,7 +139,7 @@ export function ServiceMap({ services, onContactProvider }: ServiceMapProps) {
               icon={defaultIcon}
             >
               <Popup className="rounded-lg shadow-md">
-                <div className="font-medium text-primary">Your location</div>
+                <div className="font-medium text-primary">{t('map.yourLocation', 'Your location')}</div>
               </Popup>
             </Marker>
           )}
@@ -153,7 +155,9 @@ export function ServiceMap({ services, onContactProvider }: ServiceMapProps) {
                 <div className="space-y-2">
                   <h3 className="font-medium text-primary">{service.title}</h3>
                   <p className="text-sm">{service.description.substring(0, 100)}...</p>
-                  <p className="text-sm font-medium bg-blue-50 px-2 py-1 rounded-md inline-block">Category: {service.category}</p>
+                  <p className="text-sm font-medium bg-blue-50 px-2 py-1 rounded-md inline-block">
+                    {t('services.category', 'Category')}: {service.category}
+                  </p>
                   <div className="flex justify-between mt-2 gap-2">
                     <Button 
                       variant="outline" 
@@ -161,14 +165,14 @@ export function ServiceMap({ services, onContactProvider }: ServiceMapProps) {
                       onClick={() => handleServiceClick(service.id)}
                       className="btn-transition flex-1"
                     >
-                      View Details
+                      {t('services.viewDetails', 'View Details')}
                     </Button>
                     <Button 
                       size="sm" 
                       onClick={() => handleContactClick(service)}
                       className="btn-transition flex-1"
                     >
-                      Contact
+                      {t('services.contact', 'Contact')}
                     </Button>
                   </div>
                 </div>

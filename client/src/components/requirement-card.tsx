@@ -2,6 +2,7 @@ import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button";
 import { Requirement } from "@shared/schema";
 import { Calendar, MapPin, Tag, Clock } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface RequirementCardProps {
   requirement: Requirement;
@@ -9,6 +10,8 @@ interface RequirementCardProps {
 }
 
 export function RequirementCard({ requirement, onSelect }: RequirementCardProps) {
+  const { t } = useTranslation();
+  
   return (
     <Card className="w-full relative overflow-hidden bg-white hover:shadow-lg transition-all duration-300 border border-emerald-100 group rounded-xl">
       {/* Left accent line */}
@@ -29,7 +32,7 @@ export function RequirementCard({ requirement, onSelect }: RequirementCardProps)
                 : 'bg-amber-50 text-amber-700 border-amber-200'}`}
             >
               <span className={`w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full ${requirement.status === 'open' ? 'bg-green-500' : 'bg-amber-500'}`}></span>
-              {requirement.status}
+              {t(`requirements.${requirement.status}`, requirement.status)}
             </span>
           </div>
         </div>
@@ -46,7 +49,7 @@ export function RequirementCard({ requirement, onSelect }: RequirementCardProps)
           {requirement.createdAt && (
             <div className="flex items-center gap-1 bg-emerald-50 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full">
               <Calendar size={12} className="sm:h-3.5 sm:w-3.5" />
-              <span>Posted: {new Date(requirement.createdAt).toLocaleDateString()}</span>
+              <span>{t('requirements.posted', 'Posted')}: {new Date(requirement.createdAt).toLocaleDateString()}</span>
             </div>
           )}
           {requirement.city && (
@@ -57,7 +60,11 @@ export function RequirementCard({ requirement, onSelect }: RequirementCardProps)
           )}
           <div className="flex items-center gap-1 bg-emerald-50 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full">
             <Clock size={12} className="sm:h-3.5 sm:w-3.5" />
-            <span>{requirement.isRemote ? "Remote Allowed" : "In-person Only"}</span>
+            <span>
+              {requirement.isRemote 
+                ? t('requirements.remoteAllowed', 'Remote Allowed') 
+                : t('services.inPersonOnly', 'In-person Only')}
+            </span>
           </div>
         </div>
       </CardContent>
@@ -70,7 +77,7 @@ export function RequirementCard({ requirement, onSelect }: RequirementCardProps)
                      hover:-translate-y-0.5 rounded-lg py-1.5 sm:py-2 text-sm" 
             onClick={onSelect}
           >
-            Select
+            {t('requirements.bid', 'Select')}
           </Button>
         )}
       </CardFooter>
