@@ -43,17 +43,17 @@ export function LanguageSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="flex items-center gap-1">
+        <Button variant="ghost" size="sm" className="flex items-center gap-1 text-white hover:bg-blue-400">
           <Globe className="h-4 w-4" />
           <span className="hidden md:inline">{getCurrentLanguageLabel()}</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="border-blue-100 bg-gradient-to-b from-blue-50 to-white">
         {languages.map((lang) => (
           <DropdownMenuItem
             key={lang.code}
             onClick={() => changeLanguage(lang.code)}
-            className={i18n.language === lang.code ? 'bg-muted' : ''}
+            className={`${i18n.language === lang.code ? 'bg-blue-100 text-blue-700 font-medium' : 'hover:bg-blue-50'} cursor-pointer transition-colors duration-150`}
           >
             {lang.label}
           </DropdownMenuItem>

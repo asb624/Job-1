@@ -83,33 +83,45 @@ export default function HomePage() {
 
   return (
     <div className="space-y-8">
-      <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold">Welcome to JobLo</h1>
-        <p className="text-xl text-muted-foreground">
-          Connect with skilled professionals or find your next project
-        </p>
+      <div className="bg-gradient-to-r from-blue-600 to-blue-400 text-white py-12 px-4 rounded-lg shadow-lg mb-8 transform transition-all duration-500 hover:shadow-xl">
+        <div className="text-center space-y-4 max-w-3xl mx-auto">
+          <h1 className="text-4xl font-bold">Welcome to JobLo</h1>
+          <p className="text-xl">
+            Connect with skilled professionals or find your next project
+          </p>
+          <div className="flex justify-center gap-4 mt-6">
+            <Button className="bg-white text-blue-600 hover:bg-blue-50 btn-transition">
+              {user?.isServiceProvider ? "Find Projects" : "Find Services"}
+            </Button>
+            <Button variant="outline" className="bg-transparent border-white text-white hover:bg-blue-500 btn-transition">
+              Learn More
+            </Button>
+          </div>
+        </div>
       </div>
 
       <Tabs defaultValue="services">
-        <TabsList className="grid w-full max-w-md mx-auto grid-cols-2">
-          <TabsTrigger value="services">Available Services</TabsTrigger>
-          <TabsTrigger value="requirements">Requirements</TabsTrigger>
+        <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 bg-blue-50">
+          <TabsTrigger value="services" className="data-[state=active]:bg-blue-100 data-[state=active]:text-blue-800">Available Services</TabsTrigger>
+          <TabsTrigger value="requirements" className="data-[state=active]:bg-blue-100 data-[state=active]:text-blue-800">Requirements</TabsTrigger>
         </TabsList>
 
         <TabsContent value="services" className="space-y-6">
           <div className="flex justify-end mb-4">
-            <div className="bg-secondary rounded-lg p-1 flex gap-1">
+            <div className="bg-blue-100 rounded-full p-1 flex gap-1 shadow-sm transition-all duration-300 hover:shadow-md">
               <Button
-                variant={viewMode === 'list' ? 'default' : 'ghost'}
+                variant="ghost"
                 size="sm" 
                 onClick={() => setViewMode('list')}
+                className={`rounded-full ${viewMode === 'list' ? 'bg-blue-500 text-white hover:bg-blue-600' : 'text-blue-700 hover:bg-blue-200'} transition-all duration-300`}
               >
                 List View
               </Button>
               <Button
-                variant={viewMode === 'map' ? 'default' : 'ghost'}
+                variant="ghost"
                 size="sm"
                 onClick={() => setViewMode('map')}
+                className={`rounded-full ${viewMode === 'map' ? 'bg-blue-500 text-white hover:bg-blue-600' : 'text-blue-700 hover:bg-blue-200'} transition-all duration-300`}
               >
                 Map View
               </Button>

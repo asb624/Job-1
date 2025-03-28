@@ -9,7 +9,9 @@
   }
 
   body {
-    @apply font-sans antialiased bg-background text-foreground;
+    @apply font-sans antialiased text-foreground;
+    background: linear-gradient(135deg, #f0f8ff 0%, #e6f0ff 50%, #d9e6ff 100%);
+    min-height: 100vh;
   }
 }
 
