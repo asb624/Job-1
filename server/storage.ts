@@ -1,9 +1,9 @@
 import pg from 'pg';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { 
-  User, Service, Requirement, Bid, InsertUser, 
+  User, Service, Requirement, Bid, InsertUser, Review,
   users, services, requirements, bids, profiles, Profile,
-  conversations, messages, notifications,
+  conversations, messages, notifications, reviews,
   Conversation, Message, Notification
 } from "@shared/schema";
 import session from "express-session";
@@ -119,6 +119,12 @@ export interface IStorage {
   createMessage(message: Omit<Message, "id" | "isRead" | "createdAt"> & { senderId: number }): Promise<Message>;
   getMessagesByConversationId(conversationId: number): Promise<Message[]>;
   markMessageAsRead(messageId: number): Promise<Message>;
+  
+  // Review operations
+  createReview(review: Omit<Review, "id" | "createdAt">): Promise<Review>;
+  getReviewsByServiceId(serviceId: number): Promise<Review[]>;
+  getReviewsByUserId(userId: number): Promise<Review[]>;
+  getAverageRatingForService(serviceId: number): Promise<number>;
   
   // Notification operations
   createNotification(notification: Omit<Notification, "id" | "isRead" | "createdAt">): Promise<Notification>;
@@ -547,6 +553,37 @@ export class PostgresStorage implements IStorage {
       .update(notifications)
       .set({ isRead: true })
       .where(eq(notifications.userId, userId));
+  }
+  
+  // Review operations implementation
+  async createReview(review: Omit<Review, "id" | "createdAt">): Promise<Review> {
+    const result = await this.db.insert(reviews).values(review).returning();
+    return result[0];
+  }
+  
+  async getReviewsByServiceId(serviceId: number): Promise<Review[]> {
+    return await this.db
+      .select()
+      .from(reviews)
+      .where(eq(reviews.serviceId, serviceId))
+      .orderBy(desc(reviews.createdAt));
+  }
+  
+  async getReviewsByUserId(userId: number): Promise<Review[]> {
+    return await this.db
+      .select()
+      .from(reviews)
+      .where(eq(reviews.userId, userId))
+      .orderBy(desc(reviews.createdAt));
+  }
+  
+  async getAverageRatingForService(serviceId: number): Promise<number> {
+    const result = await this.db
+      .select({ avgRating: sql`AVG(${reviews.rating})` })
+      .from(reviews)
+      .where(eq(reviews.serviceId, serviceId));
+    
+    return result[0]?.avgRating || 0;
   }
 
   // Location-based search methods

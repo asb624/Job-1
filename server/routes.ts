@@ -6,7 +6,8 @@ import { storage } from "./storage";
 import { z } from "zod";
 import { 
   insertServiceSchema, insertRequirementSchema, insertBidSchema, 
-  insertProfileSchema, insertMessageSchema, insertNotificationSchema 
+  insertProfileSchema, insertMessageSchema, insertNotificationSchema,
+  insertReviewSchema
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -470,7 +471,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Notifications
+  // Reviews
+  app.post("/api/reviews", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+
+    const parsed = insertReviewSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json(parsed.error);
+
+    try {
+      const review = await storage.createReview({
+        ...parsed.data,
+        userId: req.user.id,
+      });
+      
+      // Get the service to create a notification for its provider
+      const service = await storage.getServices({ minPrice: parsed.data.serviceId, maxPrice: parsed.data.serviceId });
+      if (service && service.length > 0) {
+        // Create notification for the service provider
+        await storage.createNotification({
+          userId: service[0].providerId,
+          title: "New Review",
+          content: `${req.user.username} left a ${parsed.data.rating}-star review on your service`,
+          type: "review",
+          referenceId: review.id,
+        });
+        
+        // Broadcast review via WebSocket
+        const wsMessage = {
+          type: 'review',
+          action: 'create',
+          payload: {
+            ...review,
+            providerId: service[0].providerId
+          }
+        };
+        
+        req.app.emit('websocket', wsMessage);
+      }
+
+      res.status(201).json(review);
+    } catch (error) {
+      console.error('Error creating review:', error);
+      res.status(500).json({ message: "Failed to create review" });
+    }
+  });
+
+  app.get("/api/services/:id/reviews", async (req, res) => {
+    try {
+      const reviews = await storage.getReviewsByServiceId(parseInt(req.params.id));
+      res.json(reviews);
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
+      res.status(500).json({ message: "Failed to fetch reviews" });
+    }
+  });
+
+  app.get("/api/services/:id/rating", async (req, res) => {
+    try {
+      const rating = await storage.getAverageRatingForService(parseInt(req.params.id));
+      res.json({ rating });
+    } catch (error) {
+      console.error('Error fetching average rating:', error);
+      res.status(500).json({ message: "Failed to fetch average rating" });
+    }
+  });
+  
   app.get("/api/notifications", async (req, res) => {
     if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
 

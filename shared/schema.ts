@@ -194,6 +194,7 @@ export const insertBidSchema = createInsertSchema(bids).pick({
 
 export const insertReviewSchema = createInsertSchema(reviews).pick({
   serviceId: true,
+  userId: true,
   rating: true,
   comment: true,
 });
