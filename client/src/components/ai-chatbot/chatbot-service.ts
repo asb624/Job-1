@@ -5,15 +5,22 @@ type ChatbotResponse = {
 
 // Free alternative to OpenAI - Rule-based responses
 export class ChatbotService {
-  private readonly greetings = ['hi', 'hello', 'hey', 'greetings', 'namaste', 'hola'];
-  private readonly goodbyes = ['bye', 'goodbye', 'see you', 'cya', 'farewell', 'alvida'];
-  private readonly thanks = ['thanks', 'thank you', 'thank', 'thanks a lot', 'dhanyavaad', 'shukriya'];
-  private readonly questions = ['how', 'what', 'where', 'when', 'why', 'who', 'which', 'can', 'could', 'would', 'will', 'should'];
+  // Multilingual keywords for better language detection
+  private readonly greetings = ['hi', 'hello', 'hey', 'greetings', 'namaste', 'hola', 'नमस्ते', 'नमस्कार', 'हैलो', 'हाय'];
+  private readonly goodbyes = ['bye', 'goodbye', 'see you', 'cya', 'farewell', 'alvida', 'अलविदा', 'बाय', 'फिर मिलेंगे'];
+  private readonly thanks = ['thanks', 'thank you', 'thank', 'thanks a lot', 'dhanyavaad', 'shukriya', 'धन्यवाद', 'शुक्रिया'];
+  private readonly questions = ['how', 'what', 'where', 'when', 'why', 'who', 'which', 'can', 'could', 'would', 'will', 'should', 'कैसे', 'क्या', 'कहां', 'कब', 'क्यों', 'कौन', 'कौनसा'];
   private readonly jobRelatedKeywords = [
+    // English keywords
     'job', 'work', 'service', 'employment', 'hire', 'salary', 'wage', 'pay',
     'house', 'household', 'agriculture', 'farm', 'shop', 'salon', 'beauty', 'medical',
     'required', 'requirement', 'looking for', 'need', 'worker', 'staff', 'labor', 'labour',
-    'helper', 'domestic', 'cook', 'maid', 'gardener', 'driver'
+    'helper', 'domestic', 'cook', 'maid', 'gardener', 'driver',
+    // Hindi keywords
+    'नौकरी', 'काम', 'रोजगार', 'सेवा', 'भर्ती', 'वेतन', 'तनख्वाह', 'पे',
+    'घर', 'घरेलू', 'कृषि', 'खेती', 'दुकान', 'सैलून', 'सौंदर्य', 'चिकित्सा',
+    'आवश्यकता', 'जरूरत', 'चाहिए', 'मजदूर', 'कर्मचारी', 'श्रम', 'मजदूरी',
+    'सहायक', 'घरेलू', 'रसोइया', 'नौकरानी', 'माली', 'ड्राइवर'
   ];
   
   private readonly language: string;
@@ -110,8 +117,10 @@ export class ChatbotService {
   }
   
   private getJobRelatedResponse(message: string): ChatbotResponse {
-    // For hiring
-    if (message.includes('hire') || message.includes('need worker') || message.includes('looking for worker') || message.includes('find staff')) {
+    // For hiring (with Hindi support)
+    if (message.includes('hire') || message.includes('need worker') || message.includes('looking for worker') || 
+        message.includes('find staff') || message.includes('भर्ती') || message.includes('नौकरी देना') || 
+        message.includes('कर्मचारी चाहिए') || message.includes('काम पर रखना')) {
       return {
         text: this.getTranslation('To hire workers, you can post a requirement by clicking the "Post Requirement" button in the navigation bar. Describe your needs, budget, and location, and service providers will contact you.'),
         suggestions: [
@@ -122,8 +131,10 @@ export class ChatbotService {
       };
     }
     
-    // For finding work
-    if (message.includes('find job') || message.includes('looking for job') || message.includes('need work') || message.includes('search job')) {
+    // For finding work (with Hindi support)
+    if (message.includes('find job') || message.includes('looking for job') || message.includes('need work') || 
+        message.includes('search job') || message.includes('नौकरी खोजना') || message.includes('काम की तलाश') || 
+        message.includes('रोजगार चाहिए') || message.includes('नौकरी चाहिए')) {
       return {
         text: this.getTranslation('To find work, you can register as a service provider and post your services or browse open requirements. You can also apply to requirements that match your skills.'),
         suggestions: [
@@ -169,7 +180,10 @@ export class ChatbotService {
   }
   
   private getQuestionResponse(message: string): ChatbotResponse {
-    if (message.includes('post') && (message.includes('service') || message.includes('job'))) {
+    // How to post a service (multilingual)
+    if ((message.includes('post') && (message.includes('service') || message.includes('job'))) || 
+        (message.includes('सेवा') && message.includes('पोस्ट')) || 
+        (message.includes('सेवा') && message.includes('कैसे'))) {
       return {
         text: this.getTranslation('To post a service, click on "Post Service" in the navigation bar. Fill out the form with your service details, including title, description, category, price, and location. This helps clients find you easily.'),
         suggestions: [
@@ -180,7 +194,10 @@ export class ChatbotService {
       };
     }
     
-    if (message.includes('post') && message.includes('requirement')) {
+    // How to post a requirement (multilingual)
+    if ((message.includes('post') && message.includes('requirement')) || 
+        (message.includes('आवश्यकता') && message.includes('पोस्ट')) || 
+        (message.includes('आवश्यकता') && message.includes('कैसे'))) {
       return {
         text: this.getTranslation('To post a requirement, click on "Post Requirement" in the navigation bar. Specify what service you need, your budget, location, and other details. Service providers can then contact you or apply directly.'),
         suggestions: [
@@ -191,7 +208,10 @@ export class ChatbotService {
       };
     }
     
-    if (message.includes('how') && message.includes('work')) {
+    // How JobLo works (multilingual)
+    if ((message.includes('how') && message.includes('work')) || 
+        (message.includes('कैसे') && message.includes('काम')) || 
+        (message.includes('जॉबलो') && message.includes('कैसे'))) {
       return {
         text: this.getTranslation('JobLo works as a platform connecting service providers with clients. Providers list their services, and clients post requirements. You can browse services on a map or list view, communicate through our messaging system, and finalize your arrangements securely.'),
         suggestions: [
@@ -202,7 +222,9 @@ export class ChatbotService {
       };
     }
     
-    if (message.includes('payment') || message.includes('pay') || message.includes('money') || message.includes('salary')) {
+    // Payment related queries (multilingual)
+    if (message.includes('payment') || message.includes('pay') || message.includes('money') || message.includes('salary') ||
+        message.includes('भुगतान') || message.includes('पैसा') || message.includes('वेतन') || message.includes('तनख्वाह')) {
       return {
         text: this.getTranslation('Payments on JobLo are currently arranged directly between providers and clients. When posting a service or requirement, you can specify your price or budget. We recommend discussing payment terms clearly in the messaging system before finalizing.'),
         suggestions: [
@@ -230,11 +252,19 @@ export class ChatbotService {
   
   // Use the i18next translation function
   private getTranslation(text: string): string {
-    // Instead of accessing window.i18n directly, we'll use predefined translation keys
-    // This approach better aligns with the i18n structure used in the UI
+    if (!text) return '';
     
-    // Map common responses to their translation keys
-    const translationMap: Record<string, string> = {
+    // Map common responses to their translation keys or use directly from i18n
+    const commonTranslations: Record<string, string> = {
+      // Default / Error responses
+      "I'm not sure I understand. Can you rephrase or ask about jobs, services, or requirements?": "chatbot.responses.dontUnderstand",
+      "Sorry, I encountered an error. Please try again.": "chatbot.error",
+      
+      // Frequently used suggestions
+      "How do I post a service?": "chatbot.suggestion.postService",
+      "How do I find workers?": "chatbot.suggestion.findWorkers",
+      "What jobs are available?": "chatbot.suggestion.viewJobs",
+      
       // Greeting responses
       "Hello! How can I help you with JobLo today?": "chatbot.responses.greeting1",
       "Hi there! Looking for services or workers?": "chatbot.responses.greeting2",
@@ -261,16 +291,24 @@ export class ChatbotService {
       "How do I get selected?": "chatbot.suggestions.getSelected"
     };
     
-    // If we have a defined translation key, use it
-    if (translationMap[text]) {
+    // If we have a defined translation key for this exact text, use it
+    if (commonTranslations[text]) {
       if ((window as any).i18n && (window as any).i18n.t) {
-        return (window as any).i18n.t(translationMap[text], text);
+        // First parameter is the key, the second is the default value if the key doesn't exist
+        return (window as any).i18n.t(commonTranslations[text], { defaultValue: text });
       }
     }
     
-    // Otherwise, just use the text as is
+    // If no direct mapping exists, try to look up a direct translation by using the text as a key
     if ((window as any).i18n && (window as any).i18n.t) {
-      return (window as any).i18n.t(text, text);
+      // Check if this is a direct translation key
+      const directResult = (window as any).i18n.t(text, { defaultValue: null });
+      if (directResult !== null && directResult !== text) {
+        return directResult;
+      }
+      
+      // Otherwise return the original text (it will be displayed as-is)
+      return text;
     }
     
     return text;

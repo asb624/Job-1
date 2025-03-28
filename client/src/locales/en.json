@@ -198,7 +198,8 @@
       "goodbye1": "Goodbye! Have a great day!",
       "goodbye2": "Thank you for chatting. Feel free to return if you need help!",
       "goodbye3": "Bye for now. Hope to assist you again soon!",
-      "goodbye4": "See you later. Remember JobLo is here when you need help!"
+      "goodbye4": "See you later. Remember JobLo is here when you need help!",
+      "dontUnderstand": "I'm not sure I understand. Can you rephrase or ask about jobs, services, or requirements?"
     },
     "suggestions": {
       "hire": "I need to hire someone",
