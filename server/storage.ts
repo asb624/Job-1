@@ -8,7 +8,7 @@ import {
 } from "@shared/schema";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
-import { eq, or, and, desc, sql, SQL } from 'drizzle-orm';
+import { eq, and, or, gte, lte, desc, ilike, sql, SQL } from "drizzle-orm";
 
 const PostgresSessionStore = connectPg(session);
 
@@ -72,10 +72,30 @@ export interface IStorage {
 
   // Service operations
   createService(service: Omit<Service, "id">): Promise<Service>;
-  getServices(): Promise<Service[]>;
+  getServices(filters?: {
+    minPrice?: number;
+    maxPrice?: number;
+    sortBy?: 'price' | 'date' | 'distance';
+    sortOrder?: 'asc' | 'desc';
+    category?: string;
+    query?: string;
+  }): Promise<Service[]>;
   getServicesByProvider(providerId: number): Promise<Service[]>;
-  searchServicesByLocation(lat: number, lng: number, radius: number, isRemote?: boolean): Promise<Service[]>;
-  searchServicesByCategory(category: string, lat?: number, lng?: number, radius?: number): Promise<Service[]>;
+  searchServicesByLocation(lat: number, lng: number, radius: number, isRemote?: boolean, filters?: {
+    minPrice?: number;
+    maxPrice?: number;
+    sortBy?: 'price' | 'date' | 'distance';
+    sortOrder?: 'asc' | 'desc';
+    category?: string;
+    query?: string;
+  }): Promise<Service[]>;
+  searchServicesByCategory(category: string, lat?: number, lng?: number, radius?: number, filters?: {
+    minPrice?: number;
+    maxPrice?: number;
+    sortBy?: 'price' | 'date' | 'distance';
+    sortOrder?: 'asc' | 'desc';
+    query?: string;
+  }): Promise<Service[]>;
 
   // Requirement operations
   createRequirement(requirement: Omit<Requirement, "id">): Promise<Requirement>;
@@ -193,31 +213,86 @@ export class PostgresStorage implements IStorage {
     return result[0];
   }
 
-  async getServices(): Promise<Service[]> {
-    // Only select columns that definitely exist until migration is complete
-    const results = await this.db.select({
-      id: services.id,
-      title: services.title,
-      description: services.description,
-      category: services.category,
-      providerId: services.providerId,
-      price: services.price,
-      createdAt: services.createdAt,
-    }).from(services);
+  async getServices(filters?: {
+    minPrice?: number;
+    maxPrice?: number;
+    sortBy?: 'price' | 'date' | 'distance';
+    sortOrder?: 'asc' | 'desc';
+    category?: string;
+    query?: string;
+  }): Promise<Service[]> {
+    // Build query with optional filters
+    let query = this.db.select().from(services);
     
-    // Add default null values for location fields
-    return results.map(service => ({
+    // Apply filters if provided
+    if (filters) {
+      // Price range filter
+      if (filters.minPrice !== undefined) {
+        query = query.where(gte(services.price, filters.minPrice));
+      }
+      
+      if (filters.maxPrice !== undefined) {
+        query = query.where(lte(services.price, filters.maxPrice));
+      }
+      
+      // Category filter
+      if (filters.category) {
+        query = query.where(eq(services.category, filters.category));
+      }
+      
+      // Text search in title and description
+      if (filters.query) {
+        const searchTerm = `%${filters.query}%`;
+        query = query.where(
+          or(
+            ilike(services.title, searchTerm),
+            ilike(services.description, searchTerm)
+          )
+        );
+      }
+      
+      // Apply sorting
+      if (filters.sortBy) {
+        switch (filters.sortBy) {
+          case 'price':
+            query = filters.sortOrder === 'desc' 
+              ? query.orderBy(desc(services.price))
+              : query.orderBy(services.price);
+            break;
+          case 'date':
+            query = filters.sortOrder === 'desc' 
+              ? query.orderBy(desc(services.createdAt))
+              : query.orderBy(services.createdAt);
+            break;
+          // 'distance' sorting is handled after query
+        }
+      } else {
+        // Default sort by newest first
+        query = query.orderBy(desc(services.createdAt));
+      }
+    } else {
+      // Default sort by newest first
+      query = query.orderBy(desc(services.createdAt));
+    }
+    
+    // Execute query
+    const results = await query;
+    
+    // Normalize results to ensure all fields are present
+    const normalizedResults = results.map(service => ({
       ...service,
-      address: null,
-      city: null,
-      state: null,
-      country: null,
-      postalCode: null,
-      latitude: null,
-      longitude: null,
-      serviceRadius: null,
-      isRemote: null
+      address: service.address || null,
+      city: service.city || null,
+      state: service.state || null,
+      country: service.country || null,
+      postalCode: service.postalCode || null,
+      latitude: service.latitude || null,
+      longitude: service.longitude || null,
+      serviceRadius: service.serviceRadius || null,
+      isRemote: service.isRemote || false
     }));
+    
+    return normalizedResults;
   }
 
   async getServicesByProvider(providerId: number): Promise<Service[]> {
@@ -475,7 +550,20 @@ export class PostgresStorage implements IStorage {
   }
 
   // Location-based search methods
-  async searchServicesByLocation(lat: number, lng: number, radius: number, isRemote: boolean = false): Promise<Service[]> {
+  async searchServicesByLocation(
+    lat: number, 
+    lng: number, 
+    radius: number, 
+    isRemote: boolean = false,
+    filters?: {
+      minPrice?: number;
+      maxPrice?: number;
+      sortBy?: 'price' | 'date' | 'distance';
+      sortOrder?: 'asc' | 'desc';
+      category?: string;
+      query?: string;
+    }
+  ): Promise<Service[]> {
     // Calculate boundary deltas
     const latDiff = radius / 111; // 1 degree of latitude is approximately 111 km
     const lngDiff = radius / (111 * Math.cos(lat * Math.PI / 180));
@@ -488,28 +576,53 @@ export class PostgresStorage implements IStorage {
       longitude BETWEEN ${lng - lngDiff} AND ${lng + lngDiff}
     `;
     
-    let results;
+    // Build the base query
+    let query = this.db.select().from(services);
     
-    // Include remote services if requested
+    // Apply location conditions
     if (isRemote) {
-      results = await this.db
-        .select()
-        .from(services)
-        .where(
-          sql`(${services.isRemote} = true OR (${locationCondition}))`
-        );
+      query = query.where(
+        sql`(${services.isRemote} = true OR (${locationCondition}))`
+      );
     } else {
-      // Only in-person services within radius
-      results = await this.db
-        .select()
-        .from(services)
-        .where(
-          sql`(${services.isRemote} = false OR ${services.isRemote} IS NULL) AND (${locationCondition})`
-        );
+      query = query.where(
+        sql`(${services.isRemote} = false OR ${services.isRemote} IS NULL) AND (${locationCondition})`
+      );
     }
     
+    // Apply additional filters if provided
+    if (filters) {
+      // Price range filter
+      if (filters.minPrice !== undefined) {
+        query = query.where(gte(services.price, filters.minPrice));
+      }
+      
+      if (filters.maxPrice !== undefined) {
+        query = query.where(lte(services.price, filters.maxPrice));
+      }
+      
+      // Category filter
+      if (filters.category) {
+        query = query.where(eq(services.category, filters.category));
+      }
+      
+      // Text search in title and description
+      if (filters.query) {
+        const searchTerm = `%${filters.query}%`;
+        query = query.where(
+          or(
+            ilike(services.title, searchTerm),
+            ilike(services.description, searchTerm)
+          )
+        );
+      }
+    }
+    
+    // Execute query
+    const results = await query;
+    
     // For accurate distance calculations, post-process the results
-    return results
+    let processedResults = results
       .filter(service => 
         // Skip null coordinates (old records without location data)
         service.latitude !== null && 
@@ -519,14 +632,61 @@ export class PostgresStorage implements IStorage {
         ...service,
         // Calculate exact distance using Haversine formula
         distance: calculateDistance(lat, lng, service.latitude!, service.longitude!)
-      }))
-      // Sort by distance
-      .sort((a, b) => (a.distance || Infinity) - (b.distance || Infinity));
+      }));
+    
+    // Apply sorting
+    if (filters?.sortBy) {
+      switch (filters.sortBy) {
+        case 'price':
+          processedResults = processedResults.sort((a, b) => {
+            return filters.sortOrder === 'desc' ? b.price - a.price : a.price - b.price;
+          });
+          break;
+        case 'date':
+          processedResults = processedResults.sort((a, b) => {
+            const dateA = new Date(a.createdAt).getTime();
+            const dateB = new Date(b.createdAt).getTime();
+            return filters.sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
+          });
+          break;
+        case 'distance':
+          // Default is already sorted by distance ascending
+          if (filters.sortOrder === 'desc') {
+            processedResults = processedResults.sort((a, b) => 
+              (b.distance || Infinity) - (a.distance || Infinity)
+            );
+          } else {
+            processedResults = processedResults.sort((a, b) => 
+              (a.distance || Infinity) - (b.distance || Infinity)
+            );
+          }
+          break;
+      }
+    } else {
+      // Default sort by distance
+      processedResults = processedResults.sort((a, b) => 
+        (a.distance || Infinity) - (b.distance || Infinity)
+      );
+    }
+    
+    return processedResults;
   }
 
-  async searchServicesByCategory(category: string, lat?: number, lng?: number, radius?: number): Promise<Service[]> {
-    // Base query for category
-    let results;
+  async searchServicesByCategory(
+    category: string, 
+    lat?: number, 
+    lng?: number, 
+    radius?: number,
+    filters?: {
+      minPrice?: number;
+      maxPrice?: number;
+      sortBy?: 'price' | 'date' | 'distance';
+      sortOrder?: 'asc' | 'desc';
+      query?: string;
+    }
+  ): Promise<Service[]> {
+    // Build the base query
+    let query = this.db.select().from(services).where(eq(services.category, category));
     
     // If location parameters are provided, include proximity filtering
     if (lat !== undefined && lng !== undefined && radius !== undefined) {
@@ -534,49 +694,134 @@ export class PostgresStorage implements IStorage {
       const latDiff = radius / 111; // 1 degree of latitude is approximately 111 km
       const lngDiff = radius / (111 * Math.cos(lat * Math.PI / 180));
       
-      // Create query with location filtering
-      results = await this.db
-        .select()
-        .from(services)
-        .where(
-          sql`
-            ${services.category} = ${category} AND
-            ${services.latitude} IS NOT NULL AND
-            ${services.longitude} IS NOT NULL AND
-            ${services.latitude} BETWEEN ${lat - latDiff} AND ${lat + latDiff} AND
-            ${services.longitude} BETWEEN ${lng - lngDiff} AND ${lng + lngDiff}
-          `
-        );
-    } else {
-      // Simple category search without location
-      results = await this.db
-        .select()
-        .from(services)
-        .where(eq(services.category, category));
+      // Add location conditions
+      query = query.where(
+        sql`
+          ${services.latitude} IS NOT NULL AND
+          ${services.longitude} IS NOT NULL AND
+          ${services.latitude} BETWEEN ${lat - latDiff} AND ${lat + latDiff} AND
+          ${services.longitude} BETWEEN ${lng - lngDiff} AND ${lng + lngDiff}
+        `
+      );
     }
     
-    // If location parameters are provided, calculate and sort by distance
+    // Apply additional filters
+    if (filters) {
+      // Price range filter
+      if (filters.minPrice !== undefined) {
+        query = query.where(gte(services.price, filters.minPrice));
+      }
+      
+      if (filters.maxPrice !== undefined) {
+        query = query.where(lte(services.price, filters.maxPrice));
+      }
+      
+      // Text search in title and description
+      if (filters.query) {
+        const searchTerm = `%${filters.query}%`;
+        query = query.where(
+          or(
+            ilike(services.title, searchTerm),
+            ilike(services.description, searchTerm)
+          )
+        );
+      }
+    }
+    
+    // Execute the query
+    const results = await query;
+    
+    // Post-processing for location-based results
     if (lat !== undefined && lng !== undefined) {
-      return results
-        .filter((service: any) => 
+      let processedResults = results
+        .filter(service => 
           // Skip null coordinates (old records without location data)
           service.latitude !== null && 
           service.longitude !== null
         )
-        .map((service: any) => ({
+        .map(service => ({
           ...service,
           // Calculate exact distance using Haversine formula
           distance: calculateDistance(lat, lng, service.latitude!, service.longitude!)
-        }))
-        // Sort by distance
-        .sort((a: any, b: any) => (a.distance || Infinity) - (b.distance || Infinity));
+        }));
+      
+      // Apply sorting if filters provided
+      if (filters?.sortBy) {
+        switch (filters.sortBy) {
+          case 'price':
+            processedResults = processedResults.sort((a, b) => {
+              return filters.sortOrder === 'desc' ? b.price - a.price : a.price - b.price;
+            });
+            break;
+          case 'date':
+            processedResults = processedResults.sort((a, b) => {
+              const dateA = new Date(a.createdAt).getTime();
+              const dateB = new Date(b.createdAt).getTime();
+              return filters.sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
+            });
+            break;
+          case 'distance':
+            // Default is already sorted by distance ascending
+            if (filters.sortOrder === 'desc') {
+              processedResults = processedResults.sort((a, b) => 
+                (b.distance || Infinity) - (a.distance || Infinity)
+              );
+            } else {
+              processedResults = processedResults.sort((a, b) => 
+                (a.distance || Infinity) - (b.distance || Infinity)
+              );
+            }
+            break;
+        }
+      } else {
+        // Default sort by distance
+        processedResults = processedResults.sort((a, b) => 
+          (a.distance || Infinity) - (b.distance || Infinity)
+        );
+      }
+      
+      return processedResults;
     }
     
-    // Otherwise, return unsorted results
-    return results;
+    // For non-location results, apply sort
+    if (filters?.sortBy && filters.sortBy !== 'distance') {
+      let processedResults = [...results];
+      
+      switch (filters.sortBy) {
+        case 'price':
+          return processedResults.sort((a, b) => {
+            return filters.sortOrder === 'desc' ? b.price - a.price : a.price - b.price;
+          });
+        case 'date':
+          return processedResults.sort((a, b) => {
+            const dateA = new Date(a.createdAt).getTime();
+            const dateB = new Date(b.createdAt).getTime();
+            return filters.sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
+          });
+      }
+    }
+    
+    // Otherwise, return results sorted by newest
+    return results.sort((a, b) => 
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
   }
 
-  async searchRequirementsByLocation(lat: number, lng: number, radius: number, isRemote: boolean = false): Promise<Requirement[]> {
+  async searchRequirementsByLocation(
+    lat: number, 
+    lng: number, 
+    radius: number, 
+    isRemote: boolean = false,
+    filters?: {
+      minBudget?: number;
+      maxBudget?: number;
+      sortBy?: 'budget' | 'date' | 'distance';
+      sortOrder?: 'asc' | 'desc';
+      category?: string;
+      query?: string;
+      status?: string;
+    }
+  ): Promise<Requirement[]> {
     // Calculate boundary deltas
     const latDiff = radius / 111; // 1 degree of latitude is approximately 111 km
     const lngDiff = radius / (111 * Math.cos(lat * Math.PI / 180));
@@ -589,52 +834,128 @@ export class PostgresStorage implements IStorage {
       longitude BETWEEN ${lng - lngDiff} AND ${lng + lngDiff}
     `;
     
-    let results;
+    // Build the base query
+    let query = this.db.select().from(requirements);
     
-    // Include remote requirements if requested
+    // Apply location conditions
     if (isRemote) {
-      results = await this.db
-        .select()
-        .from(requirements)
-        .where(
-          sql`
-            ${requirements.status} = 'open' AND
-            (${requirements.isRemote} = true OR (${locationCondition}))
-          `
-        );
+      query = query.where(
+        sql`
+          ${requirements.status} = ${filters?.status || 'open'} AND
+          (${requirements.isRemote} = true OR (${locationCondition}))
+        `
+      );
     } else {
-      // Only in-person requirements within radius
-      results = await this.db
-        .select()
-        .from(requirements)
-        .where(
-          sql`
-            ${requirements.status} = 'open' AND
-            (${requirements.isRemote} = false OR ${requirements.isRemote} IS NULL) AND
-            (${locationCondition})
-          `
-        );
+      query = query.where(
+        sql`
+          ${requirements.status} = ${filters?.status || 'open'} AND
+          (${requirements.isRemote} = false OR ${requirements.isRemote} IS NULL) AND
+          (${locationCondition})
+        `
+      );
     }
     
+    // Apply additional filters if provided
+    if (filters) {
+      // Budget range filter
+      if (filters.minBudget !== undefined) {
+        query = query.where(gte(requirements.budget, filters.minBudget));
+      }
+      
+      if (filters.maxBudget !== undefined) {
+        query = query.where(lte(requirements.budget, filters.maxBudget));
+      }
+      
+      // Category filter
+      if (filters.category) {
+        query = query.where(eq(requirements.category, filters.category));
+      }
+      
+      // Text search in title and description
+      if (filters.query) {
+        const searchTerm = `%${filters.query}%`;
+        query = query.where(
+          or(
+            ilike(requirements.title, searchTerm),
+            ilike(requirements.description, searchTerm)
+          )
+        );
+      }
+    }
+    
+    // Execute the query
+    const results = await query;
+    
     // For accurate distance calculations, post-process the results
-    return results
-      .filter((requirement: any) => 
+    let processedResults = results
+      .filter(requirement => 
         // Skip null coordinates (old records without location data)
         requirement.latitude !== null && 
         requirement.longitude !== null
       )
-      .map((requirement: any) => ({
+      .map(requirement => ({
         ...requirement,
         // Calculate exact distance using Haversine formula
         distance: calculateDistance(lat, lng, requirement.latitude!, requirement.longitude!)
-      }))
-      // Sort by distance
-      .sort((a: any, b: any) => (a.distance || Infinity) - (b.distance || Infinity));
+      }));
+    
+    // Apply sorting
+    if (filters?.sortBy) {
+      switch (filters.sortBy) {
+        case 'budget':
+          processedResults = processedResults.sort((a, b) => {
+            return filters.sortOrder === 'desc' ? b.budget - a.budget : a.budget - b.budget;
+          });
+          break;
+        case 'date':
+          processedResults = processedResults.sort((a, b) => {
+            const dateA = new Date(a.createdAt).getTime();
+            const dateB = new Date(b.createdAt).getTime();
+            return filters.sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
+          });
+          break;
+        case 'distance':
+          // Default is already sorted by distance ascending
+          if (filters.sortOrder === 'desc') {
+            processedResults = processedResults.sort((a, b) => 
+              (b.distance || Infinity) - (a.distance || Infinity)
+            );
+          } else {
+            processedResults = processedResults.sort((a, b) => 
+              (a.distance || Infinity) - (b.distance || Infinity)
+            );
+          }
+          break;
+      }
+    } else {
+      // Default sort by distance
+      processedResults = processedResults.sort((a, b) => 
+        (a.distance || Infinity) - (b.distance || Infinity)
+      );
+    }
+    
+    return processedResults;
   }
 
-  async searchRequirementsByCategory(category: string, lat?: number, lng?: number, radius?: number): Promise<Requirement[]> {
-    // Base query for category
-    let results;
+  async searchRequirementsByCategory(
+    category: string, 
+    lat?: number, 
+    lng?: number, 
+    radius?: number,
+    filters?: {
+      minBudget?: number;
+      maxBudget?: number;
+      sortBy?: 'budget' | 'date' | 'distance';
+      sortOrder?: 'asc' | 'desc';
+      query?: string;
+      status?: string;
+    }
+  ): Promise<Requirement[]> {
+    // Build the base query
+    let query = this.db.select().from(requirements).where(eq(requirements.category, category));
+    
+    // Add status filter (default to 'open')
+    query = query.where(eq(requirements.status, filters?.status || 'open'));
     
     // If location parameters are provided, include proximity filtering
     if (lat !== undefined && lng !== undefined && radius !== undefined) {
@@ -642,52 +963,117 @@ export class PostgresStorage implements IStorage {
       const latDiff = radius / 111; // 1 degree of latitude is approximately 111 km
       const lngDiff = radius / (111 * Math.cos(lat * Math.PI / 180));
       
-      // Create query with location filtering
-      results = await this.db
-        .select()
-        .from(requirements)
-        .where(
-          sql`
-            ${requirements.category} = ${category} AND
-            ${requirements.status} = 'open' AND
-            ${requirements.latitude} IS NOT NULL AND
-            ${requirements.longitude} IS NOT NULL AND
-            ${requirements.latitude} BETWEEN ${lat - latDiff} AND ${lat + latDiff} AND
-            ${requirements.longitude} BETWEEN ${lng - lngDiff} AND ${lng + lngDiff}
-          `
-        );
-    } else {
-      // Simple category search without location
-      results = await this.db
-        .select()
-        .from(requirements)
-        .where(
-          sql`
-            ${requirements.category} = ${category} AND
-            ${requirements.status} = 'open'
-          `
-        );
+      // Add location conditions
+      query = query.where(
+        sql`
+          ${requirements.latitude} IS NOT NULL AND
+          ${requirements.longitude} IS NOT NULL AND
+          ${requirements.latitude} BETWEEN ${lat - latDiff} AND ${lat + latDiff} AND
+          ${requirements.longitude} BETWEEN ${lng - lngDiff} AND ${lng + lngDiff}
+        `
+      );
     }
     
-    // If location parameters are provided, calculate and sort by distance
+    // Apply additional filters
+    if (filters) {
+      // Budget range filter
+      if (filters.minBudget !== undefined) {
+        query = query.where(gte(requirements.budget, filters.minBudget));
+      }
+      
+      if (filters.maxBudget !== undefined) {
+        query = query.where(lte(requirements.budget, filters.maxBudget));
+      }
+      
+      // Text search in title and description
+      if (filters.query) {
+        const searchTerm = `%${filters.query}%`;
+        query = query.where(
+          or(
+            ilike(requirements.title, searchTerm),
+            ilike(requirements.description, searchTerm)
+          )
+        );
+      }
+    }
+    
+    // Execute the query
+    const results = await query;
+    
+    // Post-processing for location-based results
     if (lat !== undefined && lng !== undefined) {
-      return results
-        .filter((requirement: any) => 
+      let processedResults = results
+        .filter(requirement => 
           // Skip null coordinates (old records without location data)
           requirement.latitude !== null && 
           requirement.longitude !== null
         )
-        .map((requirement: any) => ({
+        .map(requirement => ({
           ...requirement,
           // Calculate exact distance using Haversine formula
           distance: calculateDistance(lat, lng, requirement.latitude!, requirement.longitude!)
-        }))
-        // Sort by distance
-        .sort((a: any, b: any) => (a.distance || Infinity) - (b.distance || Infinity));
+        }));
+      
+      // Apply sorting if filters provided
+      if (filters?.sortBy) {
+        switch (filters.sortBy) {
+          case 'budget':
+            processedResults = processedResults.sort((a, b) => {
+              return filters.sortOrder === 'desc' ? b.budget - a.budget : a.budget - b.budget;
+            });
+            break;
+          case 'date':
+            processedResults = processedResults.sort((a, b) => {
+              const dateA = new Date(a.createdAt).getTime();
+              const dateB = new Date(b.createdAt).getTime();
+              return filters.sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
+            });
+            break;
+          case 'distance':
+            // Default is already sorted by distance ascending
+            if (filters.sortOrder === 'desc') {
+              processedResults = processedResults.sort((a, b) => 
+                (b.distance || Infinity) - (a.distance || Infinity)
+              );
+            } else {
+              processedResults = processedResults.sort((a, b) => 
+                (a.distance || Infinity) - (b.distance || Infinity)
+              );
+            }
+            break;
+        }
+      } else {
+        // Default sort by distance
+        processedResults = processedResults.sort((a, b) => 
+          (a.distance || Infinity) - (b.distance || Infinity)
+        );
+      }
+      
+      return processedResults;
     }
     
-    // Otherwise, return unsorted results
-    return results;
+    // For non-location results, apply sort
+    if (filters?.sortBy && filters.sortBy !== 'distance') {
+      let processedResults = [...results];
+      
+      switch (filters.sortBy) {
+        case 'budget':
+          return processedResults.sort((a, b) => {
+            return filters.sortOrder === 'desc' ? b.budget - a.budget : a.budget - b.budget;
+          });
+        case 'date':
+          return processedResults.sort((a, b) => {
+            const dateA = new Date(a.createdAt).getTime();
+            const dateB = new Date(b.createdAt).getTime();
+            return filters.sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
+          });
+      }
+    }
+    
+    // Otherwise, return results sorted by newest
+    return results.sort((a, b) => 
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
   }
 }
 

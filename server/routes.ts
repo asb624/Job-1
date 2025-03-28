@@ -102,39 +102,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/services", async (req, res) => {
     try {
-      // Check if location-based query parameters are provided
-      const { lat, lng, radius, isRemote, category } = req.query;
+      // Extract all possible query parameters
+      const { 
+        lat, lng, radius, isRemote, category, 
+        minPrice, maxPrice, sortBy, sortOrder, query 
+      } = req.query;
       
-      // If both location and category parameters are provided
-      if (lat && lng && radius && category) {
-        const results = await storage.searchServicesByCategory(
-          category as string,
-          parseFloat(lat as string),
-          parseFloat(lng as string),
-          parseFloat(radius as string)
-        );
-        return res.json(results);
+      // Build filters object
+      const filters: any = {};
+      
+      if (minPrice) filters.minPrice = parseInt(minPrice as string);
+      if (maxPrice) filters.maxPrice = parseInt(maxPrice as string);
+      if (category) filters.category = category as string;
+      if (query) filters.query = query as string;
+      if (sortBy && ['price', 'date', 'distance'].includes(sortBy as string)) {
+        filters.sortBy = sortBy as 'price' | 'date' | 'distance';
+      }
+      if (sortOrder && ['asc', 'desc'].includes(sortOrder as string)) {
+        filters.sortOrder = sortOrder as 'asc' | 'desc';
       }
       
-      // If only location parameters are provided
+      // If location parameters are provided
       if (lat && lng && radius) {
+        const parsedLat = parseFloat(lat as string);
+        const parsedLng = parseFloat(lng as string);
+        const parsedRadius = parseFloat(radius as string);
+        
+        // If category is also provided
+        if (category) {
+          const results = await storage.searchServicesByCategory(
+            category as string,
+            parsedLat,
+            parsedLng,
+            parsedRadius,
+            filters
+          );
+          return res.json(results);
+        }
+        
+        // Otherwise search by location only
         const results = await storage.searchServicesByLocation(
-          parseFloat(lat as string),
-          parseFloat(lng as string),
-          parseFloat(radius as string),
-          isRemote === 'true'
+          parsedLat,
+          parsedLng,
+          parsedRadius,
+          isRemote === 'true',
+          filters
         );
         return res.json(results);
       }
       
-      // If only category parameter is provided
-      if (category) {
-        const results = await storage.searchServicesByCategory(category as string);
+      // If only category filter is provided
+      if (category && !lat && !lng) {
+        const results = await storage.searchServicesByCategory(category as string, undefined, undefined, undefined, filters);
         return res.json(results);
       }
       
-      // Default: get all services
-      const services = await storage.getServices();
+      // No location/category filters, apply other filters
+      const services = await storage.getServices(filters);
       res.json(services);
     } catch (error) {
       console.error('Error fetching services:', error);
@@ -179,40 +203,107 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/requirements", async (req, res) => {
     try {
-      // Check if location-based query parameters are provided
-      const { lat, lng, radius, isRemote, category } = req.query;
+      // Extract all possible query parameters
+      const { 
+        lat, lng, radius, isRemote, category, 
+        minBudget, maxBudget, sortBy, sortOrder, query,
+        status
+      } = req.query;
       
-      // If both location and category parameters are provided
-      if (lat && lng && radius && category) {
-        const results = await storage.searchRequirementsByCategory(
-          category as string,
-          parseFloat(lat as string),
-          parseFloat(lng as string),
-          parseFloat(radius as string)
-        );
-        return res.json(results);
+      // Build filters object
+      const filters: any = {};
+      
+      if (minBudget) filters.minBudget = parseInt(minBudget as string);
+      if (maxBudget) filters.maxBudget = parseInt(maxBudget as string);
+      if (category) filters.category = category as string;
+      if (query) filters.query = query as string;
+      if (status) filters.status = status as string;
+      if (sortBy && ['budget', 'date', 'distance'].includes(sortBy as string)) {
+        filters.sortBy = sortBy as 'budget' | 'date' | 'distance';
+      }
+      if (sortOrder && ['asc', 'desc'].includes(sortOrder as string)) {
+        filters.sortOrder = sortOrder as 'asc' | 'desc';
       }
       
-      // If only location parameters are provided
+      // If location parameters are provided
       if (lat && lng && radius) {
+        const parsedLat = parseFloat(lat as string);
+        const parsedLng = parseFloat(lng as string);
+        const parsedRadius = parseFloat(radius as string);
+        
+        // If category is also provided
+        if (category) {
+          const results = await storage.searchRequirementsByCategory(
+            category as string,
+            parsedLat,
+            parsedLng,
+            parsedRadius
+          );
+          return res.json(results);
+        }
+        
+        // Otherwise search by location only
         const results = await storage.searchRequirementsByLocation(
-          parseFloat(lat as string),
-          parseFloat(lng as string),
-          parseFloat(radius as string),
+          parsedLat,
+          parsedLng,
+          parsedRadius,
           isRemote === 'true'
         );
         return res.json(results);
       }
       
-      // If only category parameter is provided
-      if (category) {
+      // If only category filter is provided
+      if (category && !lat && !lng) {
         const results = await storage.searchRequirementsByCategory(category as string);
         return res.json(results);
       }
       
-      // Default: get all requirements
+      // No location/category filters, apply other filters
       const requirements = await storage.getRequirements();
-      res.json(requirements);
+      
+      // Apply client-side filters since we haven't updated the getRequirements method yet
+      let filteredRequirements = requirements;
+      
+      if (filters.minBudget) {
+        filteredRequirements = filteredRequirements.filter(req => req.budget >= filters.minBudget);
+      }
+      
+      if (filters.maxBudget) {
+        filteredRequirements = filteredRequirements.filter(req => req.budget <= filters.maxBudget);
+      }
+      
+      if (filters.status) {
+        filteredRequirements = filteredRequirements.filter(req => req.status === filters.status);
+      }
+      
+      if (filters.query) {
+        const searchTermLower = filters.query.toLowerCase();
+        filteredRequirements = filteredRequirements.filter(req => 
+          req.title.toLowerCase().includes(searchTermLower) || 
+          req.description.toLowerCase().includes(searchTermLower)
+        );
+      }
+      
+      // Apply sorting
+      if (filters.sortBy) {
+        filteredRequirements = filteredRequirements.sort((a, b) => {
+          if (filters.sortBy === 'budget') {
+            return filters.sortOrder === 'desc' ? b.budget - a.budget : a.budget - b.budget;
+          } else if (filters.sortBy === 'date') {
+            return filters.sortOrder === 'desc' 
+              ? new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+              : new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+          }
+          return 0;
+        });
+      } else {
+        // Default sort by newest first
+        filteredRequirements = filteredRequirements.sort((a, b) => 
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+      }
+      
+      res.json(filteredRequirements);
     } catch (error) {
       console.error('Error fetching requirements:', error);
       res.status(500).json({ message: "Failed to fetch requirements" });
