@@ -76,6 +76,7 @@
     "react-leaflet": "^4.2.1",
     "react-map-gl": "^8.0.1",
     "react-resizable-panels": "^2.1.4",
+    "react-use": "^17.6.0",
     "recharts": "^2.13.0",
     "tailwind-merge": "^2.5.4",
     "tailwindcss-animate": "^1.0.7",

@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { ServiceMap } from "@/components/map/service-map";
 import { useState } from "react";
+import { ChatbotUI } from "@/components/ai-chatbot/chatbot-ui";
 
 export default function HomePage() {
   const { user } = useAuth();
@@ -158,6 +159,9 @@ export default function HomePage() {
           </div>
         </TabsContent>
       </Tabs>
+      
+      {/* AI Chatbot */}
+      <ChatbotUI />
     </div>
   );
 }
