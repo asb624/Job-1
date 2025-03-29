@@ -44,7 +44,8 @@
       "agriculture": "Agriculture",
       "shopStaff": "Shop Staff",
       "salonService": "Salon Service",
-      "medicalStaff": "Medical Staff"
+      "medicalStaff": "Medical Staff",
+      "educationServices": "Education Services"
     }
   },
   "requirements": {

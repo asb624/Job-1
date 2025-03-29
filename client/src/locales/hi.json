@@ -43,7 +43,8 @@
       "agriculture": "कृषि",
       "shopStaff": "दुकान कर्मचारी",
       "salonService": "सैलून सेवा",
-      "medicalStaff": "मेडिकल स्टाफ"
+      "medicalStaff": "मेडिकल स्टाफ",
+      "educationServices": "शिक्षा सेवाएं"
     }
   },
   "requirements": {

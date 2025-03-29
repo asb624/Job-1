@@ -239,4 +239,5 @@ export const serviceCategories = [
   "Shop Staff",
   "Salon Service",
   "Medical Staff",
+  "Education Services",
 ] as const;

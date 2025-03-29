@@ -271,6 +271,18 @@ export class ChatbotService {
       };
     }
     
+    if (message.includes('education') || message.includes('tutor') || message.includes('teach') || message.includes('teacher') || 
+        message.includes('शिक्षा') || message.includes('टीचर') || message.includes('पढ़ाई')) {
+      return {
+        text: this.getTranslation('JobLo offers various education services including tutoring, language teaching, skills training, and career counseling. Browse the "Available Services" section to find qualified educators and trainers in your area.'),
+        suggestions: [
+          this.getTranslation('What subjects are covered?'),
+          this.getTranslation('Are online classes available?'),
+          this.getTranslation('How to choose a good tutor')
+        ]
+      };
+    }
+    
     // Default job-related response
     return {
       text: this.getTranslation('JobLo connects you with workers and jobs across various categories. You can browse "Available Services" and "Available Requirements" on the home page to see what\'s currently offered.'),
@@ -306,7 +318,7 @@ export class ChatbotService {
         (message.includes('क्या') && message.includes('सेवाएं')) ||
         (message.includes('कौन') && message.includes('सेवा'))) {
       return {
-        text: this.getTranslation('JobLo offers various services including household help, agricultural labor, shop staff, salon services, and medical assistance. You can browse all available services on the home page under the "Available Services" section.'),
+        text: this.getTranslation('JobLo offers various services including household help, agricultural labor, shop staff, salon services, medical assistance, and education services. You can browse all available services on the home page under the "Available Services" section.'),
         suggestions: [
           this.getTranslation('Most popular services'),
           this.getTranslation('How to contact a service provider'),
