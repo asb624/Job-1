@@ -140,9 +140,10 @@ export function NotificationsDropdown({ isMobile = false }: NotificationsDropdow
           {notifications.map((notification: Notification) => (
             <DropdownMenuItem
               key={notification.id}
-              className={`flex flex-col items-start p-4 cursor-pointer border-b border-teal-50 hover:bg-teal-50 transition-all duration-300 ease-in-out hover:pl-6 ${
+              className={`flex flex-col items-start p-4 cursor-pointer border-b border-teal-50 hover:bg-teal-50 transition-all duration-300 ease-in-out hover:pl-6 animate-in fade-in-50 slide-in-from-right-5 ${
                 !notification.isRead ? "bg-teal-50/70 border-l-4 border-l-teal-500" : ""
               }`}
+              style={{ animationDelay: `${notification.id % 10 * 50}ms` }}
               onClick={() => handleNotificationClick(notification)}
             >
               <div className="font-medium mb-1 text-teal-800">{notification.title}</div>
@@ -206,7 +207,7 @@ export function NotificationsDropdown({ isMobile = false }: NotificationsDropdow
         </Button>
 
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent className="p-0 overflow-hidden max-w-[95vw] w-[400px] rounded-xl">
+          <DialogContent className="p-0 overflow-hidden max-w-[95vw] w-[400px] rounded-xl origin-top-right">
             <DialogHeader className="p-0">
               {renderHeader()}
             </DialogHeader>

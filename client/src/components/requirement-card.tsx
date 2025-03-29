@@ -40,7 +40,7 @@ export function RequirementCard({ requirement, onSelect }: RequirementCardProps)
   }, [requirement.title, requirement.description, requirement.city, requirement.state, i18n.language]);
   
   return (
-    <Card className="w-full relative overflow-hidden bg-white hover:shadow-lg transition-all duration-400 ease-in-out border border-emerald-100 group rounded-xl transform hover:-translate-y-1">
+    <Card className="w-full relative overflow-hidden bg-white hover:shadow-lg transition-all duration-400 ease-in-out border border-emerald-100 group rounded-xl transform hover:-translate-y-1 animate-in fade-in-5 slide-in-from-bottom-5 duration-700">
       {/* Left accent line */}
       <div className="absolute left-0 top-0 h-full w-2 bg-gradient-to-b from-emerald-500 to-teal-600"></div>
       

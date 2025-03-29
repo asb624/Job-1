@@ -40,7 +40,7 @@ export function ServiceCard({ service, onContact }: ServiceCardProps) {
   }, [service.title, service.description, service.city, service.state, i18n.language]);
   
   return (
-    <Card className="w-full relative overflow-hidden bg-white hover:shadow-lg transition-all duration-400 ease-in-out border border-teal-100 group rounded-xl transform hover:-translate-y-1">
+    <Card className="w-full relative overflow-hidden bg-white hover:shadow-lg transition-all duration-400 ease-in-out border border-teal-100 group rounded-xl transform hover:-translate-y-1 animate-in fade-in-5 slide-in-from-bottom-5 duration-700">
       {/* Top accent bar */}
       <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-teal-500 to-emerald-400"></div>
       
