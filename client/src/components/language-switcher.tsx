@@ -52,13 +52,13 @@ export function LanguageSwitcher() {
       </DropdownMenuTrigger>
       <DropdownMenuContent 
         align="end" 
-        className="border-teal-100 shadow-lg rounded-xl overflow-hidden w-48"
+        className="border-teal-100 shadow-lg rounded-xl overflow-hidden w-48 animate-bounce-in"
       >
         <div className="bg-gradient-to-r from-teal-600 to-emerald-500 py-2 px-3 text-white text-sm font-medium">
           {t('language.select')}
         </div>
         <div className="max-h-60 overflow-y-auto py-1">
-          {languages.map((lang) => (
+          {languages.map((lang, index) => (
             <DropdownMenuItem
               key={lang.code}
               onClick={() => changeLanguage(lang.code)}
@@ -66,7 +66,8 @@ export function LanguageSwitcher() {
                 i18n.language === lang.code 
                   ? 'bg-teal-50 text-teal-700 font-medium border-l-4 border-teal-500' 
                   : 'hover:bg-teal-50 hover:text-teal-600 border-l-4 border-transparent'
-              } cursor-pointer transition-all duration-300 ease-in-out px-4 hover:translate-x-1`}
+              } cursor-pointer transition-all duration-300 ease-in-out px-4 hover:translate-x-1 animate-slide-in-bounce`}
+              style={{ animationDelay: `${index * 50}ms` }}
             >
               {lang.label}
             </DropdownMenuItem>

@@ -140,7 +140,7 @@ export function NotificationsDropdown({ isMobile = false }: NotificationsDropdow
           {notifications.map((notification: Notification) => (
             <DropdownMenuItem
               key={notification.id}
-              className={`flex flex-col items-start p-4 cursor-pointer border-b border-teal-50 hover:bg-teal-50 transition-all duration-300 ease-in-out hover:pl-6 animate-in fade-in-50 slide-in-from-right-5 ${
+              className={`flex flex-col items-start p-4 cursor-pointer border-b border-teal-50 hover:bg-teal-50 transition-all duration-300 ease-in-out hover:pl-6 animate-slide-in-bounce ${
                 !notification.isRead ? "bg-teal-50/70 border-l-4 border-l-teal-500" : ""
               }`}
               style={{ animationDelay: `${notification.id % 10 * 50}ms` }}
@@ -207,7 +207,7 @@ export function NotificationsDropdown({ isMobile = false }: NotificationsDropdow
         </Button>
 
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent className="p-0 overflow-hidden max-w-[95vw] w-[400px] rounded-xl origin-top-right">
+          <DialogContent className="p-0 overflow-hidden max-w-[95vw] w-[400px] rounded-xl origin-top-right animate-bounce-in">
             <DialogHeader className="p-0">
               {renderHeader()}
             </DialogHeader>
@@ -239,7 +239,7 @@ export function NotificationsDropdown({ isMobile = false }: NotificationsDropdow
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-[350px] border-teal-100 shadow-lg rounded-xl overflow-hidden">
+      <DropdownMenuContent align="end" className="w-[350px] border-teal-100 shadow-lg rounded-xl overflow-hidden animate-bounce-in">
         <DropdownMenuLabel className="p-0">
           {renderHeader()}
         </DropdownMenuLabel>
