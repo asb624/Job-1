@@ -20,8 +20,6 @@ export function LanguageSwitcher() {
     { code: 'bn', label: t('language.bn') },
     { code: 'te', label: t('language.te') },
     { code: 'pa', label: t('language.pa') },
-    { code: 'hr', label: t('language.hr') },
-    { code: 'mr', label: t('language.mr') },
     { code: 'gu', label: t('language.gu') },
     { code: 'ml', label: t('language.ml') },
     { code: 'kn', label: t('language.kn') },

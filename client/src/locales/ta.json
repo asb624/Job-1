@@ -41,7 +41,8 @@
       "agriculture": "விவசாயம்",
       "shopStaff": "கடை ஊழியர்கள்",
       "salonService": "அழகு நிலைய சேவை",
-      "medicalStaff": "மருத்துவ ஊழியர்கள்"
+      "medicalStaff": "மருத்துவ ஊழியர்கள்",
+      "educationServices": "கல்வி சேவைகள்"
     }
   },
   "requirements": {
@@ -130,9 +131,7 @@
     "ta": "தமிழ் (Tamil)",
     "bn": "বাংলা (Bengali)",
     "te": "తెలుగు (Telugu)",
-    "pa": "ਪੰਜਾਬੀ (Punjabi)",
-    "hr": "हरियाणवी (Haryanvi)",
-    "mr": "मारवाड़ी (Marwari)"
+    "pa": "ਪੰਜਾਬੀ (Punjabi)"
   },
   "common": {
     "loading": "ஏற்றுகிறது...",
@@ -142,6 +141,22 @@
     "save": "சேமி",
     "delete": "நீக்கு",
     "edit": "திருத்து",
-    "close": "மூடு"
-  }
+    "close": "மூடு",
+    "learnMore": "மேலும் அறிய"
+  },
+  "Find Projects": "திட்டங்களைக் கண்டறியவும்",
+  "Find Services": "சேவைகளைக் கண்டறியவும்",
+  "Learn More": "மேலும் அறிய",
+  "No services available at the moment": "தற்போது சேவைகள் எதுவும் கிடைக்கவில்லை",
+  "No requirements available at the moment": "தற்போது தேவைகள் எதுவும் கிடைக்கவில்லை",
+  "Mathematics Tutor": "கணித ஆசிரியர்",
+  "English Language Teacher": "ஆங்கில மொழி ஆசிரியர்",
+  "Computer Programming Coach": "கணினி நிரலாக்க பயிற்றுநர்",
+  "Science Tutor for School Students": "பள்ளி மாணவர்களுக்கான அறிவியல் ஆசிரியர்",
+  "Career Counseling Services": "வேலைவாய்ப்பு ஆலோசனை சேவைகள்",
+  "Experienced mathematics tutor specializing in secondary and higher secondary education. Offering personalized lessons for students struggling with algebra, calculus, and geometry.": "இடைநிலை மற்றும் மேல்நிலை கல்வியில் சிறப்பு தேர்ச்சி பெற்ற அனுபவம் வாய்ந்த கணித ஆசிரியர். அல்ஜிப்ரா, கால்குலஸ் மற்றும் வடிவியலில் சிரமப்படும் மாணவர்களுக்காக தனிப்பட்ட பாடங்களை வழங்குகிறார்.",
+  "Certified English language teacher with 5+ years of experience. Offering conversational English, grammar, and business English courses for all proficiency levels.": "5+ ஆண்டுகள் அனுபவம் கொண்ட சான்றளிக்கப்பட்ட ஆங்கில மொழி ஆசிரியர். அனைத்து திறன் நிலைகளுக்கும் உரையாடல் ஆங்கிலம், இலக்கணம் மற்றும் வணிக ஆங்கில பாடங்களை வழங்குகிறார்.",
+  "Software engineer teaching programming fundamentals, web development, and app creation. Specializing in Python, JavaScript, and introductory programming concepts for beginners.": "நிரலாக்க அடிப்படைகள், இணைய மேம்பாடு மற்றும் செயலி உருவாக்கம் ஆகியவற்றைக் கற்பிக்கும் மென்பொருள் பொறியாளர். தொடக்கநிலையினருக்கான பைதான், ஜாவாஸ்கிரிப்ட் மற்றும் அறிமுக நிரலாக்க கருத்துகளில் சிறப்பு தேர்ச்சி.",
+  "Experienced science teacher offering tutoring in physics, chemistry, and biology for students in grades 6-12. Focused on making science fun and understandable.": "6-12 வகுப்பு மாணவர்களுக்கான இயற்பியல், வேதியியல் மற்றும் உயிரியல் பாடங்களில் துணைப்பாட வகுப்புகளை நடத்தும் அனுபவம் வாய்ந்த அறிவியல் ஆசிரியர். அறிவியலை சுவாரஸ்யமாகவும் புரிந்துகொள்ளக்கூடியதாகவும் மாற்றுவதில் கவனம் செலுத்துகிறார்.",
+  "Professional career counselor helping students and professionals make informed career decisions. Services include aptitude testing, resume building, and interview preparation.": "மாணவர்கள் மற்றும் தொழில்முறையினர் தகவலறிந்த வேலைவாய்ப்பு முடிவுகளை எடுக்க உதவும் தொழில்முறை வேலைவாய்ப்பு ஆலோசகர். திறன் சோதனை, ரெசூமே உருவாக்கம் மற்றும் நேர்காணல் தயாரிப்பு ஆகியவை சேவைகளில் அடங்கும்."
 }

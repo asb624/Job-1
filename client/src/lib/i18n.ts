@@ -9,8 +9,6 @@ import taTranslation from '../locales/ta.json';
 import bnTranslation from '../locales/bn.json';
 import teTranslation from '../locales/te.json';
 import paTranslation from '../locales/pa.json';
-import hrTranslation from '../locales/hr.json';
-import mrTranslation from '../locales/mr.json';
 import guTranslation from '../locales/gu.json';
 import mlTranslation from '../locales/ml.json';
 import knTranslation from '../locales/kn.json';
@@ -56,12 +54,6 @@ i18n
       },
       pa: {
         translation: paTranslation
-      },
-      hr: {
-        translation: hrTranslation
-      },
-      mr: {
-        translation: mrTranslation
       },
       gu: {
         translation: guTranslation
