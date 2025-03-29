@@ -9,7 +9,8 @@ import {
   ArrowRight, 
   Menu, 
   Sun,
-  Moon
+  Moon,
+  Palette
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "@/components/language-switcher";
@@ -153,6 +154,19 @@ export function NavBar() {
                     </div>
                   </SheetClose>
                 </div>
+                <div className="mt-2">
+                  <SheetClose asChild>
+                    <Link href="/preferences" className="block">
+                      <Button 
+                        variant="ghost" 
+                        className="w-full flex items-center justify-center gap-2 text-white hover:bg-teal-500/50 rounded-lg"
+                      >
+                        <Palette className="h-5 w-5" />
+                        <span>{t('navigation.preferences')}</span>
+                      </Button>
+                    </Link>
+                  </SheetClose>
+                </div>
               </div>
 
               <SheetClose asChild>
@@ -271,6 +285,16 @@ export function NavBar() {
                       className="text-white hover:bg-teal-500/50 rounded-full transition-all duration-300"
                     >
                       <User className="h-5 w-5" />
+                    </Button>
+                  </Link>
+                  <Link href="/preferences">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      title={t('navigation.preferences')} 
+                      className="text-white hover:bg-teal-500/50 rounded-full transition-all duration-300"
+                    >
+                      <Palette className="h-5 w-5" />
                     </Button>
                   </Link>
                   <ThemeToggle />

@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/hooks/use-auth";
 import { NotificationProvider } from "@/hooks/use-websocket-notifications";
 import { ThemeProvider } from "./lib/theme-context";
+import { ColorPaletteProvider } from "./lib/color-palette-context";
 import { ProtectedRoute } from "./lib/protected-route";
 import { NavBar } from "./components/nav-bar";
 import { I18nextProvider } from "react-i18next";
@@ -18,6 +19,7 @@ import PostService from "@/pages/post-service";
 import Profile from "@/pages/profile"; 
 import MessagesPage from "@/pages/messages";
 import OnboardingPage from "@/pages/onboarding";
+import PreferencesPage from "@/pages/preferences";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -31,6 +33,7 @@ function Router() {
       <ProtectedRoute path="/post-service" component={PostService} />
       <ProtectedRoute path="/profile" component={Profile} /> 
       <ProtectedRoute path="/messages" component={MessagesPage} />
+      <ProtectedRoute path="/preferences" component={PreferencesPage} />
       <Route>
         {() => <NotFound />}
       </Route>
@@ -42,19 +45,21 @@ function App() {
   return (
     <I18nextProvider i18n={i18n}>
       <ThemeProvider>
-        <QueryClientProvider client={queryClient}>
-          <AuthProvider>
-            <NotificationProvider>
-              <div className="min-h-screen theme-transition">
-                <NavBar />
-                <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                  <Router />
-                </main>
-              </div>
-              <Toaster />
-            </NotificationProvider>
-          </AuthProvider>
-        </QueryClientProvider>
+        <ColorPaletteProvider>
+          <QueryClientProvider client={queryClient}>
+            <AuthProvider>
+              <NotificationProvider>
+                <div className="min-h-screen theme-transition">
+                  <NavBar />
+                  <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                    <Router />
+                  </main>
+                </div>
+                <Toaster />
+              </NotificationProvider>
+            </AuthProvider>
+          </QueryClientProvider>
+        </ColorPaletteProvider>
       </ThemeProvider>
     </I18nextProvider>
   );
