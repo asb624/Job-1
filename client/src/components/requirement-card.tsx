@@ -40,7 +40,7 @@ export function RequirementCard({ requirement, onSelect }: RequirementCardProps)
   }, [requirement.title, requirement.description, requirement.city, requirement.state, i18n.language]);
   
   return (
-    <Card className="w-full relative overflow-hidden bg-white hover:shadow-lg transition-all duration-300 border border-emerald-100 group rounded-xl">
+    <Card className="w-full relative overflow-hidden bg-white hover:shadow-lg transition-all duration-400 ease-in-out border border-emerald-100 group rounded-xl transform hover:-translate-y-1">
       {/* Left accent line */}
       <div className="absolute left-0 top-0 h-full w-2 bg-gradient-to-b from-emerald-500 to-teal-600"></div>
       
@@ -75,7 +75,7 @@ export function RequirementCard({ requirement, onSelect }: RequirementCardProps)
       
       <CardHeader className="space-y-2 pl-4 sm:pl-6 pt-4 sm:pt-5 pb-2 sm:pb-3 relative z-10 pr-4 sm:pr-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <h3 className="text-lg sm:text-xl font-bold text-emerald-800 group-hover:text-emerald-600 transition-colors duration-300 line-clamp-2">
+          <h3 className="text-lg sm:text-xl font-bold text-emerald-800 group-hover:text-emerald-600 transition-colors duration-300 ease-in-out line-clamp-2">
             {translatedTitle}
           </h3>
           <div className="flex items-center gap-2 flex-wrap self-start">
@@ -129,8 +129,8 @@ export function RequirementCard({ requirement, onSelect }: RequirementCardProps)
         {onSelect && requirement.status === "open" && (
           <Button 
             className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700
-                     text-white font-medium shadow-sm hover:shadow-md transform transition-all duration-300 
-                     hover:-translate-y-0.5 rounded-lg py-1.5 sm:py-2 text-sm" 
+                     text-white font-medium shadow-sm hover:shadow-md transform transition-all duration-400 ease-in-out 
+                     hover:-translate-y-1 hover:scale-105 rounded-lg py-1.5 sm:py-2 text-sm" 
             onClick={onSelect}
           >
             {t('requirements.bid', 'Select')}

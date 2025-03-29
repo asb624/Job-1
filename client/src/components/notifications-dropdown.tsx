@@ -45,9 +45,7 @@ export function NotificationsDropdown({ isMobile = false }: NotificationsDropdow
 
   const markAsReadMutation = useMutation({
     mutationFn: async (notificationId: number) => {
-      return apiRequest(`/api/notifications/${notificationId}/read`, {
-        method: "PUT",
-      });
+      return apiRequest("PUT", `/api/notifications/${notificationId}/read`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
@@ -63,9 +61,7 @@ export function NotificationsDropdown({ isMobile = false }: NotificationsDropdow
 
   const markAllAsReadMutation = useMutation({
     mutationFn: async () => {
-      return apiRequest("/api/notifications/read-all", {
-        method: "PUT",
-      });
+      return apiRequest("PUT", "/api/notifications/read-all");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
@@ -120,7 +116,7 @@ export function NotificationsDropdown({ isMobile = false }: NotificationsDropdow
   };
 
   // Count unread notifications
-  const unreadCount = notifications?.filter((n: Notification) => !n.isRead).length || 0;
+  const unreadCount = Array.isArray(notifications) ? notifications.filter((n: Notification) => !n.isRead).length : 0;
 
   // Render notifications list
   const renderNotificationsList = () => (
@@ -134,17 +130,17 @@ export function NotificationsDropdown({ isMobile = false }: NotificationsDropdow
             </div>
           ))}
         </div>
-      ) : notifications?.length === 0 ? (
+      ) : !Array.isArray(notifications) || notifications.length === 0 ? (
         <div className="py-8 text-center text-teal-600">
           <Bell className="h-10 w-10 mx-auto mb-2 opacity-30" />
           <p>No notifications</p>
         </div>
       ) : (
         <div>
-          {notifications?.map((notification: Notification) => (
+          {notifications.map((notification: Notification) => (
             <DropdownMenuItem
               key={notification.id}
-              className={`flex flex-col items-start p-4 cursor-pointer border-b border-teal-50 hover:bg-teal-50 transition-colors duration-200 ${
+              className={`flex flex-col items-start p-4 cursor-pointer border-b border-teal-50 hover:bg-teal-50 transition-all duration-300 ease-in-out hover:pl-6 ${
                 !notification.isRead ? "bg-teal-50/70 border-l-4 border-l-teal-500" : ""
               }`}
               onClick={() => handleNotificationClick(notification)}
@@ -153,12 +149,13 @@ export function NotificationsDropdown({ isMobile = false }: NotificationsDropdow
               <div className="text-sm text-gray-600">{notification.content}</div>
               <div className="text-xs text-teal-500 mt-2 flex items-center">
                 <div className={`w-2 h-2 rounded-full mr-2 ${!notification.isRead ? 'bg-teal-500' : 'bg-gray-300'}`}></div>
-                {new Date(notification.createdAt).toLocaleDateString(undefined, {
-                  month: "short",
-                  day: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
+                {notification.createdAt ? 
+                  (typeof notification.createdAt === 'string' ? new Date(notification.createdAt) : notification.createdAt).toLocaleDateString(undefined, {
+                    month: "short",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }) : "Recent"}
               </div>
             </DropdownMenuItem>
           ))}
@@ -175,7 +172,7 @@ export function NotificationsDropdown({ isMobile = false }: NotificationsDropdow
         <Button
           variant="ghost"
           size="sm"
-          className="h-8 text-xs bg-white/20 hover:bg-white/30 text-white rounded-lg transition-all duration-300"
+          className="h-8 text-xs bg-white/20 hover:bg-white/30 text-white rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105"
           onClick={() => markAllAsReadMutation.mutate()}
           disabled={markAllAsReadMutation.isPending}
         >
@@ -192,7 +189,7 @@ export function NotificationsDropdown({ isMobile = false }: NotificationsDropdow
       <>
         <Button 
           variant="ghost" 
-          className="w-full flex flex-col items-center justify-center gap-1 text-white hover:bg-teal-500/50 rounded-lg"
+          className="w-full flex flex-col items-center justify-center gap-1 text-white hover:bg-teal-500/50 rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105"
           onClick={() => setDialogOpen(true)}
         >
           <div className="relative">
@@ -229,7 +226,7 @@ export function NotificationsDropdown({ isMobile = false }: NotificationsDropdow
         <Button 
           variant="ghost" 
           size="icon" 
-          className="relative text-white hover:bg-teal-500/50 rounded-full transition-all duration-300"
+          className="relative text-white hover:bg-teal-500/50 rounded-full transition-all duration-400 ease-in-out transform hover:scale-110"
         >
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (

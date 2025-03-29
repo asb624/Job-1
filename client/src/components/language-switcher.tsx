@@ -44,7 +44,7 @@ export function LanguageSwitcher() {
         <Button 
           variant="ghost" 
           size="sm" 
-          className="flex items-center gap-1.5 text-white hover:bg-teal-500/50 rounded-full px-3 transition-all duration-300"
+          className="flex items-center gap-1.5 text-white hover:bg-teal-500/50 rounded-full px-3 transition-all duration-400 ease-in-out transform hover:scale-105"
         >
           <Globe className="h-4 w-4" />
           <span className="hidden md:inline text-sm font-medium">{getCurrentLanguageLabel()}</span>
@@ -65,8 +65,8 @@ export function LanguageSwitcher() {
               className={`${
                 i18n.language === lang.code 
                   ? 'bg-teal-50 text-teal-700 font-medium border-l-4 border-teal-500' 
-                  : 'hover:bg-teal-50 border-l-4 border-transparent'
-              } cursor-pointer transition-all duration-200 px-4`}
+                  : 'hover:bg-teal-50 hover:text-teal-600 border-l-4 border-transparent'
+              } cursor-pointer transition-all duration-300 ease-in-out px-4 hover:translate-x-1`}
             >
               {lang.label}
             </DropdownMenuItem>
