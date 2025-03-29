@@ -272,13 +272,50 @@ export class ChatbotService {
     }
     
     if (message.includes('education') || message.includes('tutor') || message.includes('teach') || message.includes('teacher') || 
-        message.includes('शिक्षा') || message.includes('टीचर') || message.includes('पढ़ाई')) {
+        message.includes('शिक्षा') || message.includes('टीचर') || message.includes('पढ़ाई') || message.includes('coaching')) {
       return {
-        text: this.getTranslation('JobLo offers various education services including tutoring, language teaching, skills training, and career counseling. Browse the "Available Services" section to find qualified educators and trainers in your area.'),
+        text: this.getTranslation('JobLo offers various education services including mathematics tutoring, English language teaching, computer programming coaching, science tutoring, and career counseling. Browse the "Available Services" section to find qualified educators and trainers in your area or online.'),
         suggestions: [
           this.getTranslation('What subjects are covered?'),
           this.getTranslation('Are online classes available?'),
           this.getTranslation('How to choose a good tutor')
+        ]
+      };
+    }
+    
+    // For specific education subjects
+    if (message.includes('math') || message.includes('mathematics') || message.includes('algebra') || message.includes('geometry') ||
+        message.includes('गणित') || message.includes('बीजगणित') || message.includes('ज्यामिति')) {
+      return {
+        text: this.getTranslation('We have experienced mathematics tutors specializing in secondary and higher secondary education. They offer personalized lessons for students struggling with algebra, calculus, and geometry. Check the "Education Services" category to find qualified math tutors.'),
+        suggestions: [
+          this.getTranslation('How to contact a math tutor'),
+          this.getTranslation('What are the typical rates?'),
+          this.getTranslation('Can I get online math tutoring?')
+        ]
+      };
+    }
+    
+    if (message.includes('english') || message.includes('language') || message.includes('speaking') ||
+        message.includes('अंग्रेजी') || message.includes('भाषा') || message.includes('बोलना') || message.includes('स्पीकिंग')) {
+      return {
+        text: this.getTranslation('We have certified English language teachers with years of experience. They offer conversational English, grammar, and business English courses for all proficiency levels. Browse the "Education Services" category to find skilled language teachers.'),
+        suggestions: [
+          this.getTranslation('How long are language courses?'),
+          this.getTranslation('Are group classes available?'),
+          this.getTranslation('Is business English taught?')
+        ]
+      };
+    }
+    
+    if (message.includes('programming') || message.includes('coding') || message.includes('software') || message.includes('computer') ||
+        message.includes('प्रोग्रामिंग') || message.includes('कोडिंग') || message.includes('सॉफ्टवेयर') || message.includes('कंप्यूटर')) {
+      return {
+        text: this.getTranslation('Our platform has software engineers who teach programming fundamentals, web development, and app creation. They specialize in Python, JavaScript, and introductory programming concepts for beginners. Find them in the "Education Services" category.'),
+        suggestions: [
+          this.getTranslation('Which programming languages are taught?'),
+          this.getTranslation('Are there courses for beginners?'),
+          this.getTranslation('How long does it take to learn coding?')
         ]
       };
     }
@@ -318,9 +355,9 @@ export class ChatbotService {
         (message.includes('क्या') && message.includes('सेवाएं')) ||
         (message.includes('कौन') && message.includes('सेवा'))) {
       return {
-        text: this.getTranslation('JobLo offers various services including household help, agricultural labor, shop staff, salon services, medical assistance, and education services. You can browse all available services on the home page under the "Available Services" section.'),
+        text: this.getTranslation('JobLo offers various services in different categories: 1) Household help - cooking, cleaning, gardening, 2) Agricultural labor - farm workers, equipment operators, 3) Shop staff - store assistants, cashiers, 4) Salon services - hairdressers, beauticians, 5) Medical assistance - home nurses, caregivers, and 6) Education services - mathematics tutoring, language teaching, programming coaching, science tutoring, and career counseling. You can browse all available services on the home page under the "Available Services" section.'),
         suggestions: [
-          this.getTranslation('Most popular services'),
+          this.getTranslation('Tell me about education services'),
           this.getTranslation('How to contact a service provider'),
           this.getTranslation('Check service ratings')
         ]
