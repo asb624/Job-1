@@ -3,8 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Requirement } from "@shared/schema";
 import { Calendar, MapPin, Tag, Clock, Image } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { formatDate } from "@/lib/utils";
+import { translateContent } from "@/lib/translation-utils";
 
 interface RequirementCardProps {
   requirement: Requirement;
@@ -12,9 +13,31 @@ interface RequirementCardProps {
 }
 
 export function RequirementCard({ requirement, onSelect }: RequirementCardProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const hasImages = requirement.imageUrls && Array.isArray(requirement.imageUrls) && requirement.imageUrls.length > 0;
+  const [translatedTitle, setTranslatedTitle] = useState(requirement.title);
+  const [translatedDescription, setTranslatedDescription] = useState(requirement.description);
+  const [translatedCity, setTranslatedCity] = useState(requirement.city);
+  const [translatedState, setTranslatedState] = useState(requirement.state);
+  
+  // Update translations when language changes
+  useEffect(() => {
+    // Translate title
+    setTranslatedTitle(translateContent(requirement.title, i18n.language));
+    
+    // Translate description
+    setTranslatedDescription(translateContent(requirement.description, i18n.language));
+    
+    // Translate location if available
+    if (requirement.city) {
+      setTranslatedCity(translateContent(requirement.city, i18n.language));
+    }
+    
+    if (requirement.state) {
+      setTranslatedState(translateContent(requirement.state, i18n.language));
+    }
+  }, [requirement.title, requirement.description, requirement.city, requirement.state, i18n.language]);
   
   return (
     <Card className="w-full relative overflow-hidden bg-white hover:shadow-lg transition-all duration-300 border border-emerald-100 group rounded-xl">
@@ -53,7 +76,7 @@ export function RequirementCard({ requirement, onSelect }: RequirementCardProps)
       <CardHeader className="space-y-2 pl-4 sm:pl-6 pt-4 sm:pt-5 pb-2 sm:pb-3 relative z-10 pr-4 sm:pr-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <h3 className="text-lg sm:text-xl font-bold text-emerald-800 group-hover:text-emerald-600 transition-colors duration-300 line-clamp-2">
-            {requirement.title}
+            {translatedTitle}
           </h3>
           <div className="flex items-center gap-2 flex-wrap self-start">
             <span className="text-base sm:text-lg font-semibold text-emerald-700 bg-emerald-50 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full shadow-sm border border-emerald-100 whitespace-nowrap">
@@ -76,7 +99,7 @@ export function RequirementCard({ requirement, onSelect }: RequirementCardProps)
       </CardHeader>
       
       <CardContent className="relative z-10 pl-4 sm:pl-6 py-1 sm:py-2 pr-4 sm:pr-6">
-        <p className="text-xs sm:text-sm text-gray-600 line-clamp-3">{requirement.description}</p>
+        <p className="text-xs sm:text-sm text-gray-600 line-clamp-3">{translatedDescription}</p>
         
         <div className="mt-3 sm:mt-4 flex flex-wrap gap-2 sm:gap-3 text-[10px] sm:text-xs text-emerald-700">
           {requirement.createdAt && (
@@ -88,7 +111,7 @@ export function RequirementCard({ requirement, onSelect }: RequirementCardProps)
           {requirement.city && (
             <div className="flex items-center gap-1 bg-emerald-50 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full">
               <MapPin size={12} className="sm:h-3.5 sm:w-3.5" />
-              <span>{requirement.city}{requirement.state ? `, ${requirement.state}` : ''}</span>
+              <span>{translatedCity}{translatedState ? `, ${translatedState}` : ''}</span>
             </div>
           )}
           <div className="flex items-center gap-1 bg-emerald-50 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full">

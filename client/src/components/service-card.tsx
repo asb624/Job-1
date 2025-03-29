@@ -3,8 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Service } from "@shared/schema";
 import { MapPin, Clock, Tag, Star, Calendar } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { formatDate } from "@/lib/utils";
+import { translateContent } from "@/lib/translation-utils";
 
 interface ServiceCardProps {
   service: Service & { averageRating?: number };
@@ -12,9 +13,31 @@ interface ServiceCardProps {
 }
 
 export function ServiceCard({ service, onContact }: ServiceCardProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const hasImages = service.imageUrls && Array.isArray(service.imageUrls) && service.imageUrls.length > 0;
+  const [translatedTitle, setTranslatedTitle] = useState(service.title);
+  const [translatedDescription, setTranslatedDescription] = useState(service.description);
+  const [translatedCity, setTranslatedCity] = useState(service.city);
+  const [translatedState, setTranslatedState] = useState(service.state);
+  
+  // Update translations when language changes
+  useEffect(() => {
+    // Translate title
+    setTranslatedTitle(translateContent(service.title, i18n.language));
+    
+    // Translate description
+    setTranslatedDescription(translateContent(service.description, i18n.language));
+    
+    // Translate location if available
+    if (service.city) {
+      setTranslatedCity(translateContent(service.city, i18n.language));
+    }
+    
+    if (service.state) {
+      setTranslatedState(translateContent(service.state, i18n.language));
+    }
+  }, [service.title, service.description, service.city, service.state, i18n.language]);
   
   return (
     <Card className="w-full relative overflow-hidden bg-white hover:shadow-lg transition-all duration-300 border border-teal-100 group rounded-xl">
@@ -53,7 +76,7 @@ export function ServiceCard({ service, onContact }: ServiceCardProps) {
       <CardHeader className="space-y-2 pt-6 pb-2 sm:pb-3 px-4 sm:px-6 relative z-10">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <h3 className="text-lg sm:text-xl font-bold text-teal-800 group-hover:text-teal-600 transition-colors duration-300 line-clamp-2">
-            {service.title}
+            {translatedTitle}
           </h3>
           <span className="text-base sm:text-lg font-semibold text-teal-700 bg-teal-50 px-3 py-1 rounded-full shadow-sm border border-teal-100 self-start whitespace-nowrap">
             ₹{service.price}
@@ -74,7 +97,7 @@ export function ServiceCard({ service, onContact }: ServiceCardProps) {
       </CardHeader>
       
       <CardContent className="relative z-10 pt-0 pb-2 px-4 sm:px-6">
-        <p className="text-xs sm:text-sm text-gray-600 line-clamp-3">{service.description}</p>
+        <p className="text-xs sm:text-sm text-gray-600 line-clamp-3">{translatedDescription}</p>
         
         <div className="mt-3 sm:mt-4 flex flex-wrap gap-2 sm:gap-3 text-xs text-teal-700">
           {service.createdAt && (
@@ -86,7 +109,7 @@ export function ServiceCard({ service, onContact }: ServiceCardProps) {
           {service.city && (
             <div className="flex items-center gap-1 bg-teal-50 px-2 py-1 rounded-full">
               <MapPin size={12} className="sm:h-3.5 sm:w-3.5" />
-              <span className="text-[10px] sm:text-xs">{service.city}{service.state ? `, ${service.state}` : ''}</span>
+              <span className="text-[10px] sm:text-xs">{translatedCity}{translatedState ? `, ${translatedState}` : ''}</span>
             </div>
           )}
           <div className="flex items-center gap-1 bg-teal-50 px-2 py-1 rounded-full">
