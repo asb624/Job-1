@@ -36,12 +36,15 @@
     "listView": "ਸੂਚੀ ਦਰਿਸ਼",
     "mapView": "ਨਕਸ਼ਾ ਦਰਿਸ਼",
     "viewDetails": "ਵੇਰਵੇ ਵੇਖੋ",
+    "posted": "ਪੋਸਟ ਕੀਤਾ ਗਿਆ",
+    "inPersonOnly": "ਸਿਰਫ਼ ਆਹਮੋ-ਸਾਹਮਣੇ",
     "categories": {
       "householdWork": "ਘਰੇਲੂ ਕੰਮ",
       "agriculture": "ਖੇਤੀਬਾੜੀ",
       "shopStaff": "ਦੁਕਾਨ ਸਟਾਫ",
       "salonService": "ਸੈਲੂਨ ਸੇਵਾ",
-      "medicalStaff": "ਮੈਡੀਕਲ ਸਟਾਫ"
+      "medicalStaff": "ਮੈਡੀਕਲ ਸਟਾਫ",
+      "educationServices": "ਸਿੱਖਿਆ ਸੇਵਾਵਾਂ"
     }
   },
   "requirements": {
@@ -51,7 +54,9 @@
     "bid": "ਬੋਲੀ",
     "open": "ਖੁੱਲ੍ਹਾ",
     "inProgress": "ਚੱਲ ਰਿਹਾ ਹੈ",
-    "completed": "ਪੂਰਾ ਹੋਇਆ"
+    "completed": "ਪੂਰਾ ਹੋਇਆ",
+    "posted": "ਪੋਸਟ ਕੀਤਾ ਗਿਆ",
+    "remoteAllowed": "ਦੂਰਸਥ ਮਨਜ਼ੂਰ"
   },
   "map": {
     "yourLocation": "ਤੁਹਾਡਾ ਸਥਾਨ"
@@ -133,6 +138,24 @@
     "pa": "ਪੰਜਾਬੀ (Punjabi)",
     "hr": "हरियाणवी (Haryanvi)",
     "mr": "मारवाड़ी (Marwari)"
+  },
+  "preferences": {
+    "title": "ਤਰਜੀਹਾਂ",
+    "colorPalette": "ਰੰਗ ਪੈਲੇਟ",
+    "appearance": "ਦਿੱਖ",
+    "light": "ਹਲਕਾ",
+    "dark": "ਕਾਲਾ",
+    "system": "ਸਿਸਟਮ",
+    "reset": "ਰੀਸੈੱਟ",
+    "variant": "ਵੈਰੀਅੰਟ",
+    "professional": "ਪੇਸ਼ੇਵਰ",
+    "tint": "ਟਿੰਟ",
+    "vibrant": "ਜੀਵੰਤ",
+    "primaryColor": "ਮੁੱਖ ਰੰਗ",
+    "radius": "ਕੋਨੇ ਦੀ ਗੋਲਾਈ",
+    "saveChanges": "ਤਬਦੀਲੀਆਂ ਸੇਵ ਕਰੋ",
+    "description": "ਆਪਣੇ ਐਪਲੀਕੇਸ਼ਨ ਦੇ ਅਨੁਭਵ ਨੂੰ ਆਪਣੇ ਮੁਤਾਬਕ ਬਣਾਓ",
+    "previewText": "ਪ੍ਰੀਵਿਊ ਇੱਥੇ ਦਿਖਾਈ ਦੇਵੇਗਾ"
   },
   "common": {
     "loading": "ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ...",

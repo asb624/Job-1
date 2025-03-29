@@ -36,12 +36,15 @@
     "listView": "তালিকা দৃশ্য",
     "mapView": "মানচিত্র দৃশ্য",
     "viewDetails": "বিস্তারিত দেখুন",
+    "posted": "পোস্ট করা হয়েছে",
+    "inPersonOnly": "শুধুমাত্র সশরীরে",
     "categories": {
       "householdWork": "গৃহস্থালি কাজ",
       "agriculture": "কৃষি",
       "shopStaff": "দোকান কর্মী",
       "salonService": "স্যালুন সেবা",
-      "medicalStaff": "মেডিকেল স্টাফ"
+      "medicalStaff": "মেডিকেল স্টাফ",
+      "educationServices": "শিক্ষা সেবা"
     }
   },
   "requirements": {
@@ -51,7 +54,9 @@
     "bid": "দর",
     "open": "খোলা",
     "inProgress": "চলমান",
-    "completed": "সম্পন্ন"
+    "completed": "সম্পন্ন",
+    "posted": "পোস্ট করা হয়েছে",
+    "remoteAllowed": "দূরবর্তী অনুমোদিত"
   },
   "map": {
     "yourLocation": "আপনার অবস্থান"
@@ -133,6 +138,24 @@
     "pa": "ਪੰਜਾਬੀ (Punjabi)",
     "hr": "हरियाणवी (Haryanvi)",
     "mr": "मारवाड़ी (Marwari)"
+  },
+  "preferences": {
+    "title": "পছন্দসমূহ",
+    "colorPalette": "রঙের প্যালেট",
+    "appearance": "উপস্থিতি",
+    "light": "হালকা",
+    "dark": "গাঢ়",
+    "system": "সিস্টেম",
+    "reset": "রিসেট",
+    "variant": "ভেরিয়েন্ট",
+    "professional": "পেশাদার",
+    "tint": "আভা",
+    "vibrant": "উজ্জ্বল",
+    "primaryColor": "প্রাথমিক রঙ",
+    "radius": "কোণের বৃত্তাকার",
+    "saveChanges": "পরিবর্তনগুলি সংরক্ষণ করুন",
+    "description": "আপনার অ্যাপ্লিকেশনের অভিজ্ঞতা কাস্টমাইজ করুন",
+    "previewText": "প্রিভিউ এখানে দেখা যাবে"
   },
   "common": {
     "loading": "লোড হচ্ছে...",
