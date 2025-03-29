@@ -601,6 +601,160 @@ const translationCache: TranslationCache = {
     'closed': 'ବନ୍ଦ',
     'Services': 'ସେବା',
     'Requirements': 'ଆବଶ୍ୟକତା'
+  },
+  
+  // Adding translation cache for Assamese (as)
+  'as': {
+    // Categories
+    'Education Services': 'শিক্ষা সেৱা',
+    'Household Work': 'ঘৰুৱা কাম',
+    'Agriculture': 'কৃষি',
+    'Shop Staff': 'দোকান কৰ্মচাৰী',
+    'Salon Service': 'চেলুন সেৱা',
+    'Medical Staff': 'মেডিকেল কৰ্মচাৰী',
+    
+    // Common service titles
+    'Cook': 'ৰন্ধনি',
+    'Housemaid': 'গৃহ পৰিচাৰিকা',
+    'Career Counseling Services': 'কেৰিয়াৰ পৰামৰ্শ সেৱা',
+    'Science Tutor for School Students': 'স্কুলৰ ছাত্ৰ-ছাত্ৰীৰ বাবে বিজ্ঞান শিক্ষক',
+    'Computer Programming Coach': 'কম্পিউটাৰ প্ৰোগ্ৰামিং প্ৰশিক্ষক',
+    'English Language Teacher': 'ইংৰাজী ভাষাৰ শিক্ষক',
+    'Mathematics Tutor': 'গণিত শিক্ষক',
+    
+    // Common UI strings
+    'Contact': 'যোগাযোগ কৰক',
+    'Select': 'বাছনি কৰক',
+    'Posted': 'পোষ্ট কৰা হৈছে',
+    'Remote Allowed': 'দূৰৱৰ্তী অনুমতি দিয়া হৈছে',
+    'In-person Only': 'কেৱল ব্যক্তিগতভাৱে',
+    'open': 'খোলা',
+    'closed': 'বন্ধ'
+  },
+  
+  // Adding translation cache for Konkani (kok)
+  'kok': {
+    // Categories
+    'Education Services': 'शिक्षा सेवा',
+    'Household Work': 'घरचें काम',
+    'Agriculture': 'शेतकाम',
+    'Shop Staff': 'दुकानांतले कर्मचारी',
+    'Salon Service': 'सलून सेवा',
+    'Medical Staff': 'वैद्यकीय कर्मचारी',
+    
+    // Common service titles
+    'Cook': 'रांदपी',
+    'Housemaid': 'घरकाम करपी बायल',
+    'Career Counseling Services': 'करियर सल्लागार सेवा',
+    'Science Tutor for School Students': 'शाळेच्या विद्यार्थ्यांखातीर विज्ञान शिक्षक',
+    'Computer Programming Coach': 'संगणक प्रोग्रामिंग कोच',
+    
+    // Common UI strings
+    'Contact': 'संपर्क करात',
+    'Select': 'निवड करात',
+    'Posted': 'पोस्ट केला',
+    'Remote Allowed': 'रिमोट परवानगी आसा',
+    'In-person Only': 'फकत व्यक्तिशः',
+    'open': 'उक्तें',
+    'closed': 'बंद'
+  },
+  
+  // Adding translation cache for Kashmiri (ks)
+  'ks': {
+    // Categories
+    'Education Services': 'تعلیمی خدمات',
+    'Household Work': 'گھریلو کام',
+    'Agriculture': 'زراعت',
+    'Shop Staff': 'دکان ملازمین',
+    'Salon Service': 'سیلون سروس',
+    'Medical Staff': 'طبی عملہ',
+    
+    // Common service titles
+    'Cook': 'باورچی',
+    'Housemaid': 'گھریلو ملازمہ',
+    'Career Counseling Services': 'کیریر کاؤنسلنگ خدمات',
+    
+    // Common UI strings
+    'Contact': 'رابطہ کریں',
+    'Select': 'منتخب کریں',
+    'Posted': 'پوسٹ کیا گیا',
+    'Remote Allowed': 'ریموٹ کی اجازت ہے',
+    'In-person Only': 'صرف شخصی طور پر',
+    'open': 'کھلا',
+    'closed': 'بند'
+  },
+  
+  // Adding translation cache for Sindhi (sd)
+  'sd': {
+    // Categories
+    'Education Services': 'تعليمي خدمتون',
+    'Household Work': 'گھريلو ڪم',
+    'Agriculture': 'زراعت',
+    'Shop Staff': 'دڪان جو عملو',
+    'Salon Service': 'سيلون خدمت',
+    'Medical Staff': 'طبي عملو',
+    
+    // Common service titles
+    'Cook': 'وڌو',
+    'Housemaid': 'گھريلو ملازمہ',
+    'Career Counseling Services': 'ڪيريئر ڪائونسلنگ خدمتون',
+    
+    // Common UI strings
+    'Contact': 'رابطو ڪريو',
+    'Select': 'چونڊيو',
+    'Posted': 'پوسٽ ڪيل',
+    'Remote Allowed': 'ريموٽ جي اجازت آھي',
+    'In-person Only': 'صرف ذاتي طور تي',
+    'open': 'کليل',
+    'closed': 'بند'
+  },
+  
+  // Adding translation cache for Manipuri (mni)
+  'mni': {
+    // Categories
+    'Education Services': 'ꯄꯨꯟꯁꯤꯜꯂꯨꯕ ꯁꯦꯚꯥ',
+    'Household Work': 'ꯏꯃꯨꯡꯒꯤ ꯊꯕꯛ',
+    'Agriculture': 'ꯂꯣꯉ-ꯆꯥꯟꯕ',
+    'Shop Staff': 'ꯗꯨꯀꯥꯟ ꯃꯤꯈꯥ',
+    'Salon Service': 'ꯁꯦꯜꯂꯨꯟ ꯁꯦꯚꯥ',
+    'Medical Staff': 'ꯂꯩꯎꯐꯃ ꯃꯤꯈꯥ',
+    
+    // Common service titles
+    'Cook': 'ꯑꯇꯦꯝꯕ',
+    'Housemaid': 'ꯏꯃꯨꯡꯒꯤ ꯆꯥꯀꯔꯥꯅꯤ',
+    
+    // Common UI strings
+    'Contact': 'ꯄꯥꯎꯐꯝ',
+    'Select': 'ꯈꯟꯕ',
+    'Posted': 'ꯀꯣꯟꯈꯥꯍꯟꯂꯦ',
+    'Remote Allowed': 'ꯂꯥꯞꯅꯥ ꯌꯥꯍꯟꯕ',
+    'In-person Only': 'ꯃꯁꯥꯅꯥ ꯑꯣꯢꯕ ꯫',
+    'open': 'ꯍꯥꯡꯗꯣꯛꯄ',
+    'closed': 'ꯂꯣꯟꯕ'
+  },
+  
+  // Adding translation cache for Bodo (brx)
+  'brx': {
+    // Categories
+    'Education Services': 'सोलोंथाय सेवा',
+    'Household Work': 'नोगोर मावखौ',
+    'Agriculture': 'हा-बुथुम',
+    'Shop Staff': 'दुकान मावखुंगिरि',
+    'Salon Service': 'सैलन सेवा',
+    'Medical Staff': 'बेजि मावखुंगिरि',
+    
+    // Common service titles
+    'Cook': 'जुनजावखुंगिरि',
+    'Housemaid': 'नोगोरारि जुनजावखुंगिरि अनजिमा',
+    
+    // Common UI strings
+    'Contact': 'जथाय मोनहोनो',
+    'Select': 'बासिख',
+    'Posted': 'होनजानाय जादों',
+    'Remote Allowed': 'गोजान जायगानि होगौ',
+    'In-person Only': 'थाखो आरो थाखो',
+    'open': 'खेवना दंमोन',
+    'closed': 'बन्द'
   }
 };
 
