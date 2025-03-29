@@ -8,6 +8,7 @@ export const users = pgTable("users", {
   password: text("password").notNull(),
   isServiceProvider: boolean("is_service_provider").notNull().default(false),
   avatar: text("avatar"),
+  onboardingCompleted: boolean("onboarding_completed").default(false),
   createdAt: timestamp("created_at").defaultNow(),
   lastSeen: timestamp("last_seen"),
 });

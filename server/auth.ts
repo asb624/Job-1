@@ -90,4 +90,26 @@ export function setupAuth(app: Express) {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     res.json(req.user);
   });
+
+  app.post("/api/user/onboarding", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    
+    try {
+      const { completed } = req.body;
+      if (typeof completed !== 'boolean') {
+        return res.status(400).json({ error: "The 'completed' field must be a boolean" });
+      }
+      
+      const updatedUser = await storage.updateOnboardingStatus(req.user.id, completed);
+      
+      // Update the session
+      req.login(updatedUser, (err) => {
+        if (err) throw err;
+        res.json(updatedUser);
+      });
+    } catch (error) {
+      console.error("Error updating onboarding status:", error);
+      res.status(500).json({ error: "Failed to update onboarding status" });
+    }
+  });
 }

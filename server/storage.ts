@@ -64,6 +64,7 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUserLastSeen(userId: number): Promise<User>;
+  updateOnboardingStatus(userId: number, completed: boolean): Promise<User>;
 
   // Profile operations
   getProfileByUserId(userId: number): Promise<Profile | undefined>;
@@ -447,6 +448,15 @@ export class PostgresStorage implements IStorage {
     const result = await this.db
       .update(users)
       .set({ lastSeen: new Date() })
+      .where(eq(users.id, userId))
+      .returning();
+    return result[0];
+  }
+  
+  async updateOnboardingStatus(userId: number, completed: boolean): Promise<User> {
+    const result = await this.db
+      .update(users)
+      .set({ onboardingCompleted: completed })
       .where(eq(users.id, userId))
       .returning();
     return result[0];

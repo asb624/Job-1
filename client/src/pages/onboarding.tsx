@@ -28,8 +28,28 @@ export default function OnboardingPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 3;
   
-  const handleComplete = () => {
-    navigate("/");
+  const handleComplete = async () => {
+    try {
+      // Mark onboarding as completed
+      const response = await fetch('/api/user/onboarding', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ completed: true }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to update onboarding status');
+      }
+      
+      // Redirect to the home page
+      navigate("/");
+    } catch (error) {
+      console.error('Error completing onboarding:', error);
+      // Redirect anyway, as this is non-critical
+      navigate("/");
+    }
   };
   
   return (

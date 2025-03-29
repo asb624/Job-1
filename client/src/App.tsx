@@ -25,7 +25,7 @@ function Router() {
     <Switch>
       <Route path="/" component={HomePage} />
       <Route path="/auth" component={AuthPage} />
-      <Route path="/onboarding" component={OnboardingPage} />
+      <ProtectedRoute path="/onboarding" component={OnboardingPage} skipOnboardingCheck={true} />
       <ProtectedRoute path="/dashboard" component={Dashboard} />
       <ProtectedRoute path="/post-requirement" component={PostRequirement} />
       <ProtectedRoute path="/post-service" component={PostService} />
