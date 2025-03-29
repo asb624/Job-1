@@ -1,8 +1,9 @@
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Requirement } from "@shared/schema";
-import { Calendar, MapPin, Tag, Clock } from "lucide-react";
+import { Calendar, MapPin, Tag, Clock, Image } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useState } from "react";
 
 interface RequirementCardProps {
   requirement: Requirement;
@@ -11,11 +12,42 @@ interface RequirementCardProps {
 
 export function RequirementCard({ requirement, onSelect }: RequirementCardProps) {
   const { t } = useTranslation();
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const hasImages = requirement.imageUrls && Array.isArray(requirement.imageUrls) && requirement.imageUrls.length > 0;
   
   return (
     <Card className="w-full relative overflow-hidden bg-white hover:shadow-lg transition-all duration-300 border border-emerald-100 group rounded-xl">
       {/* Left accent line */}
       <div className="absolute left-0 top-0 h-full w-2 bg-gradient-to-b from-emerald-500 to-teal-600"></div>
+      
+      {/* Image Gallery */}
+      {hasImages && (
+        <div className="relative w-full h-48 overflow-hidden ml-2">
+          <img 
+            src={requirement.imageUrls![currentImageIndex]} 
+            alt={requirement.title}
+            className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-105"
+          />
+          
+          {/* Image Navigation */}
+          {requirement.imageUrls!.length > 1 && (
+            <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5">
+              {requirement.imageUrls!.map((_, idx) => (
+                <button
+                  key={idx}
+                  className={`w-2 h-2 rounded-full transition-colors ${
+                    idx === currentImageIndex ? 'bg-emerald-500' : 'bg-emerald-200 hover:bg-emerald-300'
+                  }`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCurrentImageIndex(idx);
+                  }}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
       
       <CardHeader className="space-y-2 pl-4 sm:pl-6 pt-4 sm:pt-5 pb-2 sm:pb-3 relative z-10 pr-4 sm:pr-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">

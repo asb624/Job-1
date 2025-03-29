@@ -18,6 +18,7 @@ import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import { Icon } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useTranslation } from "react-i18next";
+import { FileUpload } from "@/components/ui/file-upload";
 
 // Default icon for the map marker
 const defaultIcon = new Icon({
@@ -96,6 +97,7 @@ export default function PostService() {
       latitude: undefined,
       longitude: undefined,
       serviceRadius: 5, // Default 5km radius
+      imageUrls: [],
     },
   });
 
@@ -160,6 +162,26 @@ export default function PostService() {
                       placeholder={t('postService.descriptionPlaceholder')}
                       className="min-h-[120px]"
                       {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="imageUrls"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('fileUpload.images')}</FormLabel>
+                  <FormControl>
+                    <FileUpload
+                      onFilesSelected={(urls) => {
+                        field.onChange(urls);
+                      }}
+                      initialFiles={field.value}
+                      label={t('fileUpload.addImages')}
                     />
                   </FormControl>
                   <FormMessage />

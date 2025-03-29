@@ -146,6 +146,15 @@
     "close": "बंद करें",
     "learnMore": "और जानें"
   },
+  "fileUpload": {
+    "dragDrop": "यहां चित्र क्लिक करें या खींचें",
+    "onlyImages": "केवल चित्र फाइलें अनुमत हैं",
+    "tooManyFiles": "अधिकतम {{count}} चित्र अनुमत हैं",
+    "uploading": "अपलोड हो रहा है...",
+    "uploadError": "चित्र अपलोड करने में त्रुटि",
+    "images": "चित्र",
+    "addImages": "चित्र जोड़ें"
+  },
   "Find Projects": "प्रोजेक्ट खोजें",
   "Find Services": "सेवाएं खोजें",
   "Learn More": "और जानें",

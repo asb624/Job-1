@@ -18,6 +18,7 @@ import { Icon } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useTranslation } from "react-i18next";
 import { Checkbox } from "@/components/ui/checkbox";
+import { FileUpload } from "@/components/ui/file-upload";
 
 // Default icon for the map marker
 const defaultIcon = new Icon({
@@ -90,6 +91,7 @@ export default function PostRequirement() {
       isRemote: false,
       latitude: undefined,
       longitude: undefined,
+      imageUrls: [],
     },
   });
 
@@ -154,6 +156,26 @@ export default function PostRequirement() {
                       placeholder={t('postRequirement.descriptionPlaceholder', 'Provide detailed requirements...')}
                       className="min-h-[120px]"
                       {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="imageUrls"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('fileUpload.images')}</FormLabel>
+                  <FormControl>
+                    <FileUpload
+                      onFilesSelected={(urls) => {
+                        field.onChange(urls);
+                      }}
+                      initialFiles={field.value}
+                      label={t('fileUpload.addImages')}
                     />
                   </FormControl>
                   <FormMessage />

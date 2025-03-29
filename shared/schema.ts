@@ -51,6 +51,7 @@ export const services = pgTable("services", {
   longitude: doublePrecision("longitude"),
   serviceRadius: integer("service_radius"), // in kilometers
   isRemote: boolean("is_remote").default(false),
+  imageUrls: text("image_urls").array(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -71,6 +72,7 @@ export const requirements = pgTable("requirements", {
   latitude: doublePrecision("latitude"),
   longitude: doublePrecision("longitude"),
   isRemote: boolean("is_remote").default(false),
+  imageUrls: text("image_urls").array(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -168,6 +170,7 @@ export const insertServiceSchema = createInsertSchema(services).pick({
   longitude: true,
   serviceRadius: true,
   isRemote: true,
+  imageUrls: true,
 });
 
 export const insertRequirementSchema = createInsertSchema(requirements).pick({
@@ -184,6 +187,7 @@ export const insertRequirementSchema = createInsertSchema(requirements).pick({
   latitude: true,
   longitude: true,
   isRemote: true,
+  imageUrls: true,
 });
 
 export const insertBidSchema = createInsertSchema(bids).pick({

@@ -1,8 +1,9 @@
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Service } from "@shared/schema";
-import { MapPin, Clock, Tag, Star } from "lucide-react";
+import { MapPin, Clock, Tag, Star, Image } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useState } from "react";
 
 interface ServiceCardProps {
   service: Service & { averageRating?: number };
@@ -11,11 +12,42 @@ interface ServiceCardProps {
 
 export function ServiceCard({ service, onContact }: ServiceCardProps) {
   const { t } = useTranslation();
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const hasImages = service.imageUrls && Array.isArray(service.imageUrls) && service.imageUrls.length > 0;
   
   return (
     <Card className="w-full relative overflow-hidden bg-white hover:shadow-lg transition-all duration-300 border border-teal-100 group rounded-xl">
       {/* Top accent bar */}
       <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-teal-500 to-emerald-400"></div>
+      
+      {/* Image Gallery */}
+      {hasImages && (
+        <div className="relative w-full h-48 overflow-hidden">
+          <img 
+            src={service.imageUrls![currentImageIndex]} 
+            alt={service.title}
+            className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-105"
+          />
+          
+          {/* Image Navigation */}
+          {service.imageUrls!.length > 1 && (
+            <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5">
+              {service.imageUrls!.map((_, idx) => (
+                <button
+                  key={idx}
+                  className={`w-2 h-2 rounded-full transition-colors ${
+                    idx === currentImageIndex ? 'bg-white' : 'bg-white/60 hover:bg-white/80'
+                  }`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCurrentImageIndex(idx);
+                  }}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
       
       <CardHeader className="space-y-2 pt-6 pb-2 sm:pb-3 px-4 sm:px-6 relative z-10">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
