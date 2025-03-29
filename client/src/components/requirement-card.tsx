@@ -53,7 +53,7 @@ export function RequirementCard({ requirement, onSelect }: RequirementCardProps)
       <CardHeader className="space-y-2 pl-4 sm:pl-6 pt-4 sm:pt-5 pb-2 sm:pb-3 relative z-10 pr-4 sm:pr-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <h3 className="text-lg sm:text-xl font-bold text-emerald-800 group-hover:text-emerald-600 transition-colors duration-300 line-clamp-2">
-            {t(requirement.title)}
+            {requirement.title}
           </h3>
           <div className="flex items-center gap-2 flex-wrap self-start">
             <span className="text-base sm:text-lg font-semibold text-emerald-700 bg-emerald-50 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full shadow-sm border border-emerald-100 whitespace-nowrap">
@@ -71,12 +71,12 @@ export function RequirementCard({ requirement, onSelect }: RequirementCardProps)
         </div>
         <div className="flex items-center text-emerald-600 gap-1.5">
           <Tag size={14} className="sm:h-4 sm:w-4" />
-          <p className="text-xs sm:text-sm">{t(requirement.category)}</p>
+          <p className="text-xs sm:text-sm">{t(`services.categories.${requirement.category.toLowerCase().replace(/\s+/g, '')}`, requirement.category)}</p>
         </div>
       </CardHeader>
       
       <CardContent className="relative z-10 pl-4 sm:pl-6 py-1 sm:py-2 pr-4 sm:pr-6">
-        <p className="text-xs sm:text-sm text-gray-600 line-clamp-3">{t(requirement.description)}</p>
+        <p className="text-xs sm:text-sm text-gray-600 line-clamp-3">{requirement.description}</p>
         
         <div className="mt-3 sm:mt-4 flex flex-wrap gap-2 sm:gap-3 text-[10px] sm:text-xs text-emerald-700">
           {requirement.createdAt && (
@@ -88,7 +88,7 @@ export function RequirementCard({ requirement, onSelect }: RequirementCardProps)
           {requirement.city && (
             <div className="flex items-center gap-1 bg-emerald-50 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full">
               <MapPin size={12} className="sm:h-3.5 sm:w-3.5" />
-              <span>{t(requirement.city)}{requirement.state ? `, ${t(requirement.state)}` : ''}</span>
+              <span>{requirement.city}{requirement.state ? `, ${requirement.state}` : ''}</span>
             </div>
           )}
           <div className="flex items-center gap-1 bg-emerald-50 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full">

@@ -53,7 +53,7 @@ export function ServiceCard({ service, onContact }: ServiceCardProps) {
       <CardHeader className="space-y-2 pt-6 pb-2 sm:pb-3 px-4 sm:px-6 relative z-10">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <h3 className="text-lg sm:text-xl font-bold text-teal-800 group-hover:text-teal-600 transition-colors duration-300 line-clamp-2">
-            {t(service.title)}
+            {service.title}
           </h3>
           <span className="text-base sm:text-lg font-semibold text-teal-700 bg-teal-50 px-3 py-1 rounded-full shadow-sm border border-teal-100 self-start whitespace-nowrap">
             ₹{service.price}
@@ -62,7 +62,7 @@ export function ServiceCard({ service, onContact }: ServiceCardProps) {
         <div className="flex items-center justify-between">
           <div className="flex items-center text-teal-600 gap-1.5">
             <Tag size={16} />
-            <p className="text-xs sm:text-sm">{t(service.category)}</p>
+            <p className="text-xs sm:text-sm">{t(`services.categories.${service.category.toLowerCase().replace(/\s+/g, '')}`, service.category)}</p>
           </div>
           {service.averageRating != null && service.averageRating > 0 && (
             <div className="flex items-center gap-1 text-amber-500">
@@ -74,7 +74,7 @@ export function ServiceCard({ service, onContact }: ServiceCardProps) {
       </CardHeader>
       
       <CardContent className="relative z-10 pt-0 pb-2 px-4 sm:px-6">
-        <p className="text-xs sm:text-sm text-gray-600 line-clamp-3">{t(service.description)}</p>
+        <p className="text-xs sm:text-sm text-gray-600 line-clamp-3">{service.description}</p>
         
         <div className="mt-3 sm:mt-4 flex flex-wrap gap-2 sm:gap-3 text-xs text-teal-700">
           {service.createdAt && (
@@ -86,7 +86,7 @@ export function ServiceCard({ service, onContact }: ServiceCardProps) {
           {service.city && (
             <div className="flex items-center gap-1 bg-teal-50 px-2 py-1 rounded-full">
               <MapPin size={12} className="sm:h-3.5 sm:w-3.5" />
-              <span className="text-[10px] sm:text-xs">{t(service.city)}{service.state ? `, ${t(service.state)}` : ''}</span>
+              <span className="text-[10px] sm:text-xs">{service.city}{service.state ? `, ${service.state}` : ''}</span>
             </div>
           )}
           <div className="flex items-center gap-1 bg-teal-50 px-2 py-1 rounded-full">
