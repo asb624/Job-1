@@ -36,6 +36,8 @@
     "listView": "பட்டியல் காட்சி",
     "mapView": "வரைபட காட்சி",
     "viewDetails": "விவரங்களைக் காண",
+    "posted": "பதிவிடப்பட்டது",
+    "inPersonOnly": "நேரில் மட்டுமே",
     "categories": {
       "householdWork": "வீட்டு வேலை",
       "agriculture": "விவசாயம்",
@@ -52,7 +54,9 @@
     "bid": "ஏலம்",
     "open": "திறந்த",
     "inProgress": "முன்னேற்றத்தில்",
-    "completed": "முடிந்தது"
+    "completed": "முடிந்தது",
+    "posted": "பதிவிடப்பட்டது",
+    "remoteAllowed": "தொலைதூர அனுமதிக்கப்படுகிறது"
   },
   "map": {
     "yourLocation": "உங்கள் இருப்பிடம்"

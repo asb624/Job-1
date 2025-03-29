@@ -4,6 +4,7 @@ import { Requirement } from "@shared/schema";
 import { Calendar, MapPin, Tag, Clock, Image } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
+import { formatDate } from "@/lib/utils";
 
 interface RequirementCardProps {
   requirement: Requirement;
@@ -81,13 +82,13 @@ export function RequirementCard({ requirement, onSelect }: RequirementCardProps)
           {requirement.createdAt && (
             <div className="flex items-center gap-1 bg-emerald-50 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full">
               <Calendar size={12} className="sm:h-3.5 sm:w-3.5" />
-              <span>{t('requirements.posted', 'Posted')}: {new Date(requirement.createdAt).toLocaleDateString()}</span>
+              <span>{t('requirements.posted', 'Posted')}: {formatDate(requirement.createdAt)}</span>
             </div>
           )}
           {requirement.city && (
             <div className="flex items-center gap-1 bg-emerald-50 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full">
               <MapPin size={12} className="sm:h-3.5 sm:w-3.5" />
-              <span>{requirement.city}{requirement.state ? `, ${requirement.state}` : ''}</span>
+              <span>{t(requirement.city)}{requirement.state ? `, ${t(requirement.state)}` : ''}</span>
             </div>
           )}
           <div className="flex items-center gap-1 bg-emerald-50 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full">

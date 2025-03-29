@@ -1,9 +1,10 @@
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Service } from "@shared/schema";
-import { MapPin, Clock, Tag, Star, Image } from "lucide-react";
+import { MapPin, Clock, Tag, Star, Calendar } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
+import { formatDate } from "@/lib/utils";
 
 interface ServiceCardProps {
   service: Service & { averageRating?: number };
@@ -76,10 +77,16 @@ export function ServiceCard({ service, onContact }: ServiceCardProps) {
         <p className="text-xs sm:text-sm text-gray-600 line-clamp-3">{t(service.description)}</p>
         
         <div className="mt-3 sm:mt-4 flex flex-wrap gap-2 sm:gap-3 text-xs text-teal-700">
+          {service.createdAt && (
+            <div className="flex items-center gap-1 bg-teal-50 px-2 py-1 rounded-full">
+              <Calendar size={12} className="sm:h-3.5 sm:w-3.5" />
+              <span className="text-[10px] sm:text-xs">{t('services.posted', 'Posted')}: {formatDate(service.createdAt)}</span>
+            </div>
+          )}
           {service.city && (
             <div className="flex items-center gap-1 bg-teal-50 px-2 py-1 rounded-full">
               <MapPin size={12} className="sm:h-3.5 sm:w-3.5" />
-              <span className="text-[10px] sm:text-xs">{service.city}{service.state ? `, ${service.state}` : ''}</span>
+              <span className="text-[10px] sm:text-xs">{t(service.city)}{service.state ? `, ${t(service.state)}` : ''}</span>
             </div>
           )}
           <div className="flex items-center gap-1 bg-teal-50 px-2 py-1 rounded-full">

@@ -38,6 +38,8 @@
     "listView": "लिस्ट देखें",
     "mapView": "नक्शा देखें",
     "viewDetails": "विवरण देखें",
+    "posted": "पोस्ट किया गया",
+    "inPersonOnly": "केवल व्यक्तिगत",
     "categories": {
       "householdWork": "घरेलू काम",
       "agriculture": "कृषि",
@@ -54,7 +56,9 @@
     "bid": "बोली",
     "open": "खुला",
     "inProgress": "प्रगति पर",
-    "completed": "पूरा हुआ"
+    "completed": "पूरा हुआ",
+    "posted": "पोस्ट किया गया",
+    "remoteAllowed": "रिमोट की अनुमति है"
   },
   "map": {
     "yourLocation": "आपका स्थान"
