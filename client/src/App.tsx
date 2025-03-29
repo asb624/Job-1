@@ -4,6 +4,7 @@ import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/hooks/use-auth";
 import { NotificationProvider } from "@/hooks/use-websocket-notifications";
+import { ThemeProvider } from "./lib/theme-context";
 import { ProtectedRoute } from "./lib/protected-route";
 import { NavBar } from "./components/nav-bar";
 import { I18nextProvider } from "react-i18next";
@@ -30,7 +31,9 @@ function Router() {
       <ProtectedRoute path="/post-service" component={PostService} />
       <ProtectedRoute path="/profile" component={Profile} /> 
       <ProtectedRoute path="/messages" component={MessagesPage} />
-      <Route component={NotFound} />
+      <Route>
+        {() => <NotFound />}
+      </Route>
     </Switch>
   );
 }
@@ -38,19 +41,21 @@ function Router() {
 function App() {
   return (
     <I18nextProvider i18n={i18n}>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <NotificationProvider>
-            <div className="min-h-screen bg-background">
-              <NavBar />
-              <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <Router />
-              </main>
-            </div>
-            <Toaster />
-          </NotificationProvider>
-        </AuthProvider>
-      </QueryClientProvider>
+      <ThemeProvider>
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <NotificationProvider>
+              <div className="min-h-screen theme-transition">
+                <NavBar />
+                <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                  <Router />
+                </main>
+              </div>
+              <Toaster />
+            </NotificationProvider>
+          </AuthProvider>
+        </QueryClientProvider>
+      </ThemeProvider>
     </I18nextProvider>
   );
 }

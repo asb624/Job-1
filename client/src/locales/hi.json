@@ -12,7 +12,9 @@
     "postRequirement": "आवश्यकता पोस्ट करें",
     "login": "लॉगिन",
     "register": "रजिस्टर",
-    "logout": "लॉगआउट"
+    "logout": "लॉगआउट",
+    "darkMode": "डार्क मोड",
+    "lightMode": "लाइट मोड"
   },
   "auth": {
     "loginTitle": "अपने अकाउंट में लॉगिन करें",

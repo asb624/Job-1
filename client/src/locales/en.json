@@ -12,7 +12,9 @@
     "postRequirement": "Post Requirement",
     "login": "Login",
     "register": "Register",
-    "logout": "Logout"
+    "logout": "Logout",
+    "darkMode": "Dark Mode",
+    "lightMode": "Light Mode"
   },
   "auth": {
     "loginTitle": "Login to your account",

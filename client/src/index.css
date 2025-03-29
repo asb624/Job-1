@@ -12,25 +12,75 @@
     --emerald-dark: 160 84% 32%;
   }
 
+  .light {
+    --background-color: 160 60% 99%;
+    --foreground-color: 215 25% 27%;
+    --muted-color: 214 32% 91%;
+    --muted-foreground-color: 215 25% 27% / 50%;
+    --card-color: 0 0% 100%;
+    --card-foreground-color: 215 25% 27%;
+    --border-color: 214.3 31.8% 91.4%;
+    --ring-color: var(--primary-teal);
+    
+    --scrollbar-track: 170 70% 94%;
+    --scrollbar-thumb: 170 60% 70%;
+    --scrollbar-thumb-hover: 170 60% 60%;
+    
+    --heading-color: 170 82% 32%;
+    --gradient-start: #f8fffc;
+    --gradient-middle: #effff9;
+    --gradient-end: #e6fcf7;
+  }
+  
+  .dark {
+    --background-color: 222 47% 11%;
+    --foreground-color: 210 40% 98%;
+    --muted-color: 217 33% 17%;
+    --muted-foreground-color: 215 20% 65%;
+    --card-color: 222 47% 15%;
+    --card-foreground-color: 210 40% 98%;
+    --border-color: 217 33% 17%;
+    --ring-color: 170 82% 39%;
+    
+    --scrollbar-track: 222 47% 15%;
+    --scrollbar-thumb: 170 50% 30%;
+    --scrollbar-thumb-hover: 170 50% 40%;
+    
+    --heading-color: 170 70% 50%;
+    --gradient-start: #0f172a;
+    --gradient-middle: #111827;
+    --gradient-end: #1a202c;
+  }
+
   * {
     @apply border-border;
     transition: all 0.2s ease-in-out;
   }
 
   body {
-    @apply font-sans antialiased text-foreground;
-    background: linear-gradient(135deg, #f8fffc 0%, #effff9 50%, #e6fcf7 100%);
+    @apply font-sans antialiased;
+    color: hsl(var(--foreground-color));
+    background: linear-gradient(135deg, 
+                var(--gradient-start) 0%, 
+                var(--gradient-middle) 50%, 
+                var(--gradient-end) 100%);
     min-height: 100vh;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply text-teal-800;
+    color: hsl(var(--heading-color));
+  }
+  
+  .theme-transition {
+    transition: background-color 0.3s, color 0.3s, border-color 0.3s, box-shadow 0.3s;
   }
 }
 
 @layer components {
   .card {
     @apply rounded-xl hover:shadow-md transition-all duration-300 hover:translate-y-[-2px];
+    background-color: hsl(var(--card-color));
+    color: hsl(var(--card-foreground-color));
   }
   
   .btn-transition {
@@ -38,12 +88,14 @@
   }
   
   .nav-link {
-    @apply relative transition-colors duration-300 hover:text-teal-50;
+    @apply relative transition-colors duration-300;
+    color: hsl(var(--foreground-color));
   }
   
   .nav-link::after {
     content: '';
-    @apply absolute bottom-0 left-0 w-0 h-0.5 bg-teal-50 transition-all duration-300;
+    @apply absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300;
+    background-color: hsl(var(--primary-teal));
   }
   
   .nav-link:hover::after {
@@ -56,23 +108,45 @@
   }
   
   ::-webkit-scrollbar-track {
-    @apply bg-teal-50;
+    background-color: hsl(var(--scrollbar-track));
   }
   
   ::-webkit-scrollbar-thumb {
-    @apply bg-teal-300 rounded-full;
+    background-color: hsl(var(--scrollbar-thumb));
+    @apply rounded-full;
   }
   
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-teal-400;
+    background-color: hsl(var(--scrollbar-thumb-hover));
   }
 
   /* Form element styles */
   input, textarea, select {
     @apply focus:border-teal-500 focus:ring-teal-500/20;
+    background-color: hsl(var(--card-color));
+    color: hsl(var(--card-foreground-color));
+    border-color: hsl(var(--border-color));
   }
 
   .custom-shadow {
     box-shadow: 0 4px 20px -2px rgba(22, 163, 148, 0.15);
+  }
+  
+  /* Dark mode specific overrides */
+  .dark .custom-shadow {
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
+  }
+  
+  /* Theme toggle button */
+  .theme-toggle {
+    @apply p-2 rounded-full transition-colors duration-300;
+  }
+  
+  .light .theme-toggle {
+    @apply bg-teal-50 text-teal-700 hover:bg-teal-100;
+  }
+  
+  .dark .theme-toggle {
+    @apply bg-gray-800 text-teal-400 hover:bg-gray-700;
   }
 }

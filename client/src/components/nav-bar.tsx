@@ -8,12 +8,14 @@ import {
   BriefcaseBusiness, 
   ArrowRight, 
   Menu, 
-  X 
+  Sun,
+  Moon
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useTheme } from "@/lib/theme-context";
 import { 
   Sheet, 
   SheetContent, 
@@ -27,11 +29,25 @@ export function NavBar() {
   const { user, logoutMutation } = useAuth();
   const { t } = useTranslation();
   const isMobile = useIsMobile();
+  const { theme, toggleTheme } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
   };
+  
+  const ThemeToggle = () => (
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={toggleTheme}
+      className="theme-toggle"
+      aria-label={theme === 'light' ? t('navigation.darkMode') : t('navigation.lightMode')}
+      title={theme === 'light' ? t('navigation.darkMode') : t('navigation.lightMode')}
+    >
+      {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+    </Button>
+  );
 
   const MobileMenuButton = () => (
     <Sheet>
@@ -96,7 +112,7 @@ export function NavBar() {
               </div>
 
               <div className="pt-2 border-t border-teal-600">
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-4 gap-2">
                   <SheetClose asChild>
                     <Link href="/messages" className="block">
                       <Button 
@@ -122,6 +138,20 @@ export function NavBar() {
                   <SheetClose asChild>
                     <NotificationsDropdown isMobile={true} />
                   </SheetClose>
+                  <SheetClose asChild>
+                    <div className="block">
+                      <Button 
+                        variant="ghost" 
+                        onClick={toggleTheme}
+                        className="w-full flex flex-col items-center justify-center gap-1 text-white hover:bg-teal-500/50 rounded-lg"
+                      >
+                        {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+                        <span className="text-xs">
+                          {theme === 'light' ? t('navigation.darkMode') : t('navigation.lightMode')}
+                        </span>
+                      </Button>
+                    </div>
+                  </SheetClose>
                 </div>
               </div>
 
@@ -137,13 +167,30 @@ export function NavBar() {
               </SheetClose>
             </>
           ) : (
-            <SheetClose asChild>
-              <Link href="/auth" className="block">
-                <Button className="w-full bg-white text-teal-600 hover:bg-teal-50 shadow-md hover:shadow-lg transition-all duration-300 font-medium rounded-lg">
-                  {t('navigation.login')} / {t('navigation.register')}
-                </Button>
-              </Link>
-            </SheetClose>
+            <>
+              <SheetClose asChild>
+                <Link href="/auth" className="block">
+                  <Button className="w-full bg-white text-teal-600 hover:bg-teal-50 shadow-md hover:shadow-lg transition-all duration-300 font-medium rounded-lg">
+                    {t('navigation.login')} / {t('navigation.register')}
+                  </Button>
+                </Link>
+              </SheetClose>
+              
+              <div className="pt-2 border-t border-teal-600 mt-2">
+                <SheetClose asChild>
+                  <div className="block">
+                    <Button 
+                      variant="ghost" 
+                      onClick={toggleTheme}
+                      className="w-full flex items-center justify-center gap-2 text-white hover:bg-teal-500/50 rounded-lg"
+                    >
+                      {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+                      {theme === 'light' ? t('navigation.darkMode') : t('navigation.lightMode')}
+                    </Button>
+                  </div>
+                </SheetClose>
+              </div>
+            </>
           )}
         </div>
       </SheetContent>
@@ -226,6 +273,7 @@ export function NavBar() {
                       <User className="h-5 w-5" />
                     </Button>
                   </Link>
+                  <ThemeToggle />
                 </div>
                 <Button 
                   variant="ghost" 
@@ -238,11 +286,16 @@ export function NavBar() {
                 </Button>
               </>
             ) : (
-              <Link href="/auth">
-                <Button className="bg-white text-teal-600 hover:bg-teal-50 shadow-md hover:shadow-lg transition-all duration-300 font-medium rounded-lg">
-                  {t('navigation.login')} / {t('navigation.register')}
-                </Button>
-              </Link>
+              <>
+                <Link href="/auth">
+                  <Button className="bg-white text-teal-600 hover:bg-teal-50 shadow-md hover:shadow-lg transition-all duration-300 font-medium rounded-lg">
+                    {t('navigation.login')} / {t('navigation.register')}
+                  </Button>
+                </Link>
+                <div className="flex rounded-full bg-teal-800/20 p-0.5 border border-teal-400/20">
+                  <ThemeToggle />
+                </div>
+              </>
             )}
           </div>
         </div>
