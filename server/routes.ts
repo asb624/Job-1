@@ -66,8 +66,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Services
   app.post("/api/services", async (req, res) => {
-    if (!req.isAuthenticated() || !req.user.isServiceProvider) {
-      return res.status(403).send("Only service providers can create services");
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("You must be logged in to create services");
     }
 
     const parsed = insertServiceSchema.safeParse(req.body);
@@ -313,8 +313,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Bids
   app.post("/api/bids", async (req, res) => {
-    if (!req.isAuthenticated() || !req.user.isServiceProvider) {
-      return res.status(403).send("Only service providers can create bids");
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("You must be logged in to create bids");
     }
 
     const parsed = insertBidSchema.safeParse(req.body);
@@ -335,7 +335,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await storage.createNotification({
           userId: requirement.userId,
           title: "New Bid",
-          content: `A service provider has placed a bid on your requirement: ${requirement.title}`,
+          content: `${req.user.username} has placed a bid on your requirement: ${requirement.title}`,
           type: "bid",
           referenceId: bid.id,
         });

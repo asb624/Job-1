@@ -19,7 +19,6 @@ export default function AuthPage() {
     defaultValues: {
       username: "",
       password: "",
-      isServiceProvider: false,
     },
   });
 
@@ -28,7 +27,6 @@ export default function AuthPage() {
     defaultValues: {
       username: "",
       password: "",
-      isServiceProvider: false,
     },
   });
 
@@ -132,22 +130,7 @@ export default function AuthPage() {
                       </FormItem>
                     )}
                   />
-                  <FormField
-                    control={registerForm.control}
-                    name="isServiceProvider"
-                    render={({ field }) => (
-                      <FormItem className="flex items-center gap-2">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                        <FormLabel>Register as Service Provider</FormLabel>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+
                   <Button
                     type="submit"
                     className="w-full"

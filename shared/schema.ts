@@ -136,7 +136,6 @@ export const notifications = pgTable("notifications", {
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
-  isServiceProvider: true,
   avatar: true,
 });
 
