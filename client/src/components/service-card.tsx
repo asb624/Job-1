@@ -3,9 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Service } from "@shared/schema";
 import { MapPin, Clock, Tag, Star, Calendar } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { formatDate } from "@/lib/utils";
-import { translateContent } from "@/lib/translation-utils";
+import { useTranslatedContent } from "@/lib/translation-utils";
 
 interface ServiceCardProps {
   service: Service & { averageRating?: number };
@@ -16,28 +16,12 @@ export function ServiceCard({ service, onContact }: ServiceCardProps) {
   const { t, i18n } = useTranslation();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const hasImages = service.imageUrls && Array.isArray(service.imageUrls) && service.imageUrls.length > 0;
-  const [translatedTitle, setTranslatedTitle] = useState(service.title);
-  const [translatedDescription, setTranslatedDescription] = useState(service.description);
-  const [translatedCity, setTranslatedCity] = useState(service.city);
-  const [translatedState, setTranslatedState] = useState(service.state);
   
-  // Update translations when language changes
-  useEffect(() => {
-    // Translate title
-    setTranslatedTitle(translateContent(service.title, i18n.language));
-    
-    // Translate description
-    setTranslatedDescription(translateContent(service.description, i18n.language));
-    
-    // Translate location if available
-    if (service.city) {
-      setTranslatedCity(translateContent(service.city, i18n.language));
-    }
-    
-    if (service.state) {
-      setTranslatedState(translateContent(service.state, i18n.language));
-    }
-  }, [service.title, service.description, service.city, service.state, i18n.language]);
+  // Use our custom hook to handle translations with async support
+  const translatedTitle = useTranslatedContent(service.title, i18n.language);
+  const translatedDescription = useTranslatedContent(service.description, i18n.language);
+  const translatedCity = useTranslatedContent(service.city, i18n.language);
+  const translatedState = useTranslatedContent(service.state, i18n.language);
   
   return (
     <Card className="w-full relative overflow-hidden bg-white hover:shadow-lg transition-all duration-400 ease-in-out border border-teal-100 group rounded-xl transform hover:-translate-y-1 animate-in fade-in-5 slide-in-from-bottom-5 duration-700">

@@ -3,9 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Requirement } from "@shared/schema";
 import { Calendar, MapPin, Tag, Clock, Image } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { formatDate } from "@/lib/utils";
-import { translateContent } from "@/lib/translation-utils";
+import { useTranslatedContent } from "@/lib/translation-utils";
 
 interface RequirementCardProps {
   requirement: Requirement;
@@ -16,28 +16,12 @@ export function RequirementCard({ requirement, onSelect }: RequirementCardProps)
   const { t, i18n } = useTranslation();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const hasImages = requirement.imageUrls && Array.isArray(requirement.imageUrls) && requirement.imageUrls.length > 0;
-  const [translatedTitle, setTranslatedTitle] = useState(requirement.title);
-  const [translatedDescription, setTranslatedDescription] = useState(requirement.description);
-  const [translatedCity, setTranslatedCity] = useState(requirement.city);
-  const [translatedState, setTranslatedState] = useState(requirement.state);
   
-  // Update translations when language changes
-  useEffect(() => {
-    // Translate title
-    setTranslatedTitle(translateContent(requirement.title, i18n.language));
-    
-    // Translate description
-    setTranslatedDescription(translateContent(requirement.description, i18n.language));
-    
-    // Translate location if available
-    if (requirement.city) {
-      setTranslatedCity(translateContent(requirement.city, i18n.language));
-    }
-    
-    if (requirement.state) {
-      setTranslatedState(translateContent(requirement.state, i18n.language));
-    }
-  }, [requirement.title, requirement.description, requirement.city, requirement.state, i18n.language]);
+  // Use our custom hook to handle translations with async support
+  const translatedTitle = useTranslatedContent(requirement.title, i18n.language);
+  const translatedDescription = useTranslatedContent(requirement.description, i18n.language);
+  const translatedCity = useTranslatedContent(requirement.city, i18n.language);
+  const translatedState = useTranslatedContent(requirement.state, i18n.language);
   
   return (
     <Card className="w-full relative overflow-hidden bg-white hover:shadow-lg transition-all duration-400 ease-in-out border border-emerald-100 group rounded-xl transform hover:-translate-y-1 animate-in fade-in-5 slide-in-from-bottom-5 duration-700">
