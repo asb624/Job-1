@@ -96,17 +96,9 @@ export default function HomePage() {
         
         <div className="relative text-center space-y-4 sm:space-y-6 max-w-3xl mx-auto">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight leading-tight">{t("app.title")}</h1>
-          <p className="text-lg sm:text-xl font-light">
+          <p className="text-lg sm:text-xl font-light mb-4">
             {t("app.tagline")}
           </p>
-          <div className="flex flex-col sm:flex-row justify-center items-center gap-3 sm:gap-5 mt-6 sm:mt-8">
-            <Button className="w-full sm:w-auto bg-white text-teal-600 hover:bg-teal-50 transform hover:-translate-y-1 transition-all duration-300 px-6 py-2.5 font-medium rounded-md">
-              {user?.isServiceProvider ? t("Find Projects") : t("Find Services")}
-            </Button>
-            <Button variant="outline" className="w-full sm:w-auto mt-2 sm:mt-0 bg-transparent border-2 border-white text-white hover:bg-teal-500 transform hover:-translate-y-1 transition-all duration-300 px-6 py-2.5 font-medium rounded-md">
-              {t("Learn More")}
-            </Button>
-          </div>
         </div>
       </div>
 
