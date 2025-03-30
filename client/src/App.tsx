@@ -21,6 +21,7 @@ import Profile from "@/pages/profile";
 import MessagesPage from "@/pages/messages";
 import OnboardingPage from "@/pages/onboarding";
 import PreferencesPage from "@/pages/preferences";
+import TranslationTest from "@/pages/translation-test";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -35,6 +36,7 @@ function Router() {
       <ProtectedRoute path="/profile" component={Profile} /> 
       <ProtectedRoute path="/messages" component={MessagesPage} />
       <ProtectedRoute path="/preferences" component={PreferencesPage} />
+      <Route path="/translation-test" component={TranslationTest} />
       <Route>
         {() => <NotFound />}
       </Route>

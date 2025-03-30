@@ -34,9 +34,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Try a list of LibreTranslate endpoints until one works
         const endpoints = [
+          "https://libretranslate.com/translate", // Main endpoint
           "https://libretranslate.de/translate",
+          "https://translate.terraprint.co/translate",
           "https://translate.argosopentech.com/translate",
-          "https://translate.terraprint.co/translate"
+          "https://translate.api.skitzen.com/translate",
+          "https://translate.fedilab.app/translate"
         ];
         
         let libreResponse = null;
@@ -82,7 +85,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } catch (libreError: any) {
         console.log("LibreTranslate error:", libreError.message);
         
-        // Fall back to MyMemory
+        // Fall back to MyMemory as a last resort
         try {
           console.log("Falling back to MyMemory...");
           const encodedText = encodeURIComponent(text);
