@@ -73,10 +73,12 @@ const Sidebar = ({ children, className }: SidebarProps) => {
       className={cn(
         "h-screen shrink-0 border-r border-border bg-background transition-all duration-300 ease-in-out",
         width,
+        "fixed left-0 top-0 z-40 shadow-md",
         className
       )}
     >
       {children}
+      <div className="absolute inset-y-0 right-0 w-1 bg-gradient-to-r from-transparent to-black/5 pointer-events-none" />
     </div>
   );
 };
@@ -159,12 +161,18 @@ interface SidebarMenuButtonProps {
 }
 
 const SidebarMenuButton = ({ children, onClick, isActive, className }: SidebarMenuButtonProps) => {
+  const { collapsed } = useSidebar();
+  
   return (
     <Button 
       variant={isActive ? "secondary" : "ghost"} 
       onClick={onClick}
       className={cn(
-        "w-full justify-start", 
+        "w-full justify-start transition-all duration-200 ease-in-out",
+        isActive 
+          ? "bg-primary/10 hover:bg-primary/15 font-medium" 
+          : "hover:bg-background-hover",
+        collapsed ? "px-2" : "px-3",
         className
       )}
     >
@@ -186,7 +194,13 @@ const SidebarMenuSub = ({ children, className }: SidebarMenuSubProps) => {
   }
   
   return (
-    <div className={cn("ml-6 flex flex-col gap-1", className)}>
+    <div 
+      className={cn(
+        "ml-6 flex flex-col gap-1 overflow-hidden transition-all duration-300 ease-in-out",
+        "animate-in fade-in slide-in-from-left-2",
+        className
+      )}
+    >
       {children}
     </div>
   );
@@ -220,7 +234,10 @@ const SidebarMenuSubButton = ({ children, onClick, isActive, className }: Sideba
       size="sm"
       onClick={onClick}
       className={cn(
-        "w-full justify-start", 
+        "w-full justify-start transition-all duration-200 ease-in-out",
+        isActive 
+          ? "bg-primary/10 hover:bg-primary/15 font-medium" 
+          : "hover:bg-background-hover",
         className
       )}
     >
