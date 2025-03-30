@@ -33,6 +33,11 @@ export function NavBar() {
   const { theme, toggleTheme } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  // Only show NavBar on mobile or when not authenticated
+  if (!isMobile && user) {
+    return null;
+  }
+
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
   };

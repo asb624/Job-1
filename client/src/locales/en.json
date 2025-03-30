@@ -17,6 +17,18 @@
     "darkMode": "Dark Mode",
     "lightMode": "Light Mode"
   },
+  "services": {
+    "title": "Services",
+    "manageServices": "Manage Services",
+    "manageBids": "Manage Bids"
+  },
+  "requirements": {
+    "title": "Requirements",
+    "manageRequirements": "Manage Requirements" 
+  },
+  "common": {
+    "user": "User"
+  },
   "auth": {
     "loginTitle": "Login to your account",
     "registerTitle": "Create an account",

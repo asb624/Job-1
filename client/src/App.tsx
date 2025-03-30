@@ -8,6 +8,7 @@ import { ThemeProvider } from "./lib/theme-context";
 import { ColorPaletteProvider } from "./lib/color-palette-context";
 import { ProtectedRoute } from "./lib/protected-route";
 import { NavBar } from "./components/nav-bar";
+import { ContextualSidebar } from "./components/contextual-sidebar";
 import { I18nextProvider } from "react-i18next";
 import i18n from "./lib/i18n";
 
@@ -49,11 +50,14 @@ function App() {
           <QueryClientProvider client={queryClient}>
             <AuthProvider>
               <NotificationProvider>
-                <div className="min-h-screen theme-transition">
-                  <NavBar />
-                  <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                    <Router />
-                  </main>
+                <div className="min-h-screen theme-transition flex">
+                  <ContextualSidebar />
+                  <div className="flex-1 flex flex-col">
+                    <NavBar />
+                    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+                      <Router />
+                    </main>
+                  </div>
                 </div>
                 <Toaster />
               </NotificationProvider>
