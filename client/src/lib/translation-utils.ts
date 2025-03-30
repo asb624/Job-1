@@ -2,15 +2,12 @@ import { useState, useEffect } from "react";
 import i18n from "i18next";
 
 /**
- * Robust multi-API translation hook with fallback strategies
- * Uses a chain of free translation APIs with fallback options
- * Primary: LibreTranslate (prioritized for card translations)
- * Fallback: MyMemory Translation API
- * Final Fallback: Original text if all else fails
+ * Direct LibreTranslate implementation for card translations
+ * Uses direct integration with LibreTranslate API for reliable translations
+ * Provides fallback to MyMemory Translation API if needed
  */
 export function useTranslatedContent(text: string | null | undefined, language: string): string {
   const [translated, setTranslated] = useState<string>(text || '');
-  const [apiAttemptsCount, setApiAttemptsCount] = useState<number>(0);
   
   // Map i18next language codes to LibreTranslate codes
   const languageMapping: Record<string, string> = {
@@ -27,151 +24,118 @@ export function useTranslatedContent(text: string | null | undefined, language: 
     // Add more as needed
   };
 
-  // List of LibreTranslate public endpoints to try (expanded with more options)
-  const libreTranslateEndpoints = [
-    'https://libretranslate.de',
-    'https://translate.argosopentech.com',
-    'https://translate.terraprint.co',
-    'https://lt.vern.cc',
-    'https://translate.fedilab.app',
-    'https://translate.mentality.rip',
-    'https://translate.astian.org',
-    'https://translate.api.skitzen.com',
-    'https://libretranslate.eownerdead.dedyn.io',
-  ];
+  // Most reliable LibreTranslate endpoint
+  const PRIMARY_ENDPOINT = 'https://translate.argosopentech.com';
   
-  // Helper function to translate with LibreTranslate with improved error handling
-  const translateWithLibreTranslate = async (text: string, targetLang: string, endpoint: string): Promise<string> => {
+  // Create a direct translation function
+  const directTranslate = async (text: string, targetLang: string) => {
     try {
-      console.log(`Trying LibreTranslate at ${endpoint}`);
-      
-      // Use a timeout promise to abort if it takes too long
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
-      
-      const response = await fetch(`${endpoint}/translate`, {
+      const response = await fetch(`${PRIMARY_ENDPOINT}/translate`, {
         method: 'POST',
         body: JSON.stringify({
           q: text,
           source: 'en',
           target: targetLang,
           format: 'text',
-          api_key: '' // Some endpoints might require an empty key
         }),
         headers: {
           'Content-Type': 'application/json'
-        },
-        signal: controller.signal
+        }
       });
       
-      clearTimeout(timeoutId);
-      
+      // Check if response is valid
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`LibreTranslate HTTP error: ${response.status}`);
       }
       
       const data = await response.json();
       if (data && data.translatedText) {
-        console.log(`LibreTranslate: "${text}" → "${data.translatedText}"`);
+        console.log(`LibreTranslate success: "${text}" → "${data.translatedText}"`);
         return data.translatedText;
+      } else {
+        throw new Error('No translation data returned');
       }
-      throw new Error('No translation returned');
     } catch (error) {
-      console.error(`LibreTranslate error with ${endpoint}:`, error);
-      throw error;
+      console.error('LibreTranslate error:', error);
+      // If LibreTranslate fails, try MyMemory as fallback
+      return fetchMyMemoryTranslation(text, targetLang);
+    }
+  };
+  
+  // Fallback to MyMemory if LibreTranslate fails
+  const fetchMyMemoryTranslation = async (text: string, targetLang: string) => {
+    try {
+      console.log(`Falling back to MyMemory for "${text}" to ${targetLang}`);
+      const encodedText = encodeURIComponent(text);
+      const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodedText}&langpair=en|${targetLang}`);
+      
+      if (!response.ok) {
+        throw new Error(`MyMemory HTTP error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      // Check if we hit the MyMemory limit
+      const limitReached = data?.responseStatus === 429 || 
+                         (data?.responseData?.translatedText && 
+                          data.responseData.translatedText.includes('MYMEMORY WARNING'));
+      
+      if (data?.responseData?.translatedText && !limitReached) {
+        console.log(`MyMemory success: "${text}" → "${data.responseData.translatedText}"`);
+        return data.responseData.translatedText;
+      } else {
+        throw new Error('MyMemory limit reached or no translation returned');
+      }
+    } catch (error) {
+      console.error('MyMemory error:', error);
+      return text; // Return original as last resort
     }
   };
   
   useEffect(() => {
-    // If this is English or there's no text, just return the original
+    // If this is English or there's no text, just use the original
     if (!text || language === 'en') {
       setTranslated(text || '');
       return;
     }
     
-    // First try to use i18next directly (for static texts that are in our translation files)
+    // First try to use i18next directly (for static texts in translation files)
     const i18nResult = i18n.exists(text, { lng: language });
     if (i18nResult) {
       setTranslated(i18n.t(text, { lng: language }));
       return;
     }
     
-    // Reset API attempts counter when text or language changes
-    setApiAttemptsCount(0);
+    // Map language code for LibreTranslate
+    const targetLang = languageMapping[language] || language;
     
-    // Now try LibreTranslate FIRST (per user request)
-    // Map the language code for LibreTranslate
-    const libreLang = languageMapping[language] || language;
-    
-    // Check if language is supported by LibreTranslate
-    if (!libreLang) {
-      console.warn(`Language ${language} not supported by LibreTranslate, falling back to MyMemory`);
-      setApiAttemptsCount(2); // Skip to MyMemory
-    } else {
-      console.log(`Translating via LibreTranslate: "${text}" to ${language} (mapped to ${libreLang})`);
-      setApiAttemptsCount(1); // Trigger LibreTranslate in the fallback effect
+    // If language is not supported by LibreTranslate
+    if (!targetLang) {
+      console.warn(`Language ${language} not supported by LibreTranslate`);
+      setTranslated(text); // Use original text
+      return;
     }
+    
+    // Perform the translation with LibreTranslate
+    // Use a flag to prevent state updates after component unmount
+    let isActive = true;
+    
+    directTranslate(text, targetLang).then(result => {
+      if (isActive && result) {
+        setTranslated(result);
+      }
+    }).catch(() => {
+      // If all translation attempts fail, use original text
+      if (isActive) {
+        console.warn('All translation attempts failed, using original text');
+        setTranslated(text);
+      }
+    });
+    
+    // Clean up
+    return () => {
+      isActive = false;
+    };
   }, [text, language]);
-  
-  // Effect for API translation chain
-  useEffect(() => {
-    // Skip if no fallback needed yet
-    if (apiAttemptsCount === 0 || !text || language === 'en') return;
-    
-    // LibreTranslate as primary option now
-    if (apiAttemptsCount === 1) {
-      const libreLang = languageMapping[language] || language;
-      
-      // Try each LibreTranslate endpoint
-      const tryEndpoints = async () => {
-        for (const endpoint of libreTranslateEndpoints) {
-          try {
-            const result = await translateWithLibreTranslate(text, libreLang, endpoint);
-            if (result) {
-              setTranslated(result);
-              return; // Success, exit the loop
-            }
-          } catch (err) {
-            // Continue to next endpoint
-            console.log(`Endpoint ${endpoint} failed, trying next one...`);
-          }
-        }
-        
-        // If we get here, all LibreTranslate endpoints failed, try MyMemory as fallback
-        console.warn('All LibreTranslate endpoints failed, falling back to MyMemory API');
-        setApiAttemptsCount(2);
-      };
-      
-      tryEndpoints();
-    }
-    // Fallback to MyMemory if LibreTranslate failed
-    else if (apiAttemptsCount === 2) {
-      console.log(`Falling back to MyMemory API: "${text}" to ${language}`);
-      const encodedText = encodeURIComponent(text);
-      
-      fetch(`https://api.mymemory.translated.net/get?q=${encodedText}&langpair=en|${language}`)
-        .then(response => response.json())
-        .then(data => {
-          // Check if we hit the MyMemory limit
-          const limitReached = data?.responseStatus === 429 || 
-                              (data?.responseData?.translatedText && 
-                               data.responseData.translatedText.includes('MYMEMORY WARNING'));
-          
-          if (data?.responseData?.translatedText && !limitReached) {
-            console.log(`MyMemory API: "${text}" → "${data.responseData.translatedText}"`);
-            setTranslated(data.responseData.translatedText);
-          } else {
-            // MyMemory limit reached or error, use original text
-            console.warn('MyMemory API limit reached or error, using original text');
-            setTranslated(text);
-          }
-        })
-        .catch(error => {
-          console.error('MyMemory API error:', error);
-          setTranslated(text);
-        });
-    }
-  }, [apiAttemptsCount, text, language, languageMapping]);
   
   return translated;
 }
