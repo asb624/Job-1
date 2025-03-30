@@ -179,13 +179,21 @@ export function ContextualSidebar({ className }: SidebarNavProps) {
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton>
-                <div className="flex items-center gap-2">
-                  <Globe className={cn("h-5 w-5", isCollapsed && "mx-auto")} />
-                  {!isCollapsed && <span className="animate-in fade-in duration-300">{t('language.select')}</span>}
+              {isCollapsed ? (
+                <SidebarMenuButton>
+                  <div className="flex items-center gap-2">
+                    <Globe className="h-5 w-5 mx-auto" />
+                  </div>
+                </SidebarMenuButton>
+              ) : (
+                <div className="px-3 py-2">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Globe className="h-5 w-5" />
+                    <span className="animate-in fade-in duration-300">{t('language.select')}</span>
+                  </div>
+                  <LanguageSwitcher />
                 </div>
-                {!isCollapsed && <LanguageSwitcher />}
-              </SidebarMenuButton>
+              )}
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarFooter>
@@ -411,13 +419,21 @@ export function ContextualSidebar({ className }: SidebarNavProps) {
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton>
-              <div className="flex items-center gap-2">
-                <Globe className={cn("h-5 w-5", isCollapsed && "mx-auto")} />
-                {!isCollapsed && <span className="animate-in fade-in duration-300">{t('language.select')}</span>}
+            {isCollapsed ? (
+              <SidebarMenuButton>
+                <div className="flex items-center gap-2">
+                  <Globe className="h-5 w-5 mx-auto" />
+                </div>
+              </SidebarMenuButton>
+            ) : (
+              <div className="px-3 py-2">
+                <div className="flex items-center gap-2 mb-2">
+                  <Globe className="h-5 w-5" />
+                  <span className="animate-in fade-in duration-300">{t('language.select')}</span>
+                </div>
+                <LanguageSwitcher />
               </div>
-              {!isCollapsed && <LanguageSwitcher />}
-            </SidebarMenuButton>
+            )}
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
