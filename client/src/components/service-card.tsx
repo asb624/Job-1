@@ -64,6 +64,16 @@ export function ServiceCard({ service, onContact }: ServiceCardProps) {
   
   return (
     <Card className="w-full relative overflow-hidden bg-white hover:shadow-lg transition-all duration-400 ease-in-out border border-teal-100 group rounded-xl transform hover:-translate-y-1 animate-in fade-in-5 slide-in-from-bottom-5 duration-700">
+      {/* Translation loading overlay */}
+      {isTranslating && (
+        <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-2">
+            <Loader2 className="h-8 w-8 text-teal-600 animate-spin" />
+            <span className="text-sm font-medium text-teal-700">{t('common.translating', 'Translating...')}</span>
+          </div>
+        </div>
+      )}
+      
       {/* Top accent bar */}
       <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-teal-500 to-emerald-400"></div>
       
