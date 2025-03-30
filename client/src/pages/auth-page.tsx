@@ -27,7 +27,6 @@ export default function AuthPage() {
     defaultValues: {
       username: "",
       password: "",
-      isServiceProvider: false,
     },
   });
 
@@ -132,28 +131,7 @@ export default function AuthPage() {
                     )}
                   />
 
-                  <FormField
-                    control={registerForm.control}
-                    name="isServiceProvider"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                        <div className="space-y-1 leading-none">
-                          <FormLabel>
-                            I want to register as a service provider 
-                          </FormLabel>
-                          <p className="text-sm text-muted-foreground">
-                            You can post both services and requirements regardless of this option.
-                          </p>
-                        </div>
-                      </FormItem>
-                    )}
-                  />
+
 
                   <Button
                     type="submit"

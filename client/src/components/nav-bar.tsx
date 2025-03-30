@@ -80,29 +80,26 @@ export function NavBar() {
           {user ? (
             <>
               <div className="space-y-3 mt-2">
-                {user.isServiceProvider ? (
-                  <SheetClose asChild>
-                    <Link href="/post-service" className="block">
-                      <Button 
-                        variant="outline" 
-                        className="w-full bg-teal-600 text-white hover:bg-teal-500 border-teal-400/50 rounded-lg font-medium"
-                      >
-                        {t('navigation.postService')}
-                      </Button>
-                    </Link>
-                  </SheetClose>
-                ) : (
-                  <SheetClose asChild>
-                    <Link href="/post-requirement" className="block">
-                      <Button 
-                        variant="outline" 
-                        className="w-full bg-teal-600 text-white hover:bg-teal-500 border-teal-400/50 rounded-lg font-medium"
-                      >
-                        {t('navigation.postRequirement')}
-                      </Button>
-                    </Link>
-                  </SheetClose>
-                )}
+                <SheetClose asChild>
+                  <Link href="/post-service" className="block">
+                    <Button 
+                      variant="outline" 
+                      className="w-full bg-teal-600 text-white hover:bg-teal-500 border-teal-400/50 rounded-lg font-medium"
+                    >
+                      {t('navigation.postService')}
+                    </Button>
+                  </Link>
+                </SheetClose>
+                <SheetClose asChild>
+                  <Link href="/post-requirement" className="block">
+                    <Button 
+                      variant="outline" 
+                      className="w-full bg-teal-600 text-white hover:bg-teal-500 border-teal-400/50 rounded-lg font-medium"
+                    >
+                      {t('navigation.postRequirement')}
+                    </Button>
+                  </Link>
+                </SheetClose>
 
                 <SheetClose asChild>
                   <Link href="/dashboard" className="block">
@@ -239,27 +236,24 @@ export function NavBar() {
             <LanguageSwitcher />
             {user ? (
               <>
-                {user.isServiceProvider ? (
-                  <Link href="/post-service">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="bg-teal-600 text-white hover:bg-teal-500 border-teal-400/50 transition-all duration-300 rounded-lg font-medium"
-                    >
-                      {t('navigation.postService')}
-                    </Button>
-                  </Link>
-                ) : (
-                  <Link href="/post-requirement">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="bg-teal-600 text-white hover:bg-teal-500 border-teal-400/50 transition-all duration-300 rounded-lg font-medium"
-                    >
-                      {t('navigation.postRequirement')}
-                    </Button>
-                  </Link>
-                )}
+                <Link href="/post-service">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="bg-teal-600 text-white hover:bg-teal-500 border-teal-400/50 transition-all duration-300 rounded-lg font-medium"
+                  >
+                    {t('navigation.postService')}
+                  </Button>
+                </Link>
+                <Link href="/post-requirement">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="bg-teal-600 text-white hover:bg-teal-500 border-teal-400/50 transition-all duration-300 rounded-lg font-medium"
+                  >
+                    {t('navigation.postRequirement')}
+                  </Button>
+                </Link>
                 <Link href="/dashboard" className="nav-link">
                   <Button 
                     variant="outline" 

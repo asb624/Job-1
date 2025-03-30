@@ -196,9 +196,7 @@ export function ContextualSidebar({ className }: SidebarNavProps) {
               <div className="flex flex-col">
                 <span className="font-medium">{user.username}</span>
                 <span className="text-xs text-muted-foreground">
-                  {user.isServiceProvider
-                    ? t('auth.isServiceProvider')
-                    : t('common.user')}
+                  {t('common.user')}
                 </span>
               </div>
             )}

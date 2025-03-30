@@ -67,6 +67,7 @@ export function setupAuth(app: Express) {
     const user = await storage.createUser({
       ...req.body,
       password: await hashPassword(req.body.password),
+      isServiceProvider: true, // Set all users to be service providers by default
     });
 
     req.login(user, (err) => {
