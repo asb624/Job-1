@@ -31,15 +31,15 @@ export default function Dashboard() {
     });
   }, []);
 
-  // Fetch data based on user type
+  // Fetch all user data regardless of user type
   const { data: services } = useQuery<Service[]>({
     queryKey: ["/api/services"],
-    enabled: user?.isServiceProvider,
+    enabled: !!user,
   });
 
   const { data: requirements } = useQuery<Requirement[]>({
     queryKey: ["/api/requirements"],
-    enabled: !user?.isServiceProvider,
+    enabled: !!user,
   });
 
   const createSelectionMutation = useMutation({
@@ -128,37 +128,52 @@ export default function Dashboard() {
       <Card>
         <CardHeader>
           <CardTitle>
-            {user?.isServiceProvider ? "Service Provider Dashboard" : "Client Dashboard"}
+            My Dashboard
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {user?.isServiceProvider ? (
-            <div className="space-y-6">
-              <h3 className="text-xl font-semibold">Your Services</h3>
+          <Tabs defaultValue="services" className="w-full">
+            <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-6">
+              <TabsTrigger value="services">My Services</TabsTrigger>
+              <TabsTrigger value="requirements">My Requirements</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="services" className="space-y-6">
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {services?.map((service) => (
-                  <ServiceCard key={service.id} service={service} />
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-6">
-              <h3 className="text-xl font-semibold">Your Requirements</h3>
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {requirements?.map((requirement) => (
-                  <div key={requirement.id}>
-                    <RequirementCard
-                      key={requirement.id}
-                      requirement={requirement}
-                    />
-                    {user?.isServiceProvider && requirement.status === "open" && (
-                      <SelectionDialog requirement={requirement} />
-                    )}
+                {services?.length ? (
+                  services.map((service) => (
+                    <ServiceCard key={service.id} service={service} />
+                  ))
+                ) : (
+                  <div className="col-span-3 text-center py-8">
+                    <p className="text-muted-foreground">You haven't posted any services yet.</p>
                   </div>
-                ))}
+                )}
               </div>
-            </div>
-          )}
+            </TabsContent>
+            
+            <TabsContent value="requirements" className="space-y-6">
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {requirements?.length ? (
+                  requirements.map((requirement) => (
+                    <div key={requirement.id}>
+                      <RequirementCard
+                        key={requirement.id}
+                        requirement={requirement}
+                      />
+                      {requirement.status === "open" && (
+                        <SelectionDialog requirement={requirement} />
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <div className="col-span-3 text-center py-8">
+                    <p className="text-muted-foreground">You haven't posted any requirements yet.</p>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
     </div>
