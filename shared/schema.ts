@@ -6,7 +6,7 @@ export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
-  isServiceProvider: boolean("is_service_provider").notNull().default(false),
+  isServiceProvider: boolean("is_service_provider").notNull().default(true), // Default to true so all users can post services
   avatar: text("avatar"),
   onboardingCompleted: boolean("onboarding_completed").default(false),
   createdAt: timestamp("created_at").defaultNow(),
@@ -137,6 +137,7 @@ export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
   avatar: true,
+  // isServiceProvider is intentionally omitted as all users are both service providers and clients
 });
 
 export const insertProfileSchema = createInsertSchema(profiles).pick({
