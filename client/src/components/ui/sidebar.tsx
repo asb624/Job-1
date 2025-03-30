@@ -120,8 +120,12 @@ const SidebarFooter = ({ children, className }: SidebarFooterProps) => {
   );
 };
 
-const SidebarSeparator = () => {
-  return <Separator className="my-2" />;
+interface SidebarSeparatorProps {
+  className?: string;
+}
+
+const SidebarSeparator = ({ className }: SidebarSeparatorProps) => {
+  return <Separator className={cn("my-2", className)} />;
 };
 
 interface SidebarMenuProps {

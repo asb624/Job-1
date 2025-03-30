@@ -15,7 +15,13 @@
     "register": "Register",
     "logout": "Logout",
     "darkMode": "Dark Mode",
-    "lightMode": "Light Mode"
+    "lightMode": "Light Mode",
+    "post": "Post",
+    "search": "Search",
+    "main": "Main Navigation",
+    "marketplace": "Marketplace",
+    "settings": "Settings",
+    "saved": "Saved Items"
   },
   "services": {
     "title": "Services",
