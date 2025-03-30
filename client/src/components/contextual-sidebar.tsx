@@ -246,83 +246,79 @@ export function ContextualSidebar({ className }: SidebarNavProps) {
 
           {/* Contextual Navigation Groups */}
           <SidebarMenu>
-            {/* Service Provider specific options */}
-            {user.isServiceProvider && (
-              <SidebarMenuItem>
-                <SidebarMenuButton isActive={activeGroup === "post"}>
-                  <div className="flex items-center gap-2">
-                    <PenBox className="h-5 w-5" />
-                    <span>{t('services.title')}</span>
-                  </div>
-                </SidebarMenuButton>
-                <SidebarMenuSub>
-                  <SidebarMenuSubItem>
-                    <SidebarMenuSubButton isActive={location === "/post-service"}>
-                      <Link href="/post-service">
-                        <div className="flex items-center gap-2">
-                          <CirclePlus className="h-4 w-4" />
-                          <span>{t('navigation.postService')}</span>
-                        </div>
-                      </Link>
-                    </SidebarMenuSubButton>
-                  </SidebarMenuSubItem>
-                  <SidebarMenuSubItem>
-                    <SidebarMenuSubButton>
-                      <Link href="/dashboard?filter=services">
-                        <div className="flex items-center gap-2">
-                          <Briefcase className="h-4 w-4" />
-                          <span>{t('services.manageServices')}</span>
-                        </div>
-                      </Link>
-                    </SidebarMenuSubButton>
-                  </SidebarMenuSubItem>
-                  <SidebarMenuSubItem>
-                    <SidebarMenuSubButton>
-                      <Link href="/dashboard?filter=bids">
-                        <div className="flex items-center gap-2">
-                          <FileText className="h-4 w-4" />
-                          <span>{t('services.manageBids')}</span>
-                        </div>
-                      </Link>
-                    </SidebarMenuSubButton>
-                  </SidebarMenuSubItem>
-                </SidebarMenuSub>
-              </SidebarMenuItem>
-            )}
+            {/* Services Section - Available to all users */}
+            <SidebarMenuItem>
+              <SidebarMenuButton isActive={activeGroup === "post" && location.includes("service")}>
+                <div className="flex items-center gap-2">
+                  <PenBox className="h-5 w-5" />
+                  <span>{t('services.title')}</span>
+                </div>
+              </SidebarMenuButton>
+              <SidebarMenuSub>
+                <SidebarMenuSubItem>
+                  <SidebarMenuSubButton isActive={location === "/post-service"}>
+                    <Link href="/post-service">
+                      <div className="flex items-center gap-2">
+                        <CirclePlus className="h-4 w-4" />
+                        <span>{t('navigation.postService')}</span>
+                      </div>
+                    </Link>
+                  </SidebarMenuSubButton>
+                </SidebarMenuSubItem>
+                <SidebarMenuSubItem>
+                  <SidebarMenuSubButton>
+                    <Link href="/dashboard?filter=services">
+                      <div className="flex items-center gap-2">
+                        <Briefcase className="h-4 w-4" />
+                        <span>{t('services.manageServices')}</span>
+                      </div>
+                    </Link>
+                  </SidebarMenuSubButton>
+                </SidebarMenuSubItem>
+                <SidebarMenuSubItem>
+                  <SidebarMenuSubButton>
+                    <Link href="/dashboard?filter=bids">
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-4 w-4" />
+                        <span>{t('services.manageBids')}</span>
+                      </div>
+                    </Link>
+                  </SidebarMenuSubButton>
+                </SidebarMenuSubItem>
+              </SidebarMenuSub>
+            </SidebarMenuItem>
 
-            {/* Regular user specific options */}
-            {!user.isServiceProvider && (
-              <SidebarMenuItem>
-                <SidebarMenuButton isActive={activeGroup === "post"}>
-                  <div className="flex items-center gap-2">
-                    <PenBox className="h-5 w-5" />
-                    <span>{t('requirements.title')}</span>
-                  </div>
-                </SidebarMenuButton>
-                <SidebarMenuSub>
-                  <SidebarMenuSubItem>
-                    <SidebarMenuSubButton isActive={location === "/post-requirement"}>
-                      <Link href="/post-requirement">
-                        <div className="flex items-center gap-2">
-                          <CirclePlus className="h-4 w-4" />
-                          <span>{t('navigation.postRequirement')}</span>
-                        </div>
-                      </Link>
-                    </SidebarMenuSubButton>
-                  </SidebarMenuSubItem>
-                  <SidebarMenuSubItem>
-                    <SidebarMenuSubButton>
-                      <Link href="/dashboard?filter=requirements">
-                        <div className="flex items-center gap-2">
-                          <FileText className="h-4 w-4" />
-                          <span>{t('requirements.manageRequirements')}</span>
-                        </div>
-                      </Link>
-                    </SidebarMenuSubButton>
-                  </SidebarMenuSubItem>
-                </SidebarMenuSub>
-              </SidebarMenuItem>
-            )}
+            {/* Requirements Section - Available to all users */}
+            <SidebarMenuItem>
+              <SidebarMenuButton isActive={activeGroup === "post" && location.includes("requirement")}>
+                <div className="flex items-center gap-2">
+                  <PenBox className="h-5 w-5" />
+                  <span>{t('requirements.title')}</span>
+                </div>
+              </SidebarMenuButton>
+              <SidebarMenuSub>
+                <SidebarMenuSubItem>
+                  <SidebarMenuSubButton isActive={location === "/post-requirement"}>
+                    <Link href="/post-requirement">
+                      <div className="flex items-center gap-2">
+                        <CirclePlus className="h-4 w-4" />
+                        <span>{t('navigation.postRequirement')}</span>
+                      </div>
+                    </Link>
+                  </SidebarMenuSubButton>
+                </SidebarMenuSubItem>
+                <SidebarMenuSubItem>
+                  <SidebarMenuSubButton>
+                    <Link href="/dashboard?filter=requirements">
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-4 w-4" />
+                        <span>{t('requirements.manageRequirements')}</span>
+                      </div>
+                    </Link>
+                  </SidebarMenuSubButton>
+                </SidebarMenuSubItem>
+              </SidebarMenuSub>
+            </SidebarMenuItem>
 
             {/* User Account Group */}
             <SidebarMenuItem>

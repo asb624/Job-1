@@ -137,6 +137,7 @@ export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
   avatar: true,
+  isServiceProvider: true,
 });
 
 export const insertProfileSchema = createInsertSchema(profiles).pick({
