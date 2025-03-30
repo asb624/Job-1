@@ -83,11 +83,11 @@ export function RequirementCard({ requirement, onSelect }: RequirementCardProps)
               ₹{requirement.budget}
             </span>
             <span className={`capitalize px-2 sm:px-3 py-0.5 sm:py-1 text-xs sm:text-sm rounded-full border shadow-sm flex items-center gap-1
-              ${requirement.status === 'open' 
+              ${requirement.status === 'active' 
                 ? 'bg-green-50 text-green-700 border-green-200' 
                 : 'bg-amber-50 text-amber-700 border-amber-200'}`}
             >
-              <span className={`w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full ${requirement.status === 'open' ? 'bg-green-500' : 'bg-amber-500'}`}></span>
+              <span className={`w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full ${requirement.status === 'active' ? 'bg-green-500' : 'bg-amber-500'}`}></span>
               {t(`requirements.${requirement.status}`, requirement.status)}
             </span>
           </div>
@@ -126,7 +126,7 @@ export function RequirementCard({ requirement, onSelect }: RequirementCardProps)
       </CardContent>
       
       <CardFooter className="relative z-10 pl-4 sm:pl-6 pt-2 pb-4 pr-4 sm:pr-6">
-        {onSelect && requirement.status === "open" && (
+        {onSelect && requirement.status === "active" && (
           <Button 
             className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700
                      text-white font-medium shadow-sm hover:shadow-md transform transition-all duration-400 ease-in-out 

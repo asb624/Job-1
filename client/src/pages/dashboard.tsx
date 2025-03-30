@@ -161,7 +161,7 @@ export default function Dashboard() {
                         key={requirement.id}
                         requirement={requirement}
                       />
-                      {requirement.status === "open" && (
+                      {requirement.status === "active" && (
                         <SelectionDialog requirement={requirement} />
                       )}
                     </div>
