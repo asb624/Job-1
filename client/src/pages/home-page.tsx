@@ -141,7 +141,11 @@ export default function HomePage() {
             <div className="mt-6 flex items-center">
               <div className="flex bg-white/20 p-1 rounded-xl">
                 <button
-                  onClick={() => document.querySelector('[data-tabs-trigger="services"]')?.click()}
+                  onClick={() => {
+                    // Use querySelector and type assertion to HTMLButtonElement
+                    const servicesTab = document.querySelector('[data-tabs-trigger="services"]') as HTMLButtonElement;
+                    if (servicesTab) servicesTab.click();
+                  }}
                   className={`px-4 py-2 rounded-lg font-medium text-sm sm:text-base transition-all duration-300 ${
                     document.querySelector('[data-state="active"][data-tabs-trigger="services"]') 
                       ? 'bg-white text-teal-700 shadow-md' 
@@ -151,7 +155,11 @@ export default function HomePage() {
                   {t("services.title")}
                 </button>
                 <button
-                  onClick={() => document.querySelector('[data-tabs-trigger="requirements"]')?.click()}
+                  onClick={() => {
+                    // Use querySelector and type assertion to HTMLButtonElement
+                    const requirementsTab = document.querySelector('[data-tabs-trigger="requirements"]') as HTMLButtonElement;
+                    if (requirementsTab) requirementsTab.click();
+                  }}
                   className={`px-4 py-2 rounded-lg font-medium text-sm sm:text-base transition-all duration-300 ${
                     document.querySelector('[data-state="active"][data-tabs-trigger="requirements"]') 
                       ? 'bg-white text-teal-700 shadow-md' 
