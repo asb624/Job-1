@@ -21,6 +21,7 @@ import Profile from "@/pages/profile";
 import MessagesPage from "@/pages/messages";
 import OnboardingPage from "@/pages/onboarding";
 import PreferencesPage from "@/pages/preferences";
+import TranslationTest from "@/pages/translation-test";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -28,6 +29,7 @@ function Router() {
     <Switch>
       <Route path="/" component={HomePage} />
       <Route path="/auth" component={AuthPage} />
+      <Route path="/translation-test" component={TranslationTest} />
       <ProtectedRoute path="/onboarding" component={OnboardingPage} skipOnboardingCheck={true} />
       <ProtectedRoute path="/dashboard" component={Dashboard} />
       <ProtectedRoute path="/post-requirement" component={PostRequirement} />
