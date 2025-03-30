@@ -181,8 +181,8 @@ export default function Dashboard() {
             <div className="space-y-6">
               <h3 className="text-xl font-semibold">Your Services</h3>
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {services?.map((service) => (
-                  <ServiceCard key={service.id} service={service} />
+                {services?.map((service, index) => (
+                  <ServiceCard key={service.id} service={service} index={index} />
                 ))}
               </div>
             </div>
@@ -190,11 +190,12 @@ export default function Dashboard() {
             <div className="space-y-6">
               <h3 className="text-xl font-semibold">Your Requirements</h3>
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {requirements?.map((requirement) => (
+                {requirements?.map((requirement, index) => (
                   <div key={requirement.id}>
                     <RequirementCard
                       key={requirement.id}
                       requirement={requirement}
+                      index={index}
                     />
                     {user?.isServiceProvider && requirement.status === "open" && (
                       <SelectionDialog requirement={requirement} />
