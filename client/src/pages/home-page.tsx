@@ -337,11 +337,10 @@ export default function HomePage() {
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-                {services?.map((service, index) => (
+                {services?.map((service) => (
                   <ServiceCard
                     key={service.id}
                     service={service}
-                    index={index}
                     onContact={user ? () => handleContactProvider(service) : undefined}
                   />
                 ))}
@@ -372,11 +371,10 @@ export default function HomePage() {
           {/* Requirements View */}
           <div id="requirements-content" className={`transition-all duration-500 ${document.querySelector('[data-state="active"][data-tabs-trigger="requirements"]') ? 'block' : 'hidden'}`}>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-              {requirements?.map((requirement, index) => (
+              {requirements?.map((requirement) => (
                 <RequirementCard
                   key={requirement.id}
                   requirement={requirement}
-                  index={index}
                   onSelect={user ? () => handleSelectRequirement(requirement) : undefined}
                 />
               ))}

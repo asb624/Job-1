@@ -10,14 +10,12 @@ import { useTranslatedContent } from "@/lib/translation-utils";
 interface RequirementCardProps {
   requirement: Requirement;
   onSelect?: () => void;
-  index?: number; // Position in the list for sequential animations
 }
 
-export function RequirementCard({ requirement, onSelect, index = 0 }: RequirementCardProps) {
+export function RequirementCard({ requirement, onSelect }: RequirementCardProps) {
   const { t, i18n } = useTranslation();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isTranslating, setIsTranslating] = useState(i18n.language !== 'en');
-  const [isVisible, setIsVisible] = useState(i18n.language === 'en'); // Only show immediately for English
   const hasImages = requirement.imageUrls && Array.isArray(requirement.imageUrls) && requirement.imageUrls.length > 0;
   
   // Use our custom hook to handle translations with async support
@@ -31,13 +29,11 @@ export function RequirementCard({ requirement, onSelect, index = 0 }: Requiremen
     if (i18n.language === 'en') {
       // No translation needed for English
       setIsTranslating(false);
-      setIsVisible(true);
       return;
     }
     
     // Initial state - assume we're translating
     setIsTranslating(true);
-    setIsVisible(false);
     
     // Check if translations are complete
     const isComplete = 
@@ -47,15 +43,9 @@ export function RequirementCard({ requirement, onSelect, index = 0 }: Requiremen
       (!requirement.state || requirement.state === translatedState || translatedState !== requirement.state);
     
     if (isComplete) {
-      // Add a sequential delay based on card index for smooth fade-in
+      // Add a small delay for smooth transition
       const timer = setTimeout(() => {
         setIsTranslating(false);
-        // Stagger the appearance for a nice sequential effect
-        const appearTimer = setTimeout(() => {
-          setIsVisible(true);
-        }, 100 * index); // Delay based on card index
-        
-        return () => clearTimeout(appearTimer);
       }, 300);
       
       return () => clearTimeout(timer);
@@ -69,20 +59,8 @@ export function RequirementCard({ requirement, onSelect, index = 0 }: Requiremen
     requirement.title, 
     requirement.description, 
     requirement.city, 
-    requirement.state,
-    index
+    requirement.state
   ]);
-  
-  if (!isVisible) {
-    return (
-      <div className="w-full h-64 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-2">
-          <Loader2 className="h-8 w-8 text-emerald-600 animate-spin" />
-          <span className="text-sm font-medium text-emerald-700">{t('common.translating', 'Translating...')}</span>
-        </div>
-      </div>
-    );
-  }
   
   return (
     <Card className="w-full relative overflow-hidden bg-white hover:shadow-lg transition-all duration-400 ease-in-out border border-emerald-100 group rounded-xl transform hover:-translate-y-1 animate-in fade-in-5 slide-in-from-bottom-5 duration-700">
