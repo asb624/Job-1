@@ -17,10 +17,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { insertBidSchema as insertSelectionSchema } from "@shared/schema";
 import { subscribeToMessages } from "@/lib/websocket";
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import { preloadTranslations } from "@/lib/translation-utils";
 
 export default function Dashboard() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { i18n } = useTranslation();
 
   // Setup realtime updates
   useEffect(() => {
@@ -32,15 +35,57 @@ export default function Dashboard() {
   }, []);
 
   // Fetch data based on user type
-  const { data: services } = useQuery<Service[]>({
+  const { data: services, isSuccess: servicesLoaded } = useQuery<Service[]>({
     queryKey: ["/api/services"],
     enabled: user?.isServiceProvider,
   });
 
-  const { data: requirements } = useQuery<Requirement[]>({
+  const { data: requirements, isSuccess: requirementsLoaded } = useQuery<Requirement[]>({
     queryKey: ["/api/requirements"],
     enabled: !user?.isServiceProvider,
   });
+  
+  // Batch translate all service and requirement content
+  useEffect(() => {
+    // Only batch translate for non-English languages
+    if (i18n.language !== 'en') {
+      // Preload translations for services if available
+      if (servicesLoaded && services && services.length > 0) {
+        const textsToTranslate: string[] = [];
+        
+        services.forEach(service => {
+          if (service.title) textsToTranslate.push(service.title);
+          if (service.description) textsToTranslate.push(service.description);
+          if (service.city) textsToTranslate.push(service.city);
+          if (service.state) textsToTranslate.push(service.state);
+        });
+        
+        if (textsToTranslate.length > 0) {
+          console.log(`Preloading ${textsToTranslate.length} service translations for dashboard`);
+          preloadTranslations(textsToTranslate, i18n.language)
+            .catch(err => console.error('Error preloading service translations:', err));
+        }
+      }
+      
+      // Preload translations for requirements if available
+      if (requirementsLoaded && requirements && requirements.length > 0) {
+        const textsToTranslate: string[] = [];
+        
+        requirements.forEach(req => {
+          if (req.title) textsToTranslate.push(req.title);
+          if (req.description) textsToTranslate.push(req.description);
+          if (req.city) textsToTranslate.push(req.city);
+          if (req.state) textsToTranslate.push(req.state);
+        });
+        
+        if (textsToTranslate.length > 0) {
+          console.log(`Preloading ${textsToTranslate.length} requirement translations for dashboard`);
+          preloadTranslations(textsToTranslate, i18n.language)
+            .catch(err => console.error('Error preloading requirement translations:', err));
+        }
+      }
+    }
+  }, [services, requirements, i18n.language, servicesLoaded, requirementsLoaded]);
 
   const createSelectionMutation = useMutation({
     mutationFn: async (data: any) => {

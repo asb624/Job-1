@@ -10,24 +10,63 @@ import { useLocation } from "wouter";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ServiceMap } from "@/components/map/service-map";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChatbotUI } from "@/components/ai-chatbot/chatbot-ui";
 import { useTranslation } from "react-i18next";
+import { preloadTranslations } from "@/lib/translation-utils";
 
 export default function HomePage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [, navigate] = useLocation();
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
-  const { data: services } = useQuery<Service[]>({
+  const { data: services, isSuccess: servicesLoaded } = useQuery<Service[]>({
     queryKey: ["/api/services"],
   });
 
-  const { data: requirements } = useQuery<Requirement[]>({
+  const { data: requirements, isSuccess: requirementsLoaded } = useQuery<Requirement[]>({
     queryKey: ["/api/requirements"],
   });
+  
+  // Preload translations for all service and requirement cards in batches
+  useEffect(() => {
+    // Only try to preload when data is loaded and we're not in English
+    if (i18n.language !== 'en') {
+      if (servicesLoaded && services && services.length > 0) {
+        const textsToTranslate: string[] = [];
+        
+        // Collect all texts that need translation from services
+        services.forEach(service => {
+          if (service.title) textsToTranslate.push(service.title);
+          if (service.description) textsToTranslate.push(service.description);
+          if (service.city) textsToTranslate.push(service.city);
+          if (service.state) textsToTranslate.push(service.state);
+        });
+        
+        // Preload translations in batch
+        preloadTranslations(textsToTranslate, i18n.language)
+          .catch(err => console.error('Error preloading service translations:', err));
+      }
+      
+      if (requirementsLoaded && requirements && requirements.length > 0) {
+        const textsToTranslate: string[] = [];
+        
+        // Collect all texts that need translation from requirements
+        requirements.forEach(req => {
+          if (req.title) textsToTranslate.push(req.title);
+          if (req.description) textsToTranslate.push(req.description);
+          if (req.city) textsToTranslate.push(req.city);
+          if (req.state) textsToTranslate.push(req.state);
+        });
+        
+        // Preload translations in batch
+        preloadTranslations(textsToTranslate, i18n.language)
+          .catch(err => console.error('Error preloading requirement translations:', err));
+      }
+    }
+  }, [services, requirements, i18n.language, servicesLoaded, requirementsLoaded]);
 
   // Create a new conversation with a service provider
   const createConversationMutation = useMutation({
