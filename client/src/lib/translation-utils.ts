@@ -10,6 +10,21 @@ interface TranslationCache {
 
 const translationCache: TranslationCache = {};
 
+// Language code mapping for LibreTranslate
+const languageCodeMap: Record<string, string> = {
+  'en': 'en',
+  'hi': 'hi',
+  'bn': 'bn',
+  'gu': 'gu',
+  'kn': 'kn',
+  'ml': 'ml',
+  'mr': 'mr',
+  'ta': 'ta',
+  'te': 'te',
+  'pa': 'pa',
+  'hr': 'hr',
+};
+
 /**
  * Simple translation function that returns the original text
  * For dynamic content that isn't in the i18n system
@@ -59,13 +74,19 @@ export function useTranslatedContent(text: string | null | undefined, language: 
       return;
     }
     
-    // Finally, make an API call for translation
+    // Skip LibreTranslate and go directly to Argos which is more reliable
+    // Map our language code to what the API expects
+    const targetLang = languageCodeMap[language] || language;
+    
+    console.log(`Translating text: "${text}" from English to ${targetLang}`);
+    
+    // Use this API directly - more reliable and fewer CORS issues
     fetch('https://translate.argosopentech.com/translate', {
       method: 'POST',
       body: JSON.stringify({
         q: text,
         source: 'en',
-        target: language,
+        target: targetLang,
         format: 'text'
       }),
       headers: {
@@ -74,11 +95,13 @@ export function useTranslatedContent(text: string | null | undefined, language: 
     })
     .then(response => {
       if (!response.ok) {
+        console.error('Translation API error status:', response.status);
         throw new Error('Translation API error');
       }
       return response.json();
     })
     .then(data => {
+      console.log('Translation API success response:', data);
       const translatedText = data.translatedText;
       
       // Store in cache for future use
@@ -87,11 +110,12 @@ export function useTranslatedContent(text: string | null | undefined, language: 
       }
       translationCache[language][text] = translatedText;
       
+      console.log(`Translation result: "${text}" → "${translatedText}"`);
       setTranslated(translatedText);
     })
     .catch(error => {
-      console.error('Translation error:', error);
-      // Just use the original text if there's an error
+      console.error('Translation API error:', error);
+      // If API call fails, just use the original text
       setTranslated(text);
     });
     
