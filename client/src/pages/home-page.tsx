@@ -179,7 +179,7 @@ export default function HomePage() {
               <RequirementCard
                 key={requirement.id}
                 requirement={requirement}
-                onSelect={user ? () => handleSelectRequirement(requirement) : undefined}
+                onSelect={user?.isServiceProvider ? () => handleSelectRequirement(requirement) : undefined}
               />
             ))}
             {(requirements?.length || 0) === 0 && (
