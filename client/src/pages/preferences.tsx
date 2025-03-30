@@ -1,8 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ColorPaletteGenerator } from '@/components/color-palette-generator';
-import { PalettePreview } from '@/components/palette-preview';
 import { LanguageSwitcher } from '@/components/language-switcher';
 
 export default function PreferencesPage() {
@@ -20,19 +18,10 @@ export default function PreferencesPage() {
         </TabsList>
         
         <TabsContent value="appearance" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div>
-              <ColorPaletteGenerator />
-            </div>
-            <div>
-              <PalettePreview />
-            </div>
-          </div>
-          
-          <div className="bg-muted p-4 rounded-md mt-6">
-            <h3 className="text-lg font-medium mb-2">{t('About Color Themes')}</h3>
-            <p className="text-muted-foreground">
-              {t('Your color preferences will be saved to your browser and applied across the entire application. Changes are applied instantly, allowing you to see the effects in real-time.')}
+          <div className="bg-card border rounded-lg p-6">
+            <h2 className="text-xl font-medium mb-4">{t('Theme Settings')}</h2>
+            <p className="text-muted-foreground mb-4">
+              {t('The application uses a consistent theme across all pages. Theme customization is not available in this version.')}
             </p>
           </div>
         </TabsContent>

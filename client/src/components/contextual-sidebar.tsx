@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation, Link } from "wouter";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/hooks/use-auth";
-import { useTheme } from "@/lib/theme-context";
+
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import {
@@ -28,8 +28,6 @@ import {
   LogOut,
   PenBox,
   Palette,
-  Sun,
-  Moon,
   FileText,
   ChevronsLeft,
   ChevronsRight,
@@ -47,7 +45,6 @@ export function ContextualSidebar({ className }: SidebarNavProps) {
   const [location] = useLocation();
   const { t } = useTranslation();
   const { user, logoutMutation } = useAuth();
-  const { theme, toggleTheme } = useTheme();
   const isMobile = useIsMobile();
   const [collapsed, setCollapsed] = useState(false);
   const [activeGroup, setActiveGroup] = useState<string | null>(null);
@@ -127,22 +124,7 @@ export function ContextualSidebar({ className }: SidebarNavProps) {
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton onClick={toggleTheme}>
-                  <div className="flex items-center gap-2">
-                    {theme === "light" ? (
-                      <Moon className="h-5 w-5" />
-                    ) : (
-                      <Sun className="h-5 w-5" />
-                    )}
-                    <span>
-                      {theme === "light"
-                        ? t('navigation.darkMode')
-                        : t('navigation.lightMode')}
-                    </span>
-                  </div>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+
               <SidebarMenuItem>
                 <LanguageSwitcher />
               </SidebarMenuItem>
@@ -362,22 +344,7 @@ export function ContextualSidebar({ className }: SidebarNavProps) {
                 </div>
               </SidebarMenuButton>
             </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton onClick={toggleTheme}>
-                <div className="flex items-center gap-2">
-                  {theme === "light" ? (
-                    <Moon className="h-5 w-5" />
-                  ) : (
-                    <Sun className="h-5 w-5" />
-                  )}
-                  <span>
-                    {theme === "light"
-                      ? t('navigation.darkMode')
-                      : t('navigation.lightMode')}
-                  </span>
-                </div>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+
             <SidebarMenuItem>
               <LanguageSwitcher />
             </SidebarMenuItem>
