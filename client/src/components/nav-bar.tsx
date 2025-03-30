@@ -8,8 +8,7 @@ import {
   BriefcaseBusiness, 
   ArrowRight, 
   Menu, 
-  Palette,
-  Languages
+  Palette
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "@/components/language-switcher";
@@ -83,18 +82,6 @@ export function NavBar() {
                       className="w-full bg-teal-600 text-white hover:bg-teal-500 border-teal-400/50 rounded-lg font-medium"
                     >
                       {t('navigation.postRequirement')}
-                    </Button>
-                  </Link>
-                </SheetClose>
-
-                <SheetClose asChild>
-                  <Link href="/translation-test" className="block">
-                    <Button 
-                      variant="outline" 
-                      className="w-full flex items-center justify-center gap-1 bg-amber-600 text-white hover:bg-amber-500 border-amber-400/50 rounded-lg font-medium"
-                    >
-                      <Languages className="h-4 w-4" />
-                      Translation Test
                     </Button>
                   </Link>
                 </SheetClose>
@@ -177,17 +164,7 @@ export function NavBar() {
                 </Link>
               </SheetClose>
               
-              <SheetClose asChild>
-                <Link href="/translation-test" className="block">
-                  <Button 
-                    variant="outline" 
-                    className="w-full flex items-center justify-center gap-1 bg-amber-600 text-white hover:bg-amber-500 border-amber-400/50 rounded-lg font-medium mt-2"
-                  >
-                    <Languages className="h-4 w-4" />
-                    Translation Test
-                  </Button>
-                </Link>
-              </SheetClose>
+
             </>
           )}
         </div>
@@ -234,16 +211,6 @@ export function NavBar() {
                     className="bg-teal-600 text-white hover:bg-teal-500 border-teal-400/50 transition-all duration-300 rounded-lg font-medium"
                   >
                     {t('navigation.postRequirement')}
-                  </Button>
-                </Link>
-                <Link href="/translation-test">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="flex items-center gap-1 bg-amber-600 text-white hover:bg-amber-500 border-amber-400/50 transition-all duration-300 rounded-lg font-medium"
-                  >
-                    <Languages className="h-4 w-4" />
-                    Translation Test
                   </Button>
                 </Link>
                 <Link href="/dashboard" className="nav-link">
@@ -306,16 +273,7 @@ export function NavBar() {
                     {t('navigation.login')} / {t('navigation.register')}
                   </Button>
                 </Link>
-                <Link href="/translation-test">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="flex items-center gap-1 bg-amber-600 text-white hover:bg-amber-500 border-amber-400/50 transition-all duration-300 rounded-lg font-medium"
-                  >
-                    <Languages className="h-4 w-4" />
-                    Translation Test
-                  </Button>
-                </Link>
+
               </>
             )}
           </div>
