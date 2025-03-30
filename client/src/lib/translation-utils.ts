@@ -3,9 +3,10 @@ import i18n from "i18next";
 
 /**
  * Robust multi-API translation hook with fallback strategies
- * Primary: MyMemory Translation API (free, no API key)
- * Fallback 1: LibreTranslate (public endpoints)
- * Fallback 2: Original text if all else fails
+ * Uses a chain of free translation APIs with fallback options
+ * Primary: LibreTranslate (prioritized for card translations)
+ * Fallback: MyMemory Translation API
+ * Final Fallback: Original text if all else fails
  */
 export function useTranslatedContent(text: string | null | undefined, language: string): string {
   const [translated, setTranslated] = useState<string>(text || '');
@@ -22,20 +23,32 @@ export function useTranslatedContent(text: string | null | undefined, language: 
     'ml': 'ml', // Malayalam
     'mr': 'mr', // Marathi
     'kn': 'kn', // Kannada
+    'or': 'or', // Odia
     // Add more as needed
   };
 
-  // List of LibreTranslate public endpoints to try
+  // List of LibreTranslate public endpoints to try (expanded with more options)
   const libreTranslateEndpoints = [
     'https://libretranslate.de',
     'https://translate.argosopentech.com',
     'https://translate.terraprint.co',
+    'https://lt.vern.cc',
+    'https://translate.fedilab.app',
+    'https://translate.mentality.rip',
+    'https://translate.astian.org',
+    'https://translate.api.skitzen.com',
+    'https://libretranslate.eownerdead.dedyn.io',
   ];
   
-  // Helper function to translate with LibreTranslate
+  // Helper function to translate with LibreTranslate with improved error handling
   const translateWithLibreTranslate = async (text: string, targetLang: string, endpoint: string): Promise<string> => {
     try {
       console.log(`Trying LibreTranslate at ${endpoint}`);
+      
+      // Use a timeout promise to abort if it takes too long
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+      
       const response = await fetch(`${endpoint}/translate`, {
         method: 'POST',
         body: JSON.stringify({
@@ -43,11 +56,19 @@ export function useTranslatedContent(text: string | null | undefined, language: 
           source: 'en',
           target: targetLang,
           format: 'text',
+          api_key: '' // Some endpoints might require an empty key
         }),
         headers: {
           'Content-Type': 'application/json'
-        }
+        },
+        signal: controller.signal
       });
+      
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       
       const data = await response.json();
       if (data && data.translatedText) {
@@ -78,51 +99,28 @@ export function useTranslatedContent(text: string | null | undefined, language: 
     // Reset API attempts counter when text or language changes
     setApiAttemptsCount(0);
     
-    // Try primary API first (MyMemory)
-    console.log(`Translating via API: "${text}" to ${language}`);
-    const encodedText = encodeURIComponent(text);
+    // Now try LibreTranslate FIRST (per user request)
+    // Map the language code for LibreTranslate
+    const libreLang = languageMapping[language] || language;
     
-    fetch(`https://api.mymemory.translated.net/get?q=${encodedText}&langpair=en|${language}`)
-      .then(response => response.json())
-      .then(data => {
-        // Check if we hit the MyMemory limit
-        const limitReached = data?.responseStatus === 429 || 
-                            (data?.responseData?.translatedText && 
-                             data.responseData.translatedText.includes('MYMEMORY WARNING'));
-        
-        if (data?.responseData?.translatedText && !limitReached) {
-          console.log(`MyMemory API: "${text}" → "${data.responseData.translatedText}"`);
-          setTranslated(data.responseData.translatedText);
-        } else {
-          // MyMemory limit reached or error, try LibreTranslate
-          console.log('MyMemory limit reached or error, falling back to LibreTranslate');
-          setApiAttemptsCount(prev => prev + 1);
-          throw new Error('MyMemory API limit reached');
-        }
-      })
-      .catch(error => {
-        console.error('Primary translation API error:', error);
-        setApiAttemptsCount(prev => prev + 1);
-      });
-      
+    // Check if language is supported by LibreTranslate
+    if (!libreLang) {
+      console.warn(`Language ${language} not supported by LibreTranslate, falling back to MyMemory`);
+      setApiAttemptsCount(2); // Skip to MyMemory
+    } else {
+      console.log(`Translating via LibreTranslate: "${text}" to ${language} (mapped to ${libreLang})`);
+      setApiAttemptsCount(1); // Trigger LibreTranslate in the fallback effect
+    }
   }, [text, language]);
   
-  // Effect for fallback APIs
+  // Effect for API translation chain
   useEffect(() => {
-    // Skip if we're not needing fallback yet
+    // Skip if no fallback needed yet
     if (apiAttemptsCount === 0 || !text || language === 'en') return;
     
-    // First attempt was MyMemory, now try LibreTranslate
+    // LibreTranslate as primary option now
     if (apiAttemptsCount === 1) {
-      // Map the language code for LibreTranslate
       const libreLang = languageMapping[language] || language;
-      
-      // Check if language is supported by LibreTranslate
-      if (!libreLang) {
-        console.warn(`Language ${language} not supported by LibreTranslate, using original text`);
-        setTranslated(text);
-        return;
-      }
       
       // Try each LibreTranslate endpoint
       const tryEndpoints = async () => {
@@ -139,12 +137,39 @@ export function useTranslatedContent(text: string | null | undefined, language: 
           }
         }
         
-        // If we get here, all LibreTranslate endpoints failed
-        console.warn('All LibreTranslate endpoints failed, using original text');
-        setTranslated(text);
+        // If we get here, all LibreTranslate endpoints failed, try MyMemory as fallback
+        console.warn('All LibreTranslate endpoints failed, falling back to MyMemory API');
+        setApiAttemptsCount(2);
       };
       
       tryEndpoints();
+    }
+    // Fallback to MyMemory if LibreTranslate failed
+    else if (apiAttemptsCount === 2) {
+      console.log(`Falling back to MyMemory API: "${text}" to ${language}`);
+      const encodedText = encodeURIComponent(text);
+      
+      fetch(`https://api.mymemory.translated.net/get?q=${encodedText}&langpair=en|${language}`)
+        .then(response => response.json())
+        .then(data => {
+          // Check if we hit the MyMemory limit
+          const limitReached = data?.responseStatus === 429 || 
+                              (data?.responseData?.translatedText && 
+                               data.responseData.translatedText.includes('MYMEMORY WARNING'));
+          
+          if (data?.responseData?.translatedText && !limitReached) {
+            console.log(`MyMemory API: "${text}" → "${data.responseData.translatedText}"`);
+            setTranslated(data.responseData.translatedText);
+          } else {
+            // MyMemory limit reached or error, use original text
+            console.warn('MyMemory API limit reached or error, using original text');
+            setTranslated(text);
+          }
+        })
+        .catch(error => {
+          console.error('MyMemory API error:', error);
+          setTranslated(text);
+        });
     }
   }, [apiAttemptsCount, text, language, languageMapping]);
   
