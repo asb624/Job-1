@@ -2,13 +2,13 @@ import { useState, useEffect } from "react";
 import i18n from "i18next";
 
 /**
- * Robust translation hook with better LibreTranslate integration using CORS proxies
- * Uses multiple approaches to ensure translations work in all environments
+ * Improved server-side translation hook
+ * This version uses our backend API to handle translations, removing CORS and networking issues
  */
 export function useTranslatedContent(text: string | null | undefined, language: string): string {
   const [translated, setTranslated] = useState<string>(text || '');
   
-  // Map i18next language codes to LibreTranslate codes
+  // Map i18next language codes to translation service codes
   const languageMapping: Record<string, string> = {
     'pa': 'pa', // Punjabi
     'hi': 'hi', // Hindi
@@ -22,81 +22,34 @@ export function useTranslatedContent(text: string | null | undefined, language: 
     'or': 'or', // Odia
     // Add more as needed
   };
-
-  // Use CORS proxy to access LibreTranslate
-  const LIBRE_TRANSLATE_API = "https://api.allorigins.win/raw?url=" + 
-    encodeURIComponent("https://libretranslate.de/translate");
   
-  // Create a direct translation function using a CORS proxy
-  const libreTranslateWithProxy = async (text: string, targetLang: string) => {
+  // Use our server-side translation API endpoint
+  const translateText = async (text: string, targetLang: string) => {
     try {
-      console.log(`Trying LibreTranslate via CORS proxy for "${text}" to ${targetLang}`);
+      console.log(`Requesting server-side translation for "${text}" to ${targetLang}`);
       
-      const response = await fetch(LIBRE_TRANSLATE_API, {
+      const response = await fetch('/api/translate', {
         method: 'POST',
-        body: JSON.stringify({
-          q: text,
-          source: 'en',
-          target: targetLang,
-          format: 'text'
-        }),
-        headers: {
-          'Content-Type': 'application/json'
-        }
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, targetLang })
       });
       
       if (!response.ok) {
-        throw new Error(`LibreTranslate proxy HTTP error: ${response.status}`);
+        throw new Error(`Translation API error: ${response.status}`);
       }
       
       const data = await response.json();
       
       if (data && data.translatedText) {
-        console.log(`LibreTranslate success: "${text}" → "${data.translatedText}"`);
+        console.log(`Translation success (via ${data.source}): "${text}" → "${data.translatedText}"`);
         return data.translatedText;
       } else {
-        throw new Error('No translation data returned');
+        throw new Error('No translation data returned from server');
       }
     } catch (error) {
-      console.error('LibreTranslate with proxy error:', error);
-      // If LibreTranslate fails, try direct MyMemory as fallback
-      return fetchMyMemoryTranslation(text, targetLang);
-    }
-  };
-  
-  // Fallback to MyMemory if LibreTranslate fails
-  const fetchMyMemoryTranslation = async (text: string, targetLang: string) => {
-    try {
-      console.log(`Falling back to MyMemory for "${text}" to ${targetLang}`);
+      console.error('Server-side translation error:', error);
       
-      // Using a different method for MyMemory that might work better with Replit's environment
-      const encodedText = encodeURIComponent(text);
-      const myMemoryURL = `https://api.mymemory.translated.net/get?q=${encodedText}&langpair=en|${targetLang}`;
-      
-      // Try with a CORS proxy if needed
-      const response = await fetch(myMemoryURL);
-      
-      if (!response.ok) {
-        throw new Error(`MyMemory HTTP error: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      
-      // Check if we hit the MyMemory limit
-      const limitReached = data?.responseStatus === 429 || 
-                         (data?.responseData?.translatedText && 
-                          data.responseData.translatedText.includes('MYMEMORY WARNING'));
-      
-      if (data?.responseData?.translatedText && !limitReached) {
-        console.log(`MyMemory success: "${text}" → "${data.responseData.translatedText}"`);
-        return data.responseData.translatedText;
-      } else {
-        throw new Error('MyMemory limit reached or no translation returned');
-      }
-    } catch (error) {
-      console.error('MyMemory error:', error);
-      
-      // Last resort - use a directly hardcoded common phrase if available
+      // Provide hardcoded common phrases as a last resort
       if (text === "Website developer needed") {
         if (targetLang === 'hi') return "वेबसाइट डेवलपर की आवश्यकता है";
         if (targetLang === 'pa') return "ਵੈੱਬਸਾਈਟ ਡਿਵੈਲਪਰ ਦੀ ਲੋੜ ਹੈ";
@@ -121,7 +74,7 @@ export function useTranslatedContent(text: string | null | undefined, language: 
       return;
     }
     
-    // Map language code for LibreTranslate
+    // Map language code for translation API
     const targetLang = languageMapping[language] || language;
     
     // If language is not supported, use original text
@@ -134,8 +87,8 @@ export function useTranslatedContent(text: string | null | undefined, language: 
     // Prevent state updates after component unmount
     let isActive = true;
     
-    // Start with LibreTranslate via proxy
-    libreTranslateWithProxy(text, targetLang)
+    // Use the server-side translation API
+    translateText(text, targetLang)
       .then(result => {
         if (isActive && result) {
           setTranslated(result);

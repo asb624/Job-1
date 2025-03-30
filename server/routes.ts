@@ -4,6 +4,7 @@ import { setupAuth } from "./auth";
 import { setupWebSocket } from "./websocket";
 import { storage } from "./storage";
 import { z } from "zod";
+import fetch from "node-fetch";
 import { 
   insertServiceSchema, insertRequirementSchema, insertBidSchema, 
   insertProfileSchema, insertMessageSchema, insertNotificationSchema,
@@ -15,6 +16,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   const httpServer = createServer(app);
   setupWebSocket(httpServer);
+  
+  // Translation endpoint
+  app.post("/api/translate", async (req, res) => {
+    try {
+      const { text, targetLang } = req.body;
+      
+      if (!text || !targetLang) {
+        return res.status(400).json({ message: "Missing required parameters" });
+      }
+      
+      console.log(`Translating: "${text}" to ${targetLang}`);
+      
+      // Try LibreTranslate first
+      try {
+        console.log("Trying LibreTranslate...");
+        const libreResponse = await fetch("https://libretranslate.de/translate", {
+          method: "POST",
+          body: JSON.stringify({
+            q: text,
+            source: "auto",
+            target: targetLang,
+            format: "text"
+          }),
+          headers: { "Content-Type": "application/json" },
+          timeout: 5000
+        });
+        
+        if (libreResponse.ok) {
+          const libreData = await libreResponse.json();
+          if (libreData && libreData.translatedText) {
+            console.log(`LibreTranslate success: "${libreData.translatedText}"`);
+            return res.json({ 
+              translatedText: libreData.translatedText,
+              source: "libretranslate"
+            });
+          }
+        }
+        throw new Error("LibreTranslate translation failed or incomplete");
+      } catch (libreError) {
+        console.log("LibreTranslate error:", libreError.message);
+        
+        // Fall back to MyMemory
+        try {
+          console.log("Falling back to MyMemory...");
+          const encodedText = encodeURIComponent(text);
+          const myMemoryResponse = await fetch(
+            `https://api.mymemory.translated.net/get?q=${encodedText}&langpair=en|${targetLang}`
+          );
+          
+          if (myMemoryResponse.ok) {
+            const myMemoryData = await myMemoryResponse.json();
+            const translatedText = myMemoryData?.responseData?.translatedText;
+            
+            if (translatedText && !translatedText.includes("MYMEMORY WARNING")) {
+              console.log(`MyMemory success: "${translatedText}"`);
+              return res.json({ 
+                translatedText: translatedText,
+                source: "mymemory"
+              });
+            }
+          }
+          throw new Error("MyMemory translation failed or limit reached");
+        } catch (myMemoryError) {
+          console.log("MyMemory error:", myMemoryError.message);
+          return res.status(503).json({ 
+            message: "Translation services unavailable",
+            originalText: text
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Translation error:", error);
+      res.status(500).json({ message: "Internal server error during translation" });
+    }
+  });
 
   // Profile routes
   app.get("/api/profile", async (req, res) => {
