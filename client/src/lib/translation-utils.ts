@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import i18n from "i18next";
+import { useTranslationProgress } from "./translation-context";
 
 // Global translation cache to reduce API calls across components
 interface TranslationCache {
@@ -11,7 +12,7 @@ interface TranslationCache {
 const globalTranslationCache: TranslationCache = {};
 
 // In-progress translations queue to prevent duplicate API calls
-const pendingTranslations: Record<string, Promise<string>> = {};
+const pendingTranslations: { [key: string]: Promise<string> | undefined } = {};
 
 /**
  * Translation hook that uses our server-side API with improved caching
@@ -19,6 +20,7 @@ const pendingTranslations: Record<string, Promise<string>> = {};
  */
 export function useTranslatedContent(text: string | null | undefined, language: string): string {
   const [translated, setTranslated] = useState<string>(text || '');
+  const translationProgress = useTranslationProgress();
   
   // Map i18next language codes to translation service codes
   const languageMapping: Record<string, string> = {
@@ -54,8 +56,8 @@ export function useTranslatedContent(text: string | null | undefined, language: 
     const requestKey = `${text}:${targetLang}`;
     
     // If this exact translation is already in progress, reuse the promise
-    if (pendingTranslations[requestKey]) {
-      return pendingTranslations[requestKey];
+    if (pendingTranslations[requestKey] !== undefined) {
+      return pendingTranslations[requestKey]!; // Use non-null assertion since we checked it's not undefined
     }
     
     // Start a new translation request
@@ -160,6 +162,13 @@ export function useTranslatedContent(text: string | null | undefined, language: 
   return translated;
 }
 
+// For tracking translation progress globally (outside of React components)
+let globalProgressCallback: ((progress: number, total: number) => void) | null = null;
+
+export function setGlobalProgressCallback(callback: (progress: number, total: number) => void) {
+  globalProgressCallback = callback;
+}
+
 // Utility function to pre-load translations in batches
 export async function preloadTranslations(texts: string[], language: string): Promise<void> {
   if (language === 'en' || !texts || texts.length === 0) return;
@@ -172,6 +181,14 @@ export async function preloadTranslations(texts: string[], language: string): Pr
   if (textsToTranslate.length === 0) return;
   
   console.log(`Preloading ${textsToTranslate.length} translations for ${language}`);
+  
+  let translatedCount = 0;
+  const totalCount = textsToTranslate.length;
+  
+  // Update progress initially
+  if (globalProgressCallback) {
+    globalProgressCallback(translatedCount, totalCount);
+  }
   
   // Process in small batches to not overwhelm the translation API
   const batchSize = 3;
@@ -197,9 +214,26 @@ export async function preloadTranslations(texts: string[], language: string): Pr
               globalTranslationCache[language] = {};
             }
             globalTranslationCache[language][text] = translated.translatedText;
+            
+            // Update progress
+            translatedCount++;
+            if (globalProgressCallback) {
+              globalProgressCallback(translatedCount, totalCount);
+            }
           }
         } catch (error) {
           console.error('Batch translation error:', error);
+          // Still count it as processed even if it failed
+          translatedCount++;
+          if (globalProgressCallback) {
+            globalProgressCallback(translatedCount, totalCount);
+          }
+        }
+      } else {
+        // If already cached, still count as processed
+        translatedCount++;
+        if (globalProgressCallback) {
+          globalProgressCallback(translatedCount, totalCount);
         }
       }
     }));
