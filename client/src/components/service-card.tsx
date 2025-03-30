@@ -1,9 +1,9 @@
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Service } from "@shared/schema";
-import { MapPin, Clock, Tag, Star, Calendar } from "lucide-react";
+import { MapPin, Clock, Tag, Star, Calendar, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { formatDate } from "@/lib/utils";
 import { useTranslatedContent } from "@/lib/translation-utils";
 
@@ -15,6 +15,7 @@ interface ServiceCardProps {
 export function ServiceCard({ service, onContact }: ServiceCardProps) {
   const { t, i18n } = useTranslation();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isTranslating, setIsTranslating] = useState(i18n.language !== 'en');
   const hasImages = service.imageUrls && Array.isArray(service.imageUrls) && service.imageUrls.length > 0;
   
   // Use our custom hook to handle translations with async support
@@ -23,8 +24,55 @@ export function ServiceCard({ service, onContact }: ServiceCardProps) {
   const translatedCity = useTranslatedContent(service.city, i18n.language);
   const translatedState = useTranslatedContent(service.state, i18n.language);
   
+  // Track translation state to show loading animation
+  useEffect(() => {
+    if (i18n.language === 'en') {
+      // No translation needed for English
+      setIsTranslating(false);
+      return;
+    }
+    
+    // Initial state - assume we're translating
+    setIsTranslating(true);
+    
+    // Check if translations are complete
+    const isComplete = 
+      (service.title === translatedTitle || translatedTitle !== service.title) &&
+      (service.description === translatedDescription || translatedDescription !== service.description) &&
+      (!service.city || service.city === translatedCity || translatedCity !== service.city) &&
+      (!service.state || service.state === translatedState || translatedState !== service.state);
+    
+    if (isComplete) {
+      // Add a small delay for smooth transition
+      const timer = setTimeout(() => {
+        setIsTranslating(false);
+      }, 300);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [
+    i18n.language, 
+    translatedTitle, 
+    translatedDescription, 
+    translatedCity, 
+    translatedState, 
+    service.title, 
+    service.description, 
+    service.city, 
+    service.state
+  ]);
+  
   return (
     <Card className="w-full relative overflow-hidden bg-white hover:shadow-lg transition-all duration-400 ease-in-out border border-teal-100 group rounded-xl transform hover:-translate-y-1 animate-in fade-in-5 slide-in-from-bottom-5 duration-700">
+      {/* Translation loading overlay */}
+      {isTranslating && (
+        <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-2">
+            <Loader2 className="h-8 w-8 text-teal-600 animate-spin" />
+            <span className="text-sm font-medium text-teal-700">{t('common.translating', 'Translating...')}</span>
+          </div>
+        </div>
+      )}
       
       {/* Top accent bar */}
       <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-teal-500 to-emerald-400"></div>

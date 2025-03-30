@@ -6,8 +6,6 @@ import { AuthProvider } from "@/hooks/use-auth";
 import { NotificationProvider } from "@/hooks/use-websocket-notifications";
 import { ThemeProvider } from "./lib/theme-context";
 import { ColorPaletteProvider } from "./lib/color-palette-context";
-import { TranslationProvider } from "./lib/translation-context";
-import { TranslationLoader } from "./components/translation-loader";
 import { ProtectedRoute } from "./lib/protected-route";
 import { NavBar } from "./components/nav-bar";
 import { ContextualSidebar } from "./components/contextual-sidebar";
@@ -52,19 +50,16 @@ function App() {
           <QueryClientProvider client={queryClient}>
             <AuthProvider>
               <NotificationProvider>
-                <TranslationProvider>
-                  <div className="min-h-screen theme-transition flex">
-                    <ContextualSidebar />
-                    <div className="flex-1 flex flex-col">
-                      <NavBar />
-                      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-                        <Router />
-                      </main>
-                    </div>
+                <div className="min-h-screen theme-transition flex">
+                  <ContextualSidebar />
+                  <div className="flex-1 flex flex-col">
+                    <NavBar />
+                    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+                      <Router />
+                    </main>
                   </div>
-                  <TranslationLoader />
-                  <Toaster />
-                </TranslationProvider>
+                </div>
+                <Toaster />
               </NotificationProvider>
             </AuthProvider>
           </QueryClientProvider>
