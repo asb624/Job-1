@@ -54,7 +54,7 @@ export function NavBar() {
       </SheetTrigger>
       <SheetContent side="right" className="bg-gradient-to-b from-teal-700 to-teal-600 text-white border-teal-700 p-0">
         <SheetHeader className="px-4 py-6 border-b border-teal-600">
-          <SheetTitle className="text-white flex items-center">
+          <SheetTitle className="text-white flex items-center mt-1">
             <span className="bg-white text-teal-600 px-2 py-1 rounded-md mr-2 shadow-md font-extrabold">{t('app.title').charAt(0)}</span>
             {t('app.title')}
           </SheetTitle>
@@ -176,9 +176,9 @@ export function NavBar() {
     <nav className="border-b border-teal-700/10 shadow-lg bg-gradient-to-r from-teal-700 via-teal-600 to-emerald-500 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
-          <div className="flex">
+          <div className="flex items-center">
             <Link href="/">
-              <div className="flex items-center text-xl font-bold text-white hover:scale-105 transition-all duration-300 ease-in-out">
+              <div className="flex items-center text-xl font-bold text-white hover:scale-105 transition-all duration-300 ease-in-out mt-1">
                 <span className="bg-white text-teal-600 px-2 py-1 rounded-md mr-2 shadow-md font-extrabold">{t('app.title').charAt(0)}</span>
                 {t('app.title')}
               </div>
