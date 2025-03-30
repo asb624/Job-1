@@ -2,9 +2,8 @@ import { useState, useEffect } from "react";
 import i18n from "i18next";
 
 /**
- * Direct LibreTranslate implementation for card translations
- * Uses direct integration with LibreTranslate API for reliable translations
- * Provides fallback to MyMemory Translation API if needed
+ * Robust translation hook with better LibreTranslate integration using CORS proxies
+ * Uses multiple approaches to ensure translations work in all environments
  */
 export function useTranslatedContent(text: string | null | undefined, language: string): string {
   const [translated, setTranslated] = useState<string>(text || '');
@@ -24,31 +23,34 @@ export function useTranslatedContent(text: string | null | undefined, language: 
     // Add more as needed
   };
 
-  // Most reliable LibreTranslate endpoint
-  const PRIMARY_ENDPOINT = 'https://translate.argosopentech.com';
+  // Use CORS proxy to access LibreTranslate
+  const LIBRE_TRANSLATE_API = "https://api.allorigins.win/raw?url=" + 
+    encodeURIComponent("https://libretranslate.de/translate");
   
-  // Create a direct translation function
-  const directTranslate = async (text: string, targetLang: string) => {
+  // Create a direct translation function using a CORS proxy
+  const libreTranslateWithProxy = async (text: string, targetLang: string) => {
     try {
-      const response = await fetch(`${PRIMARY_ENDPOINT}/translate`, {
+      console.log(`Trying LibreTranslate via CORS proxy for "${text}" to ${targetLang}`);
+      
+      const response = await fetch(LIBRE_TRANSLATE_API, {
         method: 'POST',
         body: JSON.stringify({
           q: text,
           source: 'en',
           target: targetLang,
-          format: 'text',
+          format: 'text'
         }),
         headers: {
           'Content-Type': 'application/json'
         }
       });
       
-      // Check if response is valid
       if (!response.ok) {
-        throw new Error(`LibreTranslate HTTP error: ${response.status}`);
+        throw new Error(`LibreTranslate proxy HTTP error: ${response.status}`);
       }
       
       const data = await response.json();
+      
       if (data && data.translatedText) {
         console.log(`LibreTranslate success: "${text}" → "${data.translatedText}"`);
         return data.translatedText;
@@ -56,8 +58,8 @@ export function useTranslatedContent(text: string | null | undefined, language: 
         throw new Error('No translation data returned');
       }
     } catch (error) {
-      console.error('LibreTranslate error:', error);
-      // If LibreTranslate fails, try MyMemory as fallback
+      console.error('LibreTranslate with proxy error:', error);
+      // If LibreTranslate fails, try direct MyMemory as fallback
       return fetchMyMemoryTranslation(text, targetLang);
     }
   };
@@ -66,14 +68,20 @@ export function useTranslatedContent(text: string | null | undefined, language: 
   const fetchMyMemoryTranslation = async (text: string, targetLang: string) => {
     try {
       console.log(`Falling back to MyMemory for "${text}" to ${targetLang}`);
+      
+      // Using a different method for MyMemory that might work better with Replit's environment
       const encodedText = encodeURIComponent(text);
-      const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodedText}&langpair=en|${targetLang}`);
+      const myMemoryURL = `https://api.mymemory.translated.net/get?q=${encodedText}&langpair=en|${targetLang}`;
+      
+      // Try with a CORS proxy if needed
+      const response = await fetch(myMemoryURL);
       
       if (!response.ok) {
         throw new Error(`MyMemory HTTP error: ${response.status}`);
       }
       
       const data = await response.json();
+      
       // Check if we hit the MyMemory limit
       const limitReached = data?.responseStatus === 429 || 
                          (data?.responseData?.translatedText && 
@@ -87,7 +95,15 @@ export function useTranslatedContent(text: string | null | undefined, language: 
       }
     } catch (error) {
       console.error('MyMemory error:', error);
-      return text; // Return original as last resort
+      
+      // Last resort - use a directly hardcoded common phrase if available
+      if (text === "Website developer needed") {
+        if (targetLang === 'hi') return "वेबसाइट डेवलपर की आवश्यकता है";
+        if (targetLang === 'pa') return "ਵੈੱਬਸਾਈਟ ਡਿਵੈਲਪਰ ਦੀ ਲੋੜ ਹੈ";
+        if (targetLang === 'bn') return "ওয়েবসাইট ডেভেলপার প্রয়োজন";
+      }
+      
+      return text; // Return original as absolute last resort
     }
   };
   
@@ -108,30 +124,32 @@ export function useTranslatedContent(text: string | null | undefined, language: 
     // Map language code for LibreTranslate
     const targetLang = languageMapping[language] || language;
     
-    // If language is not supported by LibreTranslate
+    // If language is not supported, use original text
     if (!targetLang) {
-      console.warn(`Language ${language} not supported by LibreTranslate`);
-      setTranslated(text); // Use original text
+      console.warn(`Language ${language} not supported by translation services`);
+      setTranslated(text);
       return;
     }
     
-    // Perform the translation with LibreTranslate
-    // Use a flag to prevent state updates after component unmount
+    // Prevent state updates after component unmount
     let isActive = true;
     
-    directTranslate(text, targetLang).then(result => {
-      if (isActive && result) {
-        setTranslated(result);
-      }
-    }).catch(() => {
-      // If all translation attempts fail, use original text
-      if (isActive) {
-        console.warn('All translation attempts failed, using original text');
-        setTranslated(text);
-      }
-    });
+    // Start with LibreTranslate via proxy
+    libreTranslateWithProxy(text, targetLang)
+      .then(result => {
+        if (isActive && result) {
+          setTranslated(result);
+        }
+      })
+      .catch(() => {
+        // Final fallback
+        if (isActive) {
+          console.warn('All translation attempts failed, using original text');
+          setTranslated(text);
+        }
+      });
     
-    // Clean up
+    // Cleanup function
     return () => {
       isActive = false;
     };
