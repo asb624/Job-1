@@ -23,6 +23,10 @@
     "settings": "Settings",
     "saved": "Saved Items"
   },
+  "marketplace": {
+    "browse": "Browse Services & Requirements",
+    "description": "Find skilled professionals or post your requirements"
+  },
   "services": {
     "title": "Services",
     "manageServices": "Manage Services",
