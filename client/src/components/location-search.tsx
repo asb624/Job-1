@@ -3,7 +3,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useTranslation } from 'react-i18next';
-import { Loader2, MapPin, Search } from 'lucide-react';
+import { Loader2, MapPin, X } from 'lucide-react';
 
 // Define the structure for location search results
 interface LocationResult {
@@ -34,9 +34,28 @@ export function LocationSearch({
   const [isLoading, setIsLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const searchTimeoutRef = useRef<number | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const hasSelectedLocation = useRef(false);
 
+  // Keep popover open when there are results or when loading
   useEffect(() => {
-    // Clear any existing timeout when component unmounts
+    if (isLoading || (results.length > 0 && searchTerm.length > 1)) {
+      setOpen(true);
+    }
+  }, [isLoading, results, searchTerm]);
+
+  // Reset location selection flag when search term changes
+  useEffect(() => {
+    if (searchTerm.length > 0 && !hasSelectedLocation.current) {
+      setOpen(true);
+    }
+    if (searchTerm.length === 0) {
+      hasSelectedLocation.current = false;
+    }
+  }, [searchTerm]);
+
+  // Clear any existing timeout when component unmounts
+  useEffect(() => {
     return () => {
       if (searchTimeoutRef.current) {
         window.clearTimeout(searchTimeoutRef.current);
@@ -52,13 +71,13 @@ export function LocationSearch({
 
     setIsLoading(true);
     try {
-      // Using Nominatim for OpenStreetMap geocoding
+      // Using Nominatim for OpenStreetMap geocoding with additional parameters
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1`,
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=8&addressdetails=1&countrycodes=in`,
         {
           headers: {
-            'Accept-Language': 'en', // You can make this dynamic based on the user's selected language
-            'User-Agent': 'JobBazaar Marketplace App' // It's good practice to identify your application
+            'Accept-Language': 'en', // You can make this dynamic based on user language
+            'User-Agent': 'JobBazaar Marketplace App'
           }
         }
       );
@@ -66,6 +85,10 @@ export function LocationSearch({
       if (response.ok) {
         const data = await response.json();
         setResults(data);
+        // Keep popover open if we have results
+        if (data.length > 0) {
+          setOpen(true);
+        }
       } else {
         console.error('Error searching locations:', response.statusText);
         setResults([]);
@@ -81,6 +104,7 @@ export function LocationSearch({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchTerm(value);
+    hasSelectedLocation.current = false;
     
     // Debounce the search to avoid too many requests
     if (searchTimeoutRef.current) {
@@ -89,7 +113,7 @@ export function LocationSearch({
     
     searchTimeoutRef.current = window.setTimeout(() => {
       searchLocations(value);
-    }, 500); // 500ms debounce
+    }, 300); // Reduced debounce time for better responsiveness
   };
 
   const handleSelectLocation = (result: LocationResult) => {
@@ -99,54 +123,95 @@ export function LocationSearch({
       lon: parseFloat(result.lon)
     });
     setSearchTerm(result.display_name);
+    hasSelectedLocation.current = true;
     setOpen(false);
   };
 
+  const clearSearch = () => {
+    setSearchTerm('');
+    setResults([]);
+    hasSelectedLocation.current = false;
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  };
+
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <div className={`flex items-center relative ${className}`}>
-          <MapPin className="absolute left-3 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder={placeholder || t('filters.searchLocation')}
-            className="pl-9 pr-4"
-            value={searchTerm}
-            onChange={handleInputChange}
-            onFocus={() => setOpen(true)}
-          />
-        </div>
-      </PopoverTrigger>
-      <PopoverContent className="w-[300px] p-0" align="start">
-        <div className="py-2">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-4">
-              <Loader2 className="h-6 w-6 animate-spin text-primary" />
-            </div>
-          ) : results.length > 0 ? (
-            <div className="max-h-[300px] overflow-auto">
-              {results.map((result) => (
-                <Button
-                  key={result.place_id}
-                  variant="ghost"
-                  className="w-full justify-start text-left font-normal truncate px-2 py-1.5"
-                  onClick={() => handleSelectLocation(result)}
-                >
-                  <MapPin className="mr-2 h-4 w-4 shrink-0" />
-                  <span className="truncate">{result.display_name}</span>
-                </Button>
-              ))}
-            </div>
-          ) : searchTerm.length > 1 ? (
-            <p className="text-sm text-center py-4 text-muted-foreground">
-              {t('filters.noLocationsFound')}
-            </p>
-          ) : (
-            <p className="text-sm text-center py-4 text-muted-foreground">
-              {t('filters.typeToSearch')}
-            </p>
-          )}
-        </div>
-      </PopoverContent>
-    </Popover>
+    <div className="relative">
+      <Popover 
+        open={open} 
+        onOpenChange={(isOpen) => {
+          // Only allow manual closing if we're not loading
+          if (!isLoading || !isOpen) {
+            setOpen(isOpen);
+          }
+        }}
+      >
+        <PopoverTrigger asChild>
+          <div className={`flex items-center relative ${className}`}>
+            <MapPin className="absolute left-3 h-4 w-4 text-muted-foreground" />
+            <Input
+              ref={inputRef}
+              placeholder={placeholder || t('filters.searchLocation')}
+              className="pl-9 pr-10" // Extra padding for clear button
+              value={searchTerm}
+              onChange={handleInputChange}
+              onFocus={() => {
+                if (searchTerm.length > 1 && !hasSelectedLocation.current) {
+                  setOpen(true);
+                }
+              }}
+            />
+            {searchTerm && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="absolute right-2 h-5 w-5 p-0"
+                onClick={clearSearch}
+              >
+                <X className="h-3 w-3" />
+                <span className="sr-only">Clear</span>
+              </Button>
+            )}
+          </div>
+        </PopoverTrigger>
+        <PopoverContent 
+          className="w-[300px] p-0 z-50" 
+          align="start"
+          sideOffset={5}
+        >
+          <div className="py-2">
+            {isLoading ? (
+              <div className="flex items-center justify-center py-4">
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              </div>
+            ) : results.length > 0 ? (
+              <div className="max-h-[300px] overflow-auto">
+                {results.map((result) => (
+                  <Button
+                    key={result.place_id}
+                    variant="ghost"
+                    className="w-full justify-start text-left font-normal px-2 py-2 h-auto"
+                    onClick={() => handleSelectLocation(result)}
+                  >
+                    <MapPin className="mr-2 h-4 w-4 shrink-0 text-primary" />
+                    <span className="line-clamp-2 text-sm">{result.display_name}</span>
+                  </Button>
+                ))}
+              </div>
+            ) : searchTerm.length > 1 ? (
+              <p className="text-sm text-center py-4 text-muted-foreground">
+                {t('filters.noLocationsFound')}
+              </p>
+            ) : (
+              <p className="text-sm text-center py-4 text-muted-foreground">
+                {t('filters.typeToSearch')}
+              </p>
+            )}
+          </div>
+        </PopoverContent>
+      </Popover>
+    </div>
   );
 }
