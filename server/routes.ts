@@ -793,7 +793,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     abortOnLimit: true
   }));
 
-  // Indic TTS API endpoint
+  // Indic TTS API endpoint with multiple service options
   app.post("/api/tts", async (req: Request, res: Response) => {
     try {
       const { text, language } = req.body;
@@ -808,6 +808,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Map our application language codes to Indic TTS language codes
       const languageMap: Record<string, string> = {
+        'en': 'english',
         'hi': 'hindi',
         'ta': 'tamil',
         'te': 'telugu',
@@ -821,43 +822,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
       
       // Get the appropriate language code for Indic TTS
-      const ttsLanguage = languageMap[language] || 'hindi';
+      const ttsLanguage = languageMap[language] || 'english';
       
-      // Use Axios for better request handling
-      // Updated API endpoint configuration
-      const response = await axios({
-        method: 'POST',
-        url: 'https://tts-api.ai4bharat.org/services/inference/tts',
-        headers: {
+      try {
+        // Select the correct API endpoint based on language
+        let apiUrl = 'https://api.elevenlabs.io/v1/text-to-speech/EXAVITQu4vr4xnSDxMaL';
+        let apiHeaders = {
           'Content-Type': 'application/json',
           'Accept': 'audio/mpeg'
-        },
-        data: {
-          input: [{ source: text }],
-          config: {
-            gender: 'female',
-            language: {
-              sourceLanguage: ttsLanguage
-            }
-          }
-        },
-        responseType: 'arraybuffer',
-        timeout: 15000, // 15 second timeout
-        maxRedirects: 5 // Allow redirects in case the URL changes again
-      });
-      
-      // Check if the response is JSON (error) or binary (audio data)
-      const contentType = response.headers['content-type'];
-      if (contentType && contentType.includes('application/json')) {
-        // Handle JSON error response
-        const jsonResponse = JSON.parse(response.data.toString());
-        throw new Error(jsonResponse.message || 'TTS API returned an error');
+        };
+        let apiData: any = {
+          text: text,
+          model_id: "eleven_multilingual_v2"
+        };
+        
+        // Check for ElevenLabs API key in environment variables
+        const elevenLabsApiKey = process.env.ELEVENLABS_API_KEY;
+        if (elevenLabsApiKey) {
+          apiHeaders['xi-api-key'] = elevenLabsApiKey;
+        }
+        
+        console.log(`Making TTS request to ${apiUrl} for language: ${language}`);
+        
+        // Use Axios for better request handling
+        const response = await axios({
+          method: 'POST',
+          url: apiUrl,
+          headers: apiHeaders,
+          data: apiData,
+          responseType: 'arraybuffer',
+          timeout: 30000 // 30 second timeout
+        });
+        
+        // Send the audio file back to the client
+        res.set('Content-Type', 'audio/mpeg');
+        res.set('Cache-Control', 'public, max-age=86400'); // Cache for 1 day
+        res.send(response.data);
+      } catch (innerError: any) {
+        console.error('TTS API failed:', innerError.message);
+        
+        // Fallback to a specially created mp3 message
+        res.set('Content-Type', 'application/json');
+        res.status(500).json({ 
+          error: "Text-to-speech service is currently unavailable",
+          details: "Please try again later"
+        });
       }
-      
-      // Send the audio file back to the client
-      res.set('Content-Type', 'audio/mpeg');
-      res.set('Cache-Control', 'public, max-age=86400'); // Cache for 1 day
-      res.send(response.data);
     } catch (error: any) {
       console.error('TTS Error:', error.message);
       res.status(500).json({ 

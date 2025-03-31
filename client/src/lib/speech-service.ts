@@ -5,27 +5,10 @@
 
 import axios from 'axios';
 
-// Map i18next language codes to BCP 47 language tags used by the speech API
-const webSpeechLanguageMapping: Record<string, string> = {
-  'en': 'en-US',
-  'hi': 'hi-IN',
-  'ta': 'ta-IN',
-  'te': 'te-IN',
-  'bn': 'bn-IN',
-  'gu': 'gu-IN',
-  'ml': 'ml-IN',
-  'mr': 'mr-IN',
-  'kn': 'kn-IN',
-  'pa': 'pa-IN',
-  'or': 'or-IN',
-  'as': 'as-IN',
-  'hr': 'hr-HR',
-};
-
-// List of Indian language codes for which we prefer server-side TTS over Web Speech API
-const indicLanguages = [
-  'hi', 'ta', 'te', 'bn', 'gu', 'ml', 'mr', 'kn', 'pa', 'or', 'as',
-  'brx', 'kok', 'ks', 'mni', 'sd'
+// List of supported language codes for our custom TTS solution
+const supportedLanguages = [
+  'en', 'hi', 'ta', 'te', 'bn', 'gu', 'ml', 'mr', 'kn', 'pa', 'or', 'as',
+  'brx', 'kok', 'ks', 'mni', 'sd', 'hr'
 ];
 
 // Audio player for server-side TTS audio
@@ -37,19 +20,13 @@ type AudioPlayer = {
 // Singleton class to manage text-to-speech functionality
 class SpeechService {
   private static instance: SpeechService;
-  private synthesis: SpeechSynthesis | null = null;
-  private isSpeaking: boolean = false;
-  private currentUtterance: SpeechSynthesisUtterance | null = null;
   private audioPlayer: AudioPlayer = {
     audio: null,
     isPlaying: false
   };
   
   private constructor() {
-    // Initialize the speech synthesis if available in the browser
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      this.synthesis = window.speechSynthesis;
-    }
+    // Constructor is now simpler with no Web Speech API
   }
   
   public static getInstance(): SpeechService {
@@ -60,24 +37,16 @@ class SpeechService {
   }
   
   /**
-   * Check if speech synthesis is supported in this browser or via fallbacks
+   * Check if speech synthesis is supported in this browser via our custom TTS
    */
   public isSupported(): boolean {
-    // We consider the service supported if either Web Speech API is available 
-    // or our server-side TTS fallback can be used
-    return this.synthesis !== null || true; // Always return true since server-side is always available
+    return true; // Always return true since server-side TTS is always available
   }
   
   /**
-   * Stop any currently playing speech (both Web Speech and audio playback)
+   * Stop any currently playing speech
    */
   public stop(): void {
-    // Stop Web Speech API if active
-    if (this.synthesis && this.isSpeaking) {
-      this.synthesis.cancel();
-      this.isSpeaking = false;
-    }
-    
     // Stop audio playback if active
     if (this.audioPlayer.audio && this.audioPlayer.isPlaying) {
       this.audioPlayer.audio.pause();
@@ -87,14 +56,14 @@ class SpeechService {
   }
   
   /**
-   * Check if a language is better supported by server-side TTS
+   * Check if a language is supported by our TTS service
    */
-  private shouldUseServerSideTTS(languageCode: string): boolean {
-    return indicLanguages.includes(languageCode);
+  private isLanguageSupported(languageCode: string): boolean {
+    return supportedLanguages.includes(languageCode);
   }
   
   /**
-   * Play audio using server-side TTS (specialized for Indian languages)
+   * Play audio using our custom TTS service
    * @param text Text to convert to speech
    * @param languageCode Language code (e.g., 'hi', 'ta')
    */
@@ -158,109 +127,34 @@ class SpeechService {
   }
   
   /**
-   * Speak text using Web Speech API
-   * @param text Text to speak
-   * @param languageCode Language code
-   */
-  private speakWithWebSpeech(text: string, languageCode: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (!this.synthesis) {
-        reject(new Error('Web Speech API not supported in this browser'));
-        return;
-      }
-      
-      // Stop any current speech
-      this.stop();
-      
-      const utterance = new SpeechSynthesisUtterance(text);
-      
-      // Map the language code to BCP 47
-      const speechLang = webSpeechLanguageMapping[languageCode] || 'en-US';
-      utterance.lang = speechLang;
-      
-      console.log(`Using Web Speech API for language ${languageCode} (${speechLang})`);
-      
-      // Handle completion
-      utterance.onend = () => {
-        this.isSpeaking = false;
-        this.currentUtterance = null;
-        resolve();
-      };
-      
-      // Handle errors
-      utterance.onerror = (event) => {
-        this.isSpeaking = false;
-        this.currentUtterance = null;
-        reject(new Error(`Speech synthesis error: ${event.error}`));
-      };
-      
-      // Start speaking
-      this.currentUtterance = utterance;
-      this.isSpeaking = true;
-      this.synthesis.speak(utterance);
-    });
-  }
-  
-  /**
-   * Speak text using the most appropriate TTS method for the language
-   * Falls back gracefully based on language and available methods
+   * Speak text using our custom TTS service
    * @param text The text to speak
    * @param languageCode The i18next language code
    * @returns A promise that resolves when speech is completed or rejects on error
    */
   public async speak(text: string, languageCode: string = 'en'): Promise<void> {
     try {
-      // Check if this is an Indian language that's better supported by Indic TTS
-      if (this.shouldUseServerSideTTS(languageCode)) {
-        // Try server-side TTS first for Indian languages
-        try {
-          await this.playServerSideTTS(text, languageCode);
-          return;
-        } catch (error) {
-          console.warn('Server-side TTS failed, falling back to Web Speech API:', error);
-          
-          // Fall back to Web Speech API if server-side fails
-          if (this.synthesis) {
-            return this.speakWithWebSpeech(text, languageCode);
-          }
-          throw error; // Re-throw if Web Speech API is not available
-        }
-      } else {
-        // For non-Indian languages, use Web Speech API
-        if (this.synthesis) {
-          return this.speakWithWebSpeech(text, languageCode);
-        } else {
-          // Fall back to server-side TTS if Web Speech API is not available
-          return this.playServerSideTTS(text, languageCode);
-        }
-      }
+      // Always use our server-side TTS
+      await this.playServerSideTTS(text, languageCode);
     } catch (error) {
-      console.error('All TTS methods failed:', error);
+      console.error('TTS failed:', error);
       throw new Error(`Speech synthesis failed: ${error}`);
     }
   }
   
   /**
-   * Check if speech is currently in progress (either Web Speech or audio playback)
+   * Check if speech is currently in progress
    */
   public isSpeakingNow(): boolean {
-    return this.isSpeaking || this.audioPlayer.isPlaying;
+    return this.audioPlayer.isPlaying;
   }
   
   /**
-   * Get an array of available voices for a given language from Web Speech API
+   * Check if a language is supported
    * @param languageCode The i18next language code
    */
-  public getVoicesForLanguage(languageCode: string): SpeechSynthesisVoice[] {
-    if (!this.synthesis) {
-      return [];
-    }
-    
-    const speechLang = webSpeechLanguageMapping[languageCode] || 'en-US';
-    const allVoices = this.synthesis.getVoices();
-    
-    // Filter voices for the specific language
-    return allVoices.filter(voice => voice.lang.startsWith(speechLang.split('-')[0]));
+  public isLanguageSupportedForTTS(languageCode: string): boolean {
+    return supportedLanguages.includes(languageCode);
   }
 }
 
