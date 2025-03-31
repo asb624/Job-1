@@ -5,7 +5,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Globe } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-export function LanguageSwitcher() {
+interface LanguageSwitcherProps {
+  collapsed?: boolean;
+}
+
+export function LanguageSwitcher({ collapsed = false }: LanguageSwitcherProps) {
   const { t, i18n } = useTranslation();
   const isMobile = useIsMobile();
   const [isOpen, setIsOpen] = useState(false);
@@ -53,12 +57,12 @@ export function LanguageSwitcher() {
       <Button
         variant="ghost"
         size="sm"
-        className="flex items-center gap-1.5 text-white hover:bg-teal-500/50 rounded-full px-3 h-8"
+        className={`flex items-center ${collapsed ? 'justify-center p-0 w-8 h-8' : 'gap-1.5 px-3 h-8'} text-white hover:bg-teal-500/50 rounded-full`}
         onClick={() => setIsOpen(true)}
       >
         <Globe className="h-4 w-4" />
-        {!isMobile && (
-          <span className="text-sm font-medium">{getCurrentLanguageLabel()}</span>
+        {!collapsed && !isMobile && (
+          <span className="text-sm font-medium max-w-[100px] truncate">{getCurrentLanguageLabel()}</span>
         )}
       </Button>
 

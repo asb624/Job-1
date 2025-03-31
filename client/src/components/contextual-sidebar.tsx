@@ -181,9 +181,22 @@ export function ContextualSidebar({ className }: SidebarNavProps) {
 
             <SidebarFooter>
               <SidebarMenu>
-                <SidebarMenuItem>
-                  <LanguageSwitcher />
-                </SidebarMenuItem>
+                {collapsed ? (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <SidebarMenuItem>
+                        <SidebarMenuButton>
+                          <LanguageSwitcher collapsed={true} />
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="font-medium">{t('language.select')}</TooltipContent>
+                  </Tooltip>
+                ) : (
+                  <SidebarMenuItem>
+                    <LanguageSwitcher collapsed={false} />
+                  </SidebarMenuItem>
+                )}
               </SidebarMenu>
             </SidebarFooter>
           </Sidebar>
@@ -586,9 +599,22 @@ export function ContextualSidebar({ className }: SidebarNavProps) {
                 </SidebarMenuItem>
               )}
 
-              <SidebarMenuItem>
-                <LanguageSwitcher />
-              </SidebarMenuItem>
+              {collapsed ? (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton>
+                        <LanguageSwitcher collapsed={true} />
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className="font-medium">{t('language.select')}</TooltipContent>
+                </Tooltip>
+              ) : (
+                <SidebarMenuItem>
+                  <LanguageSwitcher collapsed={false} />
+                </SidebarMenuItem>
+              )}
             </SidebarMenu>
           </SidebarFooter>
         </Sidebar>
