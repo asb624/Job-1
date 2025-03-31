@@ -1,14 +1,13 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
 import { Icon } from 'leaflet';
-import { Service } from '@shared/schema';
+import 'leaflet/dist/leaflet.css';
+import type { Service, Requirement } from '@shared/schema';
 import { Card, CardContent } from '../ui/card';
-import { Button } from '../ui/button';
 import { useLocation } from 'wouter';
 import { useTranslation } from 'react-i18next';
 
-// Fix for default icon issue in Leaflet with webpack/vite
+// Fix for default marker icon issue in Leaflet with webpack/vite
 const defaultIcon = new Icon({
   iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
   shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
@@ -18,169 +17,208 @@ const defaultIcon = new Icon({
   shadowSize: [41, 41]
 });
 
-interface ServiceMapProps {
-  services: Service[];
-  onContactProvider?: (service: Service) => void;
-}
+const serviceIcon = new Icon({
+  iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+  className: 'service-marker' // We'll style this with CSS
+});
 
-// Component to update map when center changes
-function MapSetter({ center }: { center: [number, number] }) {
+const requirementIcon = new Icon({
+  iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+  className: 'requirement-marker' // We'll style this with CSS
+});
+
+// Component to recenter the map when coordinates change
+function ChangeMapView({ center }: { center: [number, number] }) {
   const map = useMap();
-  
   useEffect(() => {
-    map.setView(center);
+    if (center) {
+      map.setView(center, map.getZoom());
+    }
   }, [center, map]);
   
   return null;
 }
 
-// Component to fit bounds to show all markers
-function MapBoundsSetter({ 
-  services, 
-  userLocation 
-}: { 
-  services: Service[], 
-  userLocation: [number, number] | null 
-}) {
-  const map = useMap();
-  
-  useEffect(() => {
-    if (services.length === 0) return;
-    
-    // Get all valid coordinates including user location
-    const coordinates: [number, number][] = services
-      .filter(s => s.latitude != null && s.longitude != null)
-      .map(s => [s.latitude as number, s.longitude as number]);
-    
-    if (userLocation) {
-      coordinates.push(userLocation);
-    }
-    
-    // If we have coordinates, fit bounds to show all markers
-    if (coordinates.length > 0) {
-      const bounds = coordinates.reduce(
-        (bounds, coord) => bounds.extend(coord),
-        map.getBounds()
-      );
-      
-      map.fitBounds(bounds, { padding: [50, 50] });
-    }
-  }, [services, userLocation, map]);
-  
-  return null;
+interface ServiceMapProps {
+  services?: Service[];
+  requirements?: Requirement[];
+  center?: [number, number];
+  initialZoom?: number;
+  height?: string;
+  onServiceClick?: (service: Service) => void;
+  onRequirementClick?: (requirement: Requirement) => void;
+  onContactProvider?: (service: Service) => void;
 }
 
-export function ServiceMap({ services, onContactProvider }: ServiceMapProps) {
+export function ServiceMap({
+  services = [],
+  requirements = [],
+  center = [20.5937, 78.9629], // Default to center of India
+  initialZoom = 5,
+  height = '400px',
+  onServiceClick,
+  onRequirementClick,
+  onContactProvider
+}: ServiceMapProps) {
   const { t } = useTranslation();
-  const [, setLocation] = useLocation();
-  const [mapCenter, setMapCenter] = useState<[number, number]>([20.5937, 78.9629]); // Default to center of India
+  const [, navigate] = useLocation();
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
-  const mapRef = useRef(null);
+  const [mapCenter, setMapCenter] = useState<[number, number]>(center);
+  const mapRef = useRef<any>(null);
 
-  useEffect(() => {
-    // Get user's location if they allow it
-    if ('geolocation' in navigator) {
+  // Handle user location
+  const handleGetUserLocation = () => {
+    if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
           setUserLocation([latitude, longitude]);
           setMapCenter([latitude, longitude]);
+          
+          if (mapRef.current) {
+            mapRef.current.flyTo([latitude, longitude], 12);
+          }
         },
         (error) => {
-          console.error('Error getting location:', error);
+          console.error("Error getting user location:", error);
         }
       );
+    } else {
+      console.error("Geolocation is not supported by this browser.");
     }
-  }, []);
+  };
 
-  // Filter services with valid lat and lng
+  // Filter out services and requirements without valid coordinates
   const validServices = services.filter(
-    (service) => 
-      service.latitude !== undefined && 
-      service.latitude !== null && 
-      service.longitude !== undefined && 
-      service.longitude !== null
+    (service) => service.latitude && service.longitude
+  );
+  
+  const validRequirements = requirements.filter(
+    (requirement) => requirement.latitude && requirement.longitude
   );
 
-  const handleContactClick = (service: Service) => {
-    if (onContactProvider) {
-      onContactProvider(service);
-    }
-  };
-
-  const handleServiceClick = (serviceId: number) => {
-    setLocation(`/service/${serviceId}`);
-  };
-
   return (
-    <Card className="w-full h-[500px] overflow-hidden shadow-lg card">
-      <CardContent className="p-0 h-full relative">
-        <div className="absolute top-0 left-0 w-full bg-gradient-to-r from-blue-100 to-blue-50 py-2 px-4 z-[1000] shadow-sm">
-          <h3 className="text-primary font-medium">{t('map.serviceMap', 'Service Map')}</h3>
-        </div>
-        <MapContainer 
-          center={mapCenter} 
-          zoom={13} 
-          style={{ height: '100%', width: '100%' }}
-          ref={mapRef}
-          className="z-10"
-        >
-          <MapSetter center={mapCenter} />
-          <MapBoundsSetter services={validServices} userLocation={userLocation} />
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
-          
-          {/* User location marker */}
-          {userLocation && (
-            <Marker 
-              position={userLocation} 
-              icon={defaultIcon}
-            >
-              <Popup className="rounded-lg shadow-md">
-                <div className="font-medium text-primary">{t('map.yourLocation', 'Your location')}</div>
-              </Popup>
-            </Marker>
-          )}
-          
-          {/* Service markers */}
-          {validServices.map((service) => (
-            <Marker 
-              key={service.id} 
-              position={[service.latitude as number, service.longitude as number]} 
-              icon={defaultIcon}
-            >
-              <Popup className="rounded-lg">
-                <div className="space-y-2">
-                  <h3 className="font-medium text-primary">{service.title}</h3>
-                  <p className="text-sm">{service.description.substring(0, 100)}...</p>
-                  <p className="text-sm font-medium bg-blue-50 px-2 py-1 rounded-md inline-block">
-                    {t('services.category', 'Category')}: {service.category}
-                  </p>
-                  <div className="flex justify-between mt-2 gap-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => handleServiceClick(service.id)}
-                      className="btn-transition flex-1"
+    <div className="relative w-full" style={{ height }}>
+      <MapContainer
+        center={mapCenter}
+        zoom={initialZoom}
+        style={{ height: '100%', width: '100%', borderRadius: '8px' }}
+        ref={mapRef}
+      >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+        
+        {/* Display Services */}
+        {validServices.map((service) => (
+          <Marker
+            key={`service-${service.id}`}
+            position={[service.latitude!, service.longitude!]}
+            icon={serviceIcon}
+            eventHandlers={{
+              click: () => onServiceClick && onServiceClick(service)
+            }}
+          >
+            <Popup>
+              <Card className="border-none shadow-none">
+                <CardContent className="p-2">
+                  <h3 className="font-medium text-sm">{service.title}</h3>
+                  <p className="text-xs text-gray-500 mt-1">{service.category}</p>
+                  <p className="text-xs font-medium text-green-600 mt-1">₹{service.price}</p>
+                  <div className="flex space-x-2 mt-2">
+                    <button 
+                      className="text-xs text-blue-600 cursor-pointer"
+                      onClick={() => navigate(`/service/${service.id}`)}
                     >
-                      {t('services.viewDetails', 'View Details')}
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      onClick={() => handleContactClick(service)}
-                      className="btn-transition flex-1"
-                    >
-                      {t('services.contact', 'Contact')}
-                    </Button>
+                      {t("View details")}
+                    </button>
+                    {onContactProvider && (
+                      <button 
+                        className="text-xs text-green-600 cursor-pointer"
+                        onClick={() => onContactProvider(service)}
+                      >
+                        {t("Contact")}
+                      </button>
+                    )}
                   </div>
-                </div>
-              </Popup>
-            </Marker>
-          ))}
-        </MapContainer>
-      </CardContent>
-    </Card>
+                </CardContent>
+              </Card>
+            </Popup>
+          </Marker>
+        ))}
+        
+        {/* Display Requirements */}
+        {validRequirements.map((requirement) => (
+          <Marker
+            key={`requirement-${requirement.id}`}
+            position={[requirement.latitude!, requirement.longitude!]}
+            icon={requirementIcon}
+            eventHandlers={{
+              click: () => onRequirementClick && onRequirementClick(requirement)
+            }}
+          >
+            <Popup>
+              <Card className="border-none shadow-none">
+                <CardContent className="p-2">
+                  <h3 className="font-medium text-sm">{requirement.title}</h3>
+                  <p className="text-xs text-gray-500 mt-1">{requirement.category}</p>
+                  <p className="text-xs font-medium text-orange-600 mt-1">
+                    {t("Budget")}: ₹{requirement.budget}
+                  </p>
+                  <div className="flex space-x-2 mt-2">
+                    <button 
+                      className="text-xs text-blue-600 cursor-pointer"
+                      onClick={() => navigate(`/requirement/${requirement.id}`)}
+                    >
+                      {t("View details")}
+                    </button>
+                    {onRequirementClick && (
+                      <button 
+                        className="text-xs text-orange-600 cursor-pointer"
+                        onClick={() => onRequirementClick(requirement)}
+                      >
+                        {t("Bid")}
+                      </button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </Popup>
+          </Marker>
+        ))}
+        
+        {/* User location marker */}
+        {userLocation && (
+          <Marker position={userLocation} icon={defaultIcon}>
+            <Popup>{t("Your location")}</Popup>
+          </Marker>
+        )}
+        
+        {/* Update map view when center changes */}
+        <ChangeMapView center={mapCenter} />
+      </MapContainer>
+      
+      {/* User location button */}
+      <button
+        onClick={handleGetUserLocation}
+        className="absolute bottom-4 right-4 z-[1000] bg-white p-2 rounded-full shadow-md hover:bg-gray-100 focus:outline-none"
+        title={t("Use my location")}
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-600">
+          <path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5 5 4 4 0 0 1-5-5 4 4 0 0 1 5-5 4 4 0 0 1 5 5 10 10 0 0 0-10-10Z"/>
+        </svg>
+      </button>
+    </div>
   );
 }
