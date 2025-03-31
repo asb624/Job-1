@@ -824,11 +824,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const ttsLanguage = languageMap[language] || 'hindi';
       
       // Use Axios for better request handling
+      // Updated API endpoint configuration
       const response = await axios({
         method: 'POST',
-        url: 'https://ai4bharat.iitm.ac.in/api/tts',
+        url: 'https://tts-api.ai4bharat.org/services/inference/tts',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Accept': 'audio/mpeg'
         },
         data: {
           input: [{ source: text }],
@@ -840,12 +842,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         },
         responseType: 'arraybuffer',
-        timeout: 10000, // 10 second timeout
+        timeout: 15000, // 15 second timeout
         maxRedirects: 5 // Allow redirects in case the URL changes again
       });
       
+      // Check if the response is JSON (error) or binary (audio data)
+      const contentType = response.headers['content-type'];
+      if (contentType && contentType.includes('application/json')) {
+        // Handle JSON error response
+        const jsonResponse = JSON.parse(response.data.toString());
+        throw new Error(jsonResponse.message || 'TTS API returned an error');
+      }
+      
       // Send the audio file back to the client
-      res.set('Content-Type', 'audio/mp3');
+      res.set('Content-Type', 'audio/mpeg');
       res.set('Cache-Control', 'public, max-age=86400'); // Cache for 1 day
       res.send(response.data);
     } catch (error: any) {
