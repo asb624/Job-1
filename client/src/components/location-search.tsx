@@ -6,6 +6,7 @@ import { Loader2, MapPin, X, Navigation } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { getLocationWithDisplayName } from '@/lib/geolocation';
 import { useToast } from '@/hooks/use-toast';
+import { createPortal } from 'react-dom';
 
 // Define the structure for location search results
 interface LocationResult {
@@ -55,11 +56,38 @@ export function LocationSearch({
       }
     }
 
+    // Close on escape key
+    function handleEscapeKey(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setShowResults(false);
+      }
+    }
+
+    // Update dropdown position when window scrolls or resizes
+    function updateDropdownPosition() {
+      if (showResults && inputRef.current && resultsRef.current) {
+        const rect = inputRef.current.getBoundingClientRect();
+        resultsRef.current.style.width = `${inputRef.current.offsetWidth}px`;
+        resultsRef.current.style.left = `${rect.left}px`;
+        resultsRef.current.style.top = `${rect.bottom + 5}px`;
+      }
+    }
+
     document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscapeKey);
+    window.addEventListener('scroll', updateDropdownPosition);
+    window.addEventListener('resize', updateDropdownPosition);
+    
+    // Initial position update
+    updateDropdownPosition();
+    
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscapeKey);
+      window.removeEventListener('scroll', updateDropdownPosition);
+      window.removeEventListener('resize', updateDropdownPosition);
     };
-  }, []);
+  }, [showResults]);
 
   // Clear any existing timeout when component unmounts
   useEffect(() => {
@@ -239,11 +267,16 @@ export function LocationSearch({
         )}
       </div>
 
-      {/* Custom dropdown that doesn't use Popover */}
-      {showResults && (
+      {/* Custom dropdown using React Portal for perfect stacking context */}
+      {showResults && createPortal(
         <div 
           ref={resultsRef}
-          className="absolute top-full left-0 right-0 w-full bg-background border rounded-md shadow-lg mt-1 z-[100] max-h-[350px] overflow-y-auto"
+          className="fixed bg-background border border-input rounded-md shadow-xl mt-1 z-[9999] max-h-[350px] overflow-y-auto"
+          style={{ 
+            width: inputRef.current ? inputRef.current.offsetWidth + 'px' : '100%',
+            left: inputRef.current ? inputRef.current.getBoundingClientRect().left + 'px' : '0',
+            top: inputRef.current ? (inputRef.current.getBoundingClientRect().bottom + 5) + 'px' : '0'
+          }}
         >
           <div className="py-2">
             {/* Current location option at the top of the dropdown */}
@@ -291,7 +324,8 @@ export function LocationSearch({
               </p>
             ) : null}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

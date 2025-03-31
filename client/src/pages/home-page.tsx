@@ -141,8 +141,8 @@ export default function HomePage() {
             {t("app.tagline")}
           </p>
           
-          {/* Location Search Bar */}
-          <div className="max-w-md mx-auto mt-4 relative z-20">
+          {/* Location Search Bar - Using special container with highest z-index */}
+          <div className="relative mx-auto mt-4" style={{ zIndex: 9999, maxWidth: "28rem" }}>
             <LocationSearch 
               onLocationSelect={(location) => {
                 console.log("Selected location on hero:", location);
