@@ -1,17 +1,20 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Globe, ChevronDown } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Globe } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 export function LanguageSwitcher() {
   const { t, i18n } = useTranslation();
   const isMobile = useIsMobile();
+  const [isOpen, setIsOpen] = useState(false);
   
   const changeLanguage = (lng: string) => {
     i18n.changeLanguage(lng);
     // Store the language preference in localStorage
     localStorage.setItem('preferredLanguage', lng);
+    setIsOpen(false);
   };
 
   const languages = [
@@ -39,42 +42,55 @@ export function LanguageSwitcher() {
     return language ? language.label : languages[0].label;
   };
 
+  // Group languages into rows for grid display
+  const languageRows = [];
+  for (let i = 0; i < languages.length; i += 3) {
+    languageRows.push(languages.slice(i, i + 3));
+  }
+
   return (
-    <div className="relative">
-      <Select
-        value={i18n.language}
-        onValueChange={changeLanguage}
+    <>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="flex items-center gap-1.5 text-white hover:bg-teal-500/50 rounded-full px-3 h-8"
+        onClick={() => setIsOpen(true)}
       >
-        <SelectTrigger 
-          className={`flex items-center gap-1.5 text-white hover:bg-teal-500/50 rounded-full px-3 transition-all duration-300 ease-in-out h-8 border-0 focus:ring-1 focus:ring-teal-400 ${isMobile ? 'w-8 pl-1 pr-0 justify-center' : 'min-w-[110px]'}`}
-        >
-          <Globe className="h-4 w-4 flex-shrink-0" />
-          {!isMobile && (
-            <>
-              <SelectValue placeholder={getCurrentLanguageLabel()} className="text-sm font-medium" />
-              <ChevronDown className="h-3 w-3 opacity-70 text-white ml-auto" />
-            </>
-          )}
-        </SelectTrigger>
-        <SelectContent className="border-teal-100 shadow-lg rounded-xl overflow-hidden max-h-60">
-          <div className="bg-gradient-to-r from-teal-600 to-emerald-500 py-2 px-3 text-white text-sm font-medium mb-1">
-            {t('language.select')}
+        <Globe className="h-4 w-4" />
+        {!isMobile && (
+          <span className="text-sm font-medium">{getCurrentLanguageLabel()}</span>
+        )}
+      </Button>
+
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogContent className="sm:max-w-md border-teal-100 p-0 max-h-[90vh] overflow-auto">
+          <DialogHeader className="bg-gradient-to-r from-teal-600 to-emerald-500 px-4 py-3 sticky top-0 z-10">
+            <DialogTitle className="text-white text-lg font-medium">{t('language.select')}</DialogTitle>
+          </DialogHeader>
+          
+          <div className="p-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {languages.map((lang) => (
+                <Button
+                  key={lang.code}
+                  variant={i18n.language === lang.code ? "default" : "outline"}
+                  className={`justify-start h-10 relative transition-all duration-200 ${
+                    i18n.language === lang.code 
+                      ? 'bg-teal-500 hover:bg-teal-600 text-white font-medium' 
+                      : 'hover:border-teal-500 hover:text-teal-700'
+                  }`}
+                  onClick={() => changeLanguage(lang.code)}
+                >
+                  <span className="text-left truncate">{lang.label}</span>
+                  {i18n.language === lang.code && (
+                    <span className="absolute right-2 w-2 h-2 rounded-full bg-white" />
+                  )}
+                </Button>
+              ))}
+            </div>
           </div>
-          {languages.map((lang, index) => (
-            <SelectItem 
-              key={lang.code} 
-              value={lang.code}
-              className={`cursor-pointer transition-all duration-200 ease-in-out ${
-                i18n.language === lang.code 
-                  ? 'bg-teal-50 text-teal-700 font-medium border-l-4 border-teal-500' 
-                  : 'hover:bg-teal-50 hover:text-teal-600 border-l-4 border-transparent'
-              }`}
-            >
-              {lang.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
