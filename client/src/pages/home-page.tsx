@@ -21,6 +21,7 @@ export default function HomePage() {
   const { toast } = useToast();
   const [, navigate] = useLocation();
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+  const [activeTab, setActiveTab] = useState<'services' | 'requirements'>('services');
   const { t, i18n } = useTranslation();
 
   const { data: services, isSuccess: servicesLoaded } = useQuery<Service[]>({
@@ -198,12 +199,15 @@ export default function HomePage() {
               <div className="flex bg-white/20 p-1 rounded-xl">
                 <button
                   onClick={() => {
-                    // Use querySelector and type assertion to HTMLButtonElement
+                    // Set active tab to services
+                    setActiveTab('services');
+                    
+                    // Also trigger the shadcn Tabs component for consistency
                     const servicesTab = document.querySelector('[data-tabs-trigger="services"]') as HTMLButtonElement;
                     if (servicesTab) servicesTab.click();
                   }}
                   className={`px-4 py-2 rounded-lg font-medium text-sm sm:text-base transition-all duration-300 ${
-                    document.querySelector('[data-state="active"][data-tabs-trigger="services"]') 
+                    activeTab === 'services'
                       ? 'bg-white text-teal-700 shadow-md' 
                       : 'text-white hover:bg-white/10'
                   }`}
@@ -212,12 +216,15 @@ export default function HomePage() {
                 </button>
                 <button
                   onClick={() => {
-                    // Use querySelector and type assertion to HTMLButtonElement
+                    // Set active tab to requirements
+                    setActiveTab('requirements');
+                    
+                    // Also trigger the shadcn Tabs component for consistency
                     const requirementsTab = document.querySelector('[data-tabs-trigger="requirements"]') as HTMLButtonElement;
                     if (requirementsTab) requirementsTab.click();
                   }}
                   className={`px-4 py-2 rounded-lg font-medium text-sm sm:text-base transition-all duration-300 ${
-                    document.querySelector('[data-state="active"][data-tabs-trigger="requirements"]') 
+                    activeTab === 'requirements'
                       ? 'bg-white text-teal-700 shadow-md' 
                       : 'text-white hover:bg-white/10'
                   }`}
@@ -341,8 +348,8 @@ export default function HomePage() {
         
         {/* Main Content Area */}
         <div className="p-4 sm:p-6">
-          {/* Services View - This will be controlled by the tab selected */}
-          <div id="services-content" className={`transition-all duration-500 ${document.querySelector('[data-state="active"][data-tabs-trigger="services"]') ? 'block' : 'hidden'}`}>
+          {/* Services View - This will be controlled by the tab state */}
+          <div id="services-content" className={`transition-all duration-500 ${activeTab === 'services' ? 'block' : 'hidden'}`}>
             {viewMode === 'map' ? (
               <div className="rounded-xl overflow-hidden border border-teal-100 shadow-md h-[500px]">
                 <ServiceMap 
@@ -384,7 +391,7 @@ export default function HomePage() {
           </div>
           
           {/* Requirements View */}
-          <div id="requirements-content" className={`transition-all duration-500 ${document.querySelector('[data-state="active"][data-tabs-trigger="requirements"]') ? 'block' : 'hidden'}`}>
+          <div id="requirements-content" className={`transition-all duration-500 ${activeTab === 'requirements' ? 'block' : 'hidden'}`}>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
               {requirements?.map((requirement) => (
                 <RequirementCard
@@ -439,41 +446,7 @@ export default function HomePage() {
         </div>
       </div>
       
-      {/* JavaScript to handle tab toggling */}
-      <script dangerouslySetInnerHTML={{
-        __html: `
-          document.addEventListener('DOMContentLoaded', function() {
-            // Initially show services content
-            document.getElementById('services-content').style.display = 'block';
-            document.getElementById('requirements-content').style.display = 'none';
-            
-            // Listen for tab clicks and update content visibility
-            const servicesTab = document.querySelector('[data-tabs-trigger="services"]');
-            const requirementsTab = document.querySelector('[data-tabs-trigger="requirements"]');
-            
-            if (servicesTab && requirementsTab) {
-              // Create MutationObserver to watch for attribute changes
-              const observer = new MutationObserver(function(mutations) {
-                mutations.forEach(function(mutation) {
-                  if (mutation.attributeName === 'data-state') {
-                    if (servicesTab.getAttribute('data-state') === 'active') {
-                      document.getElementById('services-content').style.display = 'block';
-                      document.getElementById('requirements-content').style.display = 'none';
-                    } else {
-                      document.getElementById('services-content').style.display = 'none';
-                      document.getElementById('requirements-content').style.display = 'block';
-                    }
-                  }
-                });
-              });
-              
-              // Start observing the tab elements
-              observer.observe(servicesTab, { attributes: true });
-              observer.observe(requirementsTab, { attributes: true });
-            }
-          });
-        `
-      }} />
+      {/* We don't need the JavaScript DOM manipulation anymore as we're using React state */}
       
       {/* AI Chatbot */}
       <ChatbotUI />
