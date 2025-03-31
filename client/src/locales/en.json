@@ -240,6 +240,18 @@
     "learnMore": "Learn More",
     "translating": "Translating..."
   },
+  "location": {
+    "useMyLocation": "Use my current location",
+    "detectionFailed": "Could not detect your location. Please allow location access or try again.",
+    "currentLocation": "Current Location",
+    "coordinatesDetected": "Coordinates detected successfully",
+    "locationDetected": "Location detected",
+    "permissionDenied": "Location permission denied",
+    "timeout": "Location detection timed out",
+    "unavailable": "Location service unavailable",
+    "accuracyLow": "Location accuracy is low",
+    "searchingLocation": "Searching for your location..."
+  },
   "filters": {
     "allCategories": "All Categories",
     "anyLocation": "Any Location",

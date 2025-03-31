@@ -2,8 +2,10 @@ import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useTranslation } from 'react-i18next';
-import { Loader2, MapPin, X } from 'lucide-react';
+import { Loader2, MapPin, X, Navigation } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { getLocationWithDisplayName } from '@/lib/geolocation';
+import { useToast } from '@/hooks/use-toast';
 
 // Define the structure for location search results
 interface LocationResult {
@@ -29,10 +31,12 @@ export function LocationSearch({
   className
 }: LocationSearchProps) {
   const { t } = useTranslation();
+  const { toast } = useToast();
   const isMobile = useIsMobile();
   const [searchTerm, setSearchTerm] = useState('');
   const [results, setResults] = useState<LocationResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const searchTimeoutRef = useRef<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -141,41 +145,104 @@ export function LocationSearch({
     }
   };
 
+  /**
+   * Auto-detect user's current location using geolocation API
+   */
+  const detectCurrentLocation = async () => {
+    setIsLocating(true);
+    try {
+      const result = await getLocationWithDisplayName();
+      
+      if (!result.success || !result.position) {
+        toast({
+          title: t('common.error'),
+          description: result.error?.message || t('location.detectionFailed'),
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // Success - we have coordinates and possibly a display name
+      onLocationSelect({
+        displayName: result.displayName || t('location.currentLocation'),
+        lat: result.position.coords.latitude,
+        lon: result.position.coords.longitude
+      });
+
+      // Update the input field
+      setSearchTerm(result.displayName || t('location.currentLocation'));
+      setShowResults(false);
+      
+      toast({
+        title: t('location.locationDetected'),
+        description: result.displayName || t('location.coordinatesDetected'),
+      });
+    } catch (error) {
+      console.error('Error detecting location:', error);
+      toast({
+        title: t('common.error'),
+        description: error instanceof Error ? error.message : t('location.detectionFailed'),
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLocating(false);
+    }
+  };
+
   return (
     <div className="relative w-full">
-      <div className={`flex items-center relative ${className}`}>
-        <MapPin className="absolute left-3 h-4 w-4 text-muted-foreground z-10" />
-        <Input
-          ref={inputRef}
-          placeholder={placeholder || t('filters.searchLocation')}
-          className="pl-9 pr-10" // Extra padding for clear button
-          value={searchTerm}
-          onChange={handleInputChange}
-          onFocus={() => {
-            if (searchTerm.length > 0) {
-              setShowResults(true);
-            }
-          }}
-        />
-        {searchTerm && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="absolute right-2 h-5 w-5 p-0 z-10"
-            onClick={clearSearch}
-          >
-            <X className="h-3 w-3" />
-            <span className="sr-only">Clear</span>
-          </Button>
-        )}
+      <div className="flex flex-col space-y-2 w-full">
+        <div className={`flex items-center relative ${className}`}>
+          <MapPin className="absolute left-3 h-4 w-4 text-muted-foreground z-10" />
+          <Input
+            ref={inputRef}
+            placeholder={placeholder || t('filters.searchLocation')}
+            className="pl-9 pr-10" // Extra padding for clear button
+            value={searchTerm}
+            onChange={handleInputChange}
+            onFocus={() => {
+              if (searchTerm.length > 0) {
+                setShowResults(true);
+              }
+            }}
+          />
+          {searchTerm && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="absolute right-2 h-5 w-5 p-0 z-10"
+              onClick={clearSearch}
+            >
+              <X className="h-3 w-3" />
+              <span className="sr-only">Clear</span>
+            </Button>
+          )}
+        </div>
+
+        {/* Geolocation button to detect current location */}
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="w-full flex items-center justify-center"
+          onClick={detectCurrentLocation}
+          disabled={isLocating}
+        >
+          {isLocating ? (
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+          ) : (
+            <Navigation className="h-4 w-4 mr-2" />
+          )}
+          {t('location.useMyLocation')}
+        </Button>
       </div>
 
       {/* Custom dropdown that doesn't use Popover */}
       {showResults && (
         <div 
           ref={resultsRef}
-          className="absolute top-full left-0 right-0 w-full bg-background border rounded-md shadow-md mt-1 z-50"
+          className="absolute top-[calc(100%_-_32px)] left-0 right-0 w-full bg-background border rounded-md shadow-md mt-1 z-50"
         >
           <div className="py-2">
             {isLoading ? (
