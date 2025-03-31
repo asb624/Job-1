@@ -69,7 +69,16 @@
       "shopStaff": "Shop Staff",
       "salonService": "Salon Service",
       "medicalStaff": "Medical Staff",
-      "educationServices": "Education Services"
+      "educationServices": "Education Services",
+      "plumbing": "Plumbing",
+      "electrical": "Electrical",
+      "gardening": "Gardening",
+      "carpentry": "Carpentry",
+      "painting": "Painting",
+      "cleaning": "Cleaning",
+      "webdevelopment": "Web Development",
+      "digitalmarketing": "Digital Marketing",
+      "pestcontrol": "Pest Control"
     }
   },
   "requirements": {
@@ -227,7 +236,19 @@
     "delete": "Delete",
     "edit": "Edit",
     "close": "Close",
-    "learnMore": "Learn More"
+    "learnMore": "Learn More",
+    "translating": "Translating..."
+  },
+  "filters": {
+    "allCategories": "All Categories",
+    "anyLocation": "Any Location",
+    "anyPrice": "Any Price Range",
+    "sortBy": "Sort By",
+    "newest": "Newest",
+    "oldest": "Oldest",
+    "priceLowToHigh": "Price: Low to High",
+    "priceHighToLow": "Price: High to Low",
+    "search": "Search"
   },
   "fileUpload": {
     "dragDrop": "Click or drag images here",
