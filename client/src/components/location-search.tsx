@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useTranslation } from 'react-i18next';
 import { Loader2, MapPin, X } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 // Define the structure for location search results
 interface LocationResult {
@@ -29,30 +29,33 @@ export function LocationSearch({
   className
 }: LocationSearchProps) {
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
   const [searchTerm, setSearchTerm] = useState('');
   const [results, setResults] = useState<LocationResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [open, setOpen] = useState(false);
+  const [showResults, setShowResults] = useState(false);
   const searchTimeoutRef = useRef<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const hasSelectedLocation = useRef(false);
+  const resultsRef = useRef<HTMLDivElement>(null);
 
-  // Keep popover open when there are results or when loading
+  // Handle clicks outside the component to close results
   useEffect(() => {
-    if (isLoading || (results.length > 0 && searchTerm.length > 1)) {
-      setOpen(true);
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        resultsRef.current && 
+        !resultsRef.current.contains(event.target as Node) &&
+        inputRef.current && 
+        !inputRef.current.contains(event.target as Node)
+      ) {
+        setShowResults(false);
+      }
     }
-  }, [isLoading, results, searchTerm]);
 
-  // Reset location selection flag when search term changes
-  useEffect(() => {
-    if (searchTerm.length > 0 && !hasSelectedLocation.current) {
-      setOpen(true);
-    }
-    if (searchTerm.length === 0) {
-      hasSelectedLocation.current = false;
-    }
-  }, [searchTerm]);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   // Clear any existing timeout when component unmounts
   useEffect(() => {
@@ -85,9 +88,9 @@ export function LocationSearch({
       if (response.ok) {
         const data = await response.json();
         setResults(data);
-        // Keep popover open if we have results
+        // Show results if we have any
         if (data.length > 0) {
-          setOpen(true);
+          setShowResults(true);
         }
       } else {
         console.error('Error searching locations:', response.statusText);
@@ -104,7 +107,11 @@ export function LocationSearch({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchTerm(value);
-    hasSelectedLocation.current = false;
+    
+    // Show the results dropdown as soon as typing starts
+    if (value.length > 0) {
+      setShowResults(true);
+    }
     
     // Debounce the search to avoid too many requests
     if (searchTimeoutRef.current) {
@@ -123,63 +130,52 @@ export function LocationSearch({
       lon: parseFloat(result.lon)
     });
     setSearchTerm(result.display_name);
-    hasSelectedLocation.current = true;
-    setOpen(false);
+    setShowResults(false);
   };
 
   const clearSearch = () => {
     setSearchTerm('');
     setResults([]);
-    hasSelectedLocation.current = false;
     if (inputRef.current) {
       inputRef.current.focus();
     }
   };
 
   return (
-    <div className="relative">
-      <Popover 
-        open={open} 
-        onOpenChange={(isOpen) => {
-          // Only allow manual closing if we're not loading
-          if (!isLoading || !isOpen) {
-            setOpen(isOpen);
-          }
-        }}
-      >
-        <PopoverTrigger asChild>
-          <div className={`flex items-center relative ${className}`}>
-            <MapPin className="absolute left-3 h-4 w-4 text-muted-foreground" />
-            <Input
-              ref={inputRef}
-              placeholder={placeholder || t('filters.searchLocation')}
-              className="pl-9 pr-10" // Extra padding for clear button
-              value={searchTerm}
-              onChange={handleInputChange}
-              onFocus={() => {
-                if (searchTerm.length > 1 && !hasSelectedLocation.current) {
-                  setOpen(true);
-                }
-              }}
-            />
-            {searchTerm && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="absolute right-2 h-5 w-5 p-0"
-                onClick={clearSearch}
-              >
-                <X className="h-3 w-3" />
-                <span className="sr-only">Clear</span>
-              </Button>
-            )}
-          </div>
-        </PopoverTrigger>
-        <PopoverContent 
-          className="w-[300px] p-0 z-50" 
-          align="start"
-          sideOffset={5}
+    <div className="relative w-full">
+      <div className={`flex items-center relative ${className}`}>
+        <MapPin className="absolute left-3 h-4 w-4 text-muted-foreground z-10" />
+        <Input
+          ref={inputRef}
+          placeholder={placeholder || t('filters.searchLocation')}
+          className="pl-9 pr-10" // Extra padding for clear button
+          value={searchTerm}
+          onChange={handleInputChange}
+          onFocus={() => {
+            if (searchTerm.length > 0) {
+              setShowResults(true);
+            }
+          }}
+        />
+        {searchTerm && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="absolute right-2 h-5 w-5 p-0 z-10"
+            onClick={clearSearch}
+          >
+            <X className="h-3 w-3" />
+            <span className="sr-only">Clear</span>
+          </Button>
+        )}
+      </div>
+
+      {/* Custom dropdown that doesn't use Popover */}
+      {showResults && (
+        <div 
+          ref={resultsRef}
+          className="absolute top-full left-0 right-0 w-full bg-background border rounded-md shadow-md mt-1 z-50"
         >
           <div className="py-2">
             {isLoading ? (
@@ -189,15 +185,15 @@ export function LocationSearch({
             ) : results.length > 0 ? (
               <div className="max-h-[300px] overflow-auto">
                 {results.map((result) => (
-                  <Button
+                  <button
                     key={result.place_id}
-                    variant="ghost"
-                    className="w-full justify-start text-left font-normal px-2 py-2 h-auto"
+                    className="w-full text-left px-3 py-2 hover:bg-accent flex items-start gap-2"
                     onClick={() => handleSelectLocation(result)}
+                    type="button"
                   >
-                    <MapPin className="mr-2 h-4 w-4 shrink-0 text-primary" />
+                    <MapPin className="h-4 w-4 shrink-0 text-primary mt-0.5" />
                     <span className="line-clamp-2 text-sm">{result.display_name}</span>
-                  </Button>
+                  </button>
                 ))}
               </div>
             ) : searchTerm.length > 1 ? (
@@ -210,8 +206,8 @@ export function LocationSearch({
               </p>
             )}
           </div>
-        </PopoverContent>
-      </Popover>
+        </div>
+      )}
     </div>
   );
 }
