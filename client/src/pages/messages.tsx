@@ -7,6 +7,8 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Conversation, Message, User } from "@shared/schema";
 import { subscribeToMessages } from "@/lib/websocket";
 import { useLocation } from "wouter";
+import { TranslatedMessage, TranslatedMessageList } from "@/components/translated-message";
+import { TranslateAllMessagesButton } from "@/components/message-translation-button";
 
 import {
   Card,
@@ -32,8 +34,10 @@ import {
 } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
-import { MessageCircle, Send, Menu, UserPlus } from "lucide-react";
+import { MessageCircle, Send, Menu, UserPlus, Languages } from "lucide-react";
 
 export default function MessagesPage() {
   const { user } = useAuth();
@@ -44,6 +48,7 @@ export default function MessagesPage() {
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [messageText, setMessageText] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
+  const [autoTranslate, setAutoTranslate] = useState(false);
 
   // Fetch conversations
   const { data: conversations, isLoading: isLoadingConversations } = useQuery({
@@ -222,12 +227,25 @@ export default function MessagesPage() {
           {selectedConversation ? (
             <>
               <CardHeader className="p-4 border-b">
-                <div className="flex items-center">
-                  <Avatar className="h-8 w-8 mr-2">
-                    <AvatarImage src={getOtherUser(selectedConversation)?.avatar || ""} />
-                    <AvatarFallback>{getOtherUser(selectedConversation)?.username?.charAt(0).toUpperCase()}</AvatarFallback>
-                  </Avatar>
-                  <CardTitle className="text-lg">{getOtherUser(selectedConversation)?.username}</CardTitle>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <Avatar className="h-8 w-8 mr-2">
+                      <AvatarImage src={getOtherUser(selectedConversation)?.avatar || ""} />
+                      <AvatarFallback>{getOtherUser(selectedConversation)?.username?.charAt(0).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                    <CardTitle className="text-lg">{getOtherUser(selectedConversation)?.username}</CardTitle>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Languages className="h-5 w-5 text-muted-foreground" />
+                    <div className="flex items-center space-x-2">
+                      <Label htmlFor="auto-translate" className="text-sm">Auto-translate</Label>
+                      <Switch
+                        id="auto-translate"
+                        checked={autoTranslate}
+                        onCheckedChange={setAutoTranslate}
+                      />
+                    </div>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="flex-1 overflow-hidden p-0">
@@ -255,43 +273,36 @@ export default function MessagesPage() {
                       </div>
                     </div>
                   ) : (
-                    <div className="space-y-4 p-4">
-                      {messages?.map((message: Message) => (
-                        <div
-                          key={message.id}
-                          className={`flex ${
-                            message.senderId === user.id ? "justify-end" : "justify-start"
-                          }`}
-                        >
-                          <div className="flex gap-2 max-w-[80%]">
-                            {message.senderId !== user.id && (
-                              <Avatar className="h-8 w-8">
-                                <AvatarImage src={getOtherUser(selectedConversation)?.avatar || ""} />
-                                <AvatarFallback>
-                                  {getOtherUser(selectedConversation)?.username?.charAt(0).toUpperCase()}
-                                </AvatarFallback>
-                              </Avatar>
-                            )}
-                            <div>
-                              <div
-                                className={`rounded-lg p-3 ${
-                                  message.senderId === user.id
-                                    ? "bg-primary text-primary-foreground"
-                                    : "bg-muted"
-                                }`}
-                              >
-                                {message.content}
-                              </div>
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {new Date(message.createdAt).toLocaleTimeString([], {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                })}
-                              </p>
-                            </div>
+                    <div className="p-4">
+                      {messages && messages.length > 0 ? (
+                        <>
+                          <div className="mb-4 flex justify-end">
+                            <TranslateAllMessagesButton 
+                              onTranslateAll={() => setAutoTranslate(!autoTranslate)} 
+                            />
+                          </div>
+                          <TranslatedMessageList
+                            messages={messages}
+                            currentUserId={user?.id || 0}
+                            otherUser={{
+                              id: getOtherUser(selectedConversation)?.id || 0,
+                              username: getOtherUser(selectedConversation)?.username || "",
+                              avatarUrl: getOtherUser(selectedConversation)?.avatar || ""
+                            }}
+                            autoTranslate={autoTranslate}
+                          />
+                        </>
+                      ) : (
+                        <div className="flex h-full items-center justify-center text-center">
+                          <div>
+                            <MessageCircle className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
+                            <p className="text-lg font-medium">No messages yet</p>
+                            <p className="text-sm text-muted-foreground">
+                              Start the conversation by sending a message below.
+                            </p>
                           </div>
                         </div>
-                      ))}
+                      )}
                     </div>
                   )}
                 </ScrollArea>
