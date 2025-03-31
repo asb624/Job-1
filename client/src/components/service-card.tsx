@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Service } from "@shared/schema";
 import { 
   MapPin, Clock, Tag, Star, Calendar, Loader2, 
-  Headphones, VolumeX, Volume2
+  VolumeX, Volume2
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useState, useEffect } from "react";
@@ -24,7 +24,6 @@ export function ServiceCard({ service, onContact }: ServiceCardProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isTranslating, setIsTranslating] = useState(i18n.language !== 'en');
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [isReadingFullCard, setIsReadingFullCard] = useState(false);
   const hasImages = service.imageUrls && Array.isArray(service.imageUrls) && service.imageUrls.length > 0;
   const isSpeechSupported = speechService.isSupported();
   
@@ -37,57 +36,6 @@ export function ServiceCard({ service, onContact }: ServiceCardProps) {
     t(`services.categories.${service.category.toLowerCase().replace(/\s+/g, '')}`, service.category),
     i18n.language
   );
-  
-  // Function to read the entire card in a structured manner
-  const readEntireCard = async () => {
-    if (!isSpeechSupported || isSpeaking || isReadingFullCard) {
-      return;
-    }
-    
-    try {
-      setIsReadingFullCard(true);
-      setIsSpeaking(true);
-      
-      // Prepare structured content with pauses
-      const serviceTypeLabel = t('services.serviceLabel', 'Service');
-      const priceLabel = t('services.priceLabel', 'Price');
-      const descriptionLabel = t('services.descriptionLabel', 'Description');
-      const categoryLabel = t('services.categoryLabel', 'Category');
-      const locationLabel = t('services.locationLabel', 'Location');
-      const serviceTypeText = service.isRemote 
-        ? t('services.remote', 'Remote Service') 
-        : t('services.inPersonOnly', 'In-person Only');
-      
-      // Structured content with labels
-      const structuredContent = [
-        // 1. Service title
-        `${serviceTypeLabel}: ${translatedTitle}.`,
-        
-        // 2. Price information
-        `${priceLabel}: ${service.price} ${t('common.currency', 'Rupees')}.`,
-        
-        // 3. Category
-        `${categoryLabel}: ${translatedCategory}.`,
-        
-        // 4. Description with more detailed context
-        `${descriptionLabel}: ${translatedDescription}`,
-        
-        // 5. Location information if available
-        service.city ? `${locationLabel}: ${translatedCity}${translatedState ? `, ${translatedState}` : ''}.` : '',
-        
-        // 6. Type of service (remote or in-person)
-        serviceTypeText
-      ].filter(Boolean).join('. ');
-      
-      // Speak the structured content
-      await speechService.speak(structuredContent, i18n.language);
-    } catch (error) {
-      console.error('Error reading card:', error);
-    } finally {
-      setIsReadingFullCard(false);
-      setIsSpeaking(false);
-    }
-  };
   
   // Track translation state to show loading animation
   useEffect(() => {
@@ -180,7 +128,44 @@ export function ServiceCard({ service, onContact }: ServiceCardProps) {
               {translatedTitle}
             </h3>
             
-            {/* Removed pronunciation button */}
+            {/* Title pronunciation button */}
+            {isSpeechSupported && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button 
+                      className={`h-7 w-7 rounded-full flex items-center justify-center transition-colors ${
+                        isSpeaking ? 'bg-teal-100 text-teal-700' : 'bg-gray-50 text-gray-400 hover:bg-teal-50 hover:text-teal-600'
+                      }`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (isSpeaking) {
+                          speechService.stop();
+                          setIsSpeaking(false);
+                        } else {
+                          setIsSpeaking(true);
+                          const text = `Service: ${translatedTitle}.. Price: ${service.price} Rupees.. Category: ${translatedCategory}.. Description: ${translatedDescription}.. ${service.isRemote ? 'Remote service' : 'In-person only'}`;
+                          
+                          speechService.speak(text, i18n.language)
+                            .then(() => {
+                              setIsSpeaking(false);
+                            })
+                            .catch((error: unknown) => {
+                              console.error("Error reading card:", error);
+                              setIsSpeaking(false);
+                            });
+                        }
+                      }}
+                    >
+                      {isSpeaking ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {isSpeaking ? t('common.stopReading', 'Stop reading') : t('common.readAloud', 'Read aloud')}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
           </div>
           <span className="text-base sm:text-lg font-semibold text-teal-700 bg-teal-50 px-3 py-1 rounded-full shadow-sm border border-teal-100 self-start whitespace-nowrap">
             ₹{service.price}
@@ -203,7 +188,43 @@ export function ServiceCard({ service, onContact }: ServiceCardProps) {
       <CardContent className="relative z-10 pt-0 pb-2 px-4 sm:px-6">
         <div className="flex items-start gap-2">
           <p className="text-xs sm:text-sm text-gray-600 line-clamp-3 flex-1">{translatedDescription}</p>
-          {/* Removed description pronunciation button */}
+          
+          {/* Description pronunciation button */}
+          {isSpeechSupported && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button 
+                    className={`h-6 w-6 rounded-full flex-shrink-0 flex items-center justify-center transition-colors ${
+                      isSpeaking ? 'bg-teal-100 text-teal-700' : 'bg-gray-50 text-gray-400 hover:bg-teal-50 hover:text-teal-600'
+                    }`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (isSpeaking) {
+                        speechService.stop();
+                        setIsSpeaking(false);
+                      } else {
+                        setIsSpeaking(true);
+                        speechService.speak(translatedDescription, i18n.language)
+                          .then(() => {
+                            setIsSpeaking(false);
+                          })
+                          .catch((error: unknown) => {
+                            console.error("Error reading description:", error);
+                            setIsSpeaking(false);
+                          });
+                      }
+                    }}
+                  >
+                    {isSpeaking ? <VolumeX size={12} /> : <Volume2 size={12} />}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {isSpeaking ? t('common.stopReading', 'Stop reading') : t('common.readDescription', 'Read description')}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
         </div>
         
         <div className="mt-3 sm:mt-4 flex flex-wrap gap-2 sm:gap-3 text-xs text-teal-700">
@@ -229,55 +250,16 @@ export function ServiceCard({ service, onContact }: ServiceCardProps) {
       </CardContent>
       
       <CardFooter className="relative z-10 pt-2 pb-4 px-4 sm:px-6">
-        <div className="w-full flex flex-col gap-2">
-          {/* Read aloud button - full card content */}
-          {isSpeechSupported && (
-            <Button
-              variant="outline"
-              className={`w-full flex items-center justify-center gap-2 border-teal-200 text-teal-700
-                        hover:bg-teal-50 hover:text-teal-800 hover:border-teal-300 transition-all
-                        ${(isSpeaking || isReadingFullCard) ? 'bg-teal-100 animate-pulse' : ''}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                
-                if (isSpeaking || isReadingFullCard) {
-                  // Stop speaking if already in progress
-                  speechService.stop();
-                  setIsSpeaking(false);
-                  setIsReadingFullCard(false);
-                } else {
-                  // Read the full card in a structured manner
-                  readEntireCard();
-                }
-              }}
-            >
-              {isReadingFullCard || isSpeaking ? (
-                <>
-                  <VolumeX size={18} />
-                  {t('services.stopReading', 'Stop Reading')}
-                </>
-              ) : (
-                <>
-                  <Headphones size={18} />
-                  {t('services.readAloud', 'Read Aloud')}
-                </>
-              )}
-            </Button>
-          )}
-          
-          {/* Contact button */}
-          {onContact && (
-            <Button 
-              className="w-full bg-gradient-to-r from-teal-600 to-emerald-500 hover:from-teal-700 hover:to-emerald-600 
-                      text-white font-medium shadow-sm hover:shadow-md transform transition-all duration-400 ease-in-out 
-                      hover:-translate-y-1 hover:scale-105 rounded-lg py-1.5 sm:py-2 text-sm" 
-              onClick={onContact}
-            >
-              {t('services.contact')}
-            </Button>
-          )}
-        </div>
+        {onContact && (
+          <Button 
+            className="w-full bg-gradient-to-r from-teal-600 to-emerald-500 hover:from-teal-700 hover:to-emerald-600 
+                    text-white font-medium shadow-sm hover:shadow-md transform transition-all duration-400 ease-in-out 
+                    hover:-translate-y-1 hover:scale-105 rounded-lg py-1.5 sm:py-2 text-sm" 
+            onClick={onContact}
+          >
+            {t('services.contact')}
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );
