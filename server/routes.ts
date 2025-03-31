@@ -69,13 +69,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         console.log("Using MyMemory for translation...");
         const encodedText = encodeURIComponent(text);
+        const email = process.env.TRANSLATION_EMAIL || '';
         
         // Add timeout to avoid hanging requests
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
         
+        // Add email for increased daily quota (from ~1000 to ~50000 words/day)
+        const apiUrl = `https://api.mymemory.translated.net/get?q=${encodedText}&langpair=en|${targetLang}${email ? `&de=${email}` : ''}`;
+        console.log(`Making API request to: ${apiUrl.replace(email, '[REDACTED_EMAIL]')}`);
+        
         const myMemoryResponse = await fetch(
-          `https://api.mymemory.translated.net/get?q=${encodedText}&langpair=en|${targetLang}`,
+          apiUrl,
           { signal: controller.signal }
         );
         
