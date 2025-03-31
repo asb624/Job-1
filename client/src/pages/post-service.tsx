@@ -18,6 +18,7 @@ import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import { Icon } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useTranslation } from "react-i18next";
+import { LocationSearch } from "@/components/location-search";
 import { FileUpload } from "@/components/ui/file-upload";
 
 // Default icon for the map marker
@@ -350,7 +351,7 @@ export default function PostService() {
                   )}
                 />
 
-                <div className="space-y-2">
+                <div className="space-y-4">
                   <div className="flex justify-between items-center">
                     <FormLabel>{t('postService.location')}</FormLabel>
                     <div className="flex space-x-2">
@@ -396,6 +397,47 @@ export default function PostService() {
                         {showMap ? t('common.close') : t('postService.pickLocation')}
                       </Button>
                     </div>
+                  </div>
+                  
+                  {/* Nominatim Location Search */}
+                  <div className="w-full">
+                    <FormLabel className="mb-2 block">{t('filters.searchLocation')}</FormLabel>
+                    <LocationSearch 
+                      onLocationSelect={(location) => {
+                        console.log("Selected location:", location);
+                        // Update the form fields with the selected location details
+                        form.setValue("latitude", location.lat as any);
+                        form.setValue("longitude", location.lon as any);
+                        
+                        // Try to extract city, state and country from the display name
+                        // Display name format is typically: "Street, City, Region, Country, Postal Code"
+                        const addressParts = location.displayName.split(',').map(part => part.trim());
+                        
+                        if (addressParts.length >= 3) {
+                          // Assuming city is near the beginning, country near the end
+                          const cityIndex = 1; // Often the second element
+                          const stateIndex = Math.max(0, addressParts.length - 3);
+                          const countryIndex = Math.max(0, addressParts.length - 2);
+                          
+                          form.setValue("city", addressParts[cityIndex] || "");
+                          form.setValue("state", addressParts[stateIndex] || "");
+                          form.setValue("country", addressParts[countryIndex] || "");
+                          
+                          // For address, use the first part or combination
+                          form.setValue("address", addressParts[0] || "");
+                          
+                          // For postal code (if available), often the last part
+                          const postalCodeCandidate = addressParts[addressParts.length - 1];
+                          if (postalCodeCandidate && /\d/.test(postalCodeCandidate)) {
+                            form.setValue("postalCode", postalCodeCandidate);
+                          }
+                        }
+                        
+                        setShowMap(true);
+                      }}
+                      className="w-full"
+                      placeholder={t('postService.searchLocationPlaceholder')}
+                    />
                   </div>
                   
                   {showMap && (

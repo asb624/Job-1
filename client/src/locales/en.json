@@ -125,7 +125,8 @@
     "countryPlaceholder": "Country",
     "postalCodePlaceholder": "Postal Code",
     "serviceRadiusPlaceholder": "How far you're willing to travel (km)",
-    "locationError": "Could not get your location. Please allow location access or enter coordinates manually."
+    "locationError": "Could not get your location. Please allow location access or enter coordinates manually.",
+    "searchLocationPlaceholder": "Search for a place, city, or address..."
   },
   "postRequirement": {
     "title": "Post a New Requirement",
@@ -248,7 +249,11 @@
     "oldest": "Oldest",
     "priceLowToHigh": "Price: Low to High",
     "priceHighToLow": "Price: High to Low",
-    "search": "Search"
+    "search": "Search",
+    "searchLocation": "Search for a location...",
+    "noLocationsFound": "No locations found",
+    "typeToSearch": "Type to search for locations",
+    "selectLocation": "Select a location"
   },
   "fileUpload": {
     "dragDrop": "Click or drag images here",

@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { ServiceMap } from "@/components/map/service-map";
 import { useState, useEffect } from "react";
 import { ChatbotUI } from "@/components/ai-chatbot/chatbot-ui";
+import { LocationSearch } from "@/components/location-search";
 import { useTranslation } from "react-i18next";
 import { preloadTranslations } from "@/lib/translation-utils";
 
@@ -243,17 +244,15 @@ export default function HomePage() {
             </select>
             
             {/* Location Filter */}
-            <div className="flex items-center gap-1 bg-white border border-teal-200 text-teal-700 rounded-lg px-3 py-1.5">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
-                <circle cx="12" cy="10" r="3"/>
-              </svg>
-              <select className="bg-transparent border-none text-sm focus:outline-none">
-                <option value="">{t("filters.anyLocation")}</option>
-                <option value="delhi">Delhi</option>
-                <option value="mumbai">Mumbai</option>
-                <option value="bangalore">Bangalore</option>
-              </select>
+            <div className="w-60">
+              <LocationSearch 
+                onLocationSelect={(location) => {
+                  console.log("Selected location:", location);
+                  // Here you would typically update your filters state
+                  // setFilters(prev => ({ ...prev, location: location }));
+                }}
+                className="w-full"
+              />
             </div>
             
             {/* Price Range */}
