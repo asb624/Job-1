@@ -238,7 +238,11 @@
     "edit": "Edit",
     "close": "Close",
     "learnMore": "Learn More",
-    "translating": "Translating..."
+    "translating": "Translating...",
+    "pronounce": "Pronounce",
+    "pronounceDescription": "Pronounce description",
+    "stopPronunciation": "Stop",
+    "speechNotSupported": "Speech not supported in your browser"
   },
   "location": {
     "useMyLocation": "Use my current location",

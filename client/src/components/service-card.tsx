@@ -1,11 +1,13 @@
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Service } from "@shared/schema";
-import { MapPin, Clock, Tag, Star, Calendar, Loader2 } from "lucide-react";
+import { MapPin, Clock, Tag, Star, Calendar, Loader2, Volume2, VolumeX } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useState, useEffect } from "react";
 import { formatDate } from "@/lib/utils";
 import { useTranslatedContent } from "@/lib/translation-utils";
+import { speechService } from "@/lib/speech-service";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface ServiceCardProps {
   service: Service & { averageRating?: number };
@@ -16,7 +18,9 @@ export function ServiceCard({ service, onContact }: ServiceCardProps) {
   const { t, i18n } = useTranslation();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isTranslating, setIsTranslating] = useState(i18n.language !== 'en');
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const hasImages = service.imageUrls && Array.isArray(service.imageUrls) && service.imageUrls.length > 0;
+  const isSpeechSupported = speechService.isSupported();
   
   // Use our custom hook to handle translations with async support
   const translatedTitle = useTranslatedContent(service.title, i18n.language);
@@ -108,9 +112,60 @@ export function ServiceCard({ service, onContact }: ServiceCardProps) {
       
       <CardHeader className="space-y-2 pt-6 pb-2 sm:pb-3 px-4 sm:px-6 relative z-10">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-          <h3 className="text-lg sm:text-xl font-bold text-teal-800 group-hover:text-teal-600 transition-colors duration-300 ease-in-out line-clamp-2">
-            {translatedTitle}
-          </h3>
+          <div className="flex items-center gap-2">
+            <h3 className="text-lg sm:text-xl font-bold text-teal-800 group-hover:text-teal-600 transition-colors duration-300 ease-in-out line-clamp-2">
+              {translatedTitle}
+            </h3>
+            
+            {/* Pronunciation button */}
+            {isSpeechSupported && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button 
+                      className={`flex items-center justify-center rounded-full p-1.5 transition-colors ${
+                        isSpeaking 
+                          ? 'bg-teal-100 text-teal-600 animate-pulse' 
+                          : 'text-teal-400 hover:bg-teal-50 hover:text-teal-600'
+                      }`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        
+                        if (isSpeaking) {
+                          // Stop speaking if already in progress
+                          speechService.stop();
+                          setIsSpeaking(false);
+                        } else {
+                          // Start speech
+                          setIsSpeaking(true);
+                          const textToRead = translatedTitle;
+                          
+                          speechService.speak(textToRead, i18n.language)
+                            .then(() => {
+                              setIsSpeaking(false);
+                            })
+                            .catch((error) => {
+                              console.error('Speech error:', error);
+                              setIsSpeaking(false);
+                            });
+                        }
+                      }}
+                    >
+                      {isSpeaking ? (
+                        <VolumeX size={16} className="sm:w-5 sm:h-5" />
+                      ) : (
+                        <Volume2 size={16} className="sm:w-5 sm:h-5" />
+                      )}
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    <p>{isSpeaking ? t('common.stopPronunciation', 'Stop') : t('common.pronounce', 'Pronounce')}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          </div>
           <span className="text-base sm:text-lg font-semibold text-teal-700 bg-teal-50 px-3 py-1 rounded-full shadow-sm border border-teal-100 self-start whitespace-nowrap">
             ₹{service.price}
           </span>
@@ -130,7 +185,50 @@ export function ServiceCard({ service, onContact }: ServiceCardProps) {
       </CardHeader>
       
       <CardContent className="relative z-10 pt-0 pb-2 px-4 sm:px-6">
-        <p className="text-xs sm:text-sm text-gray-600 line-clamp-3">{translatedDescription}</p>
+        <div className="flex items-start gap-2">
+          <p className="text-xs sm:text-sm text-gray-600 line-clamp-3 flex-1">{translatedDescription}</p>
+          
+          {/* Description pronunciation button */}
+          {isSpeechSupported && (
+            <button 
+              className={`flex-none mt-0.5 rounded-full p-1 transition-colors ${
+                isSpeaking 
+                  ? 'bg-teal-100 text-teal-600 animate-pulse' 
+                  : 'text-teal-400 hover:bg-teal-50 hover:text-teal-600'
+              }`}
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                
+                if (isSpeaking) {
+                  // Stop speaking if already in progress
+                  speechService.stop();
+                  setIsSpeaking(false);
+                } else {
+                  // Start speech
+                  setIsSpeaking(true);
+                  const textToRead = translatedDescription;
+                  
+                  speechService.speak(textToRead, i18n.language)
+                    .then(() => {
+                      setIsSpeaking(false);
+                    })
+                    .catch((error) => {
+                      console.error('Speech error:', error);
+                      setIsSpeaking(false);
+                    });
+                }
+              }}
+              title={isSpeaking ? t('common.stopPronunciation', 'Stop') : t('common.pronounceDescription', 'Pronounce description')}
+            >
+              {isSpeaking ? (
+                <VolumeX size={14} className="sm:w-4 sm:h-4" />
+              ) : (
+                <Volume2 size={14} className="sm:w-4 sm:h-4" />
+              )}
+            </button>
+          )}
+        </div>
         
         <div className="mt-3 sm:mt-4 flex flex-wrap gap-2 sm:gap-3 text-xs text-teal-700">
           {service.createdAt && (
