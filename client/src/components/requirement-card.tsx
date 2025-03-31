@@ -113,17 +113,13 @@ export function RequirementCard({ requirement, onSelect }: RequirementCardProps)
       <CardHeader className="space-y-2 pl-4 sm:pl-6 pt-4 sm:pt-5 pb-2 sm:pb-3 relative z-10 pr-4 sm:pr-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <h3 className="text-lg sm:text-xl font-bold text-emerald-800 group-hover:text-emerald-600 transition-colors duration-300 ease-in-out line-clamp-2">
-              {translatedTitle}
-            </h3>
-            
-            {/* Pronunciation button */}
+            {/* Single Read Aloud button before title */}
             {isSpeechSupported && (
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <button 
-                      className={`h-7 w-7 rounded-full flex items-center justify-center transition-colors ${
+                      className={`h-7 w-7 rounded-full flex-shrink-0 flex items-center justify-center transition-colors ${
                         isSpeaking ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-50 text-gray-400 hover:bg-emerald-50 hover:text-emerald-600'
                       }`}
                       onClick={(e) => {
@@ -155,6 +151,10 @@ export function RequirementCard({ requirement, onSelect }: RequirementCardProps)
                 </Tooltip>
               </TooltipProvider>
             )}
+            
+            <h3 className="text-lg sm:text-xl font-bold text-emerald-800 group-hover:text-emerald-600 transition-colors duration-300 ease-in-out line-clamp-2">
+              {translatedTitle}
+            </h3>
           </div>
           <div className="flex items-center gap-2 flex-wrap self-start">
             <span className="text-base sm:text-lg font-semibold text-emerald-700 bg-emerald-50 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full shadow-sm border border-emerald-100 whitespace-nowrap">
@@ -179,43 +179,6 @@ export function RequirementCard({ requirement, onSelect }: RequirementCardProps)
       <CardContent className="relative z-10 pl-4 sm:pl-6 py-1 sm:py-2 pr-4 sm:pr-6">
         <div className="flex items-start gap-2">
           <p className="text-xs sm:text-sm text-gray-600 line-clamp-3 flex-1">{translatedDescription}</p>
-          
-          {/* Description pronunciation button */}
-          {isSpeechSupported && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button 
-                    className={`h-6 w-6 rounded-full flex-shrink-0 flex items-center justify-center transition-colors ${
-                      isSpeaking ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-50 text-gray-400 hover:bg-emerald-50 hover:text-emerald-600'
-                    }`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (isSpeaking) {
-                        speechService.stop();
-                        setIsSpeaking(false);
-                      } else {
-                        setIsSpeaking(true);
-                        speechService.speak(translatedDescription, i18n.language)
-                          .then(() => {
-                            setIsSpeaking(false);
-                          })
-                          .catch((error: unknown) => {
-                            console.error("Error reading description:", error);
-                            setIsSpeaking(false);
-                          });
-                      }
-                    }}
-                  >
-                    {isSpeaking ? <VolumeX size={12} /> : <Volume2 size={12} />}
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {isSpeaking ? t('common.stopReading', 'Stop reading') : t('common.readDescription', 'Read description')}
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
         </div>
         
         <div className="mt-3 sm:mt-4 flex flex-wrap gap-2 sm:gap-3 text-[10px] sm:text-xs text-emerald-700">

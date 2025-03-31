@@ -124,17 +124,13 @@ export function ServiceCard({ service, onContact }: ServiceCardProps) {
       <CardHeader className="space-y-2 pt-6 pb-2 sm:pb-3 px-4 sm:px-6 relative z-10">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div className="flex items-center gap-2">
-            <h3 className="text-lg sm:text-xl font-bold text-teal-800 group-hover:text-teal-600 transition-colors duration-300 ease-in-out line-clamp-2">
-              {translatedTitle}
-            </h3>
-            
-            {/* Title pronunciation button */}
+            {/* Single Read Aloud button before title */}
             {isSpeechSupported && (
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <button 
-                      className={`h-7 w-7 rounded-full flex items-center justify-center transition-colors ${
+                      className={`h-7 w-7 rounded-full flex-shrink-0 flex items-center justify-center transition-colors ${
                         isSpeaking ? 'bg-teal-100 text-teal-700' : 'bg-gray-50 text-gray-400 hover:bg-teal-50 hover:text-teal-600'
                       }`}
                       onClick={(e) => {
@@ -166,6 +162,10 @@ export function ServiceCard({ service, onContact }: ServiceCardProps) {
                 </Tooltip>
               </TooltipProvider>
             )}
+            
+            <h3 className="text-lg sm:text-xl font-bold text-teal-800 group-hover:text-teal-600 transition-colors duration-300 ease-in-out line-clamp-2">
+              {translatedTitle}
+            </h3>
           </div>
           <span className="text-base sm:text-lg font-semibold text-teal-700 bg-teal-50 px-3 py-1 rounded-full shadow-sm border border-teal-100 self-start whitespace-nowrap">
             ₹{service.price}
@@ -188,43 +188,6 @@ export function ServiceCard({ service, onContact }: ServiceCardProps) {
       <CardContent className="relative z-10 pt-0 pb-2 px-4 sm:px-6">
         <div className="flex items-start gap-2">
           <p className="text-xs sm:text-sm text-gray-600 line-clamp-3 flex-1">{translatedDescription}</p>
-          
-          {/* Description pronunciation button */}
-          {isSpeechSupported && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button 
-                    className={`h-6 w-6 rounded-full flex-shrink-0 flex items-center justify-center transition-colors ${
-                      isSpeaking ? 'bg-teal-100 text-teal-700' : 'bg-gray-50 text-gray-400 hover:bg-teal-50 hover:text-teal-600'
-                    }`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (isSpeaking) {
-                        speechService.stop();
-                        setIsSpeaking(false);
-                      } else {
-                        setIsSpeaking(true);
-                        speechService.speak(translatedDescription, i18n.language)
-                          .then(() => {
-                            setIsSpeaking(false);
-                          })
-                          .catch((error: unknown) => {
-                            console.error("Error reading description:", error);
-                            setIsSpeaking(false);
-                          });
-                      }
-                    }}
-                  >
-                    {isSpeaking ? <VolumeX size={12} /> : <Volume2 size={12} />}
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {isSpeaking ? t('common.stopReading', 'Stop reading') : t('common.readDescription', 'Read description')}
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
         </div>
         
         <div className="mt-3 sm:mt-4 flex flex-wrap gap-2 sm:gap-3 text-xs text-teal-700">
