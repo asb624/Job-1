@@ -65,126 +65,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log(`Translating: "${text}" to ${targetLang}`);
       
-      // Use LibreTranslate via direct API
+      // Use only MyMemory for translations
       try {
-        console.log("Using LibreTranslate directly...");
+        console.log("Using MyMemory for translation...");
+        const encodedText = encodeURIComponent(text);
         
-        // Rotate and shuffle endpoints to distribute load and increase success chance
-        const endpoints = [
-          "https://libretranslate.de/translate",
-          "https://translate.argosopentech.com/translate",
-          "https://translate.terraprint.co/translate", 
-          "https://translate.fedilab.app/translate",
-          "https://libretranslate.com/translate", // Main endpoint sometimes has rate limits
-          "https://translate.api.skitzen.com/translate"
-        ];
+        // Add timeout to avoid hanging requests
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
         
-        // Shuffle the endpoints array to distribute load
-        for (let i = endpoints.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [endpoints[i], endpoints[j]] = [endpoints[j], endpoints[i]];
-        }
+        const myMemoryResponse = await fetch(
+          `https://api.mymemory.translated.net/get?q=${encodedText}&langpair=en|${targetLang}`,
+          { signal: controller.signal }
+        );
         
-        let libreResponse = null;
-        let lastError = null;
+        clearTimeout(timeoutId);
         
-        // Try each endpoint with retry logic
-        for (const endpoint of endpoints) {
-          try {
-            console.log(`Trying LibreTranslate endpoint: ${endpoint}`);
+        if (myMemoryResponse.ok) {
+          const myMemoryData = await myMemoryResponse.json();
+          if (myMemoryData?.responseData?.translatedText) {
+            const translatedText = myMemoryData.responseData.translatedText;
             
-            // Add timeout to avoid hanging requests
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
-            
-            libreResponse = await fetch(endpoint, {
-              method: "POST",
-              body: JSON.stringify({
-                q: text,
-                source: "auto", // Let the service detect the source language
-                target: targetLang,
-                format: "text"
-              }),
-              headers: { "Content-Type": "application/json" },
-              signal: controller.signal
-            });
-            
-            clearTimeout(timeoutId);
-            
-            if (libreResponse.ok) {
-              break; // Found a working endpoint
-            }
-          } catch (error: any) {
-            lastError = error;
-            console.log(`Endpoint ${endpoint} failed:`, error.message);
-            continue; // Try the next endpoint
-          }
-        }
-        
-        if (libreResponse && libreResponse.ok) {
-          const libreData = await libreResponse.json();
-          if (libreData && libreData.translatedText) {
-            console.log(`LibreTranslate success: "${libreData.translatedText}"`);
-            
-            // Cache the successful translation
-            cacheTranslation(cacheKey, libreData.translatedText);
-            
-            return res.json({ 
-              translatedText: libreData.translatedText,
-              source: "libretranslate"
-            });
-          }
-        }
-        
-        throw new Error(lastError?.message || "All LibreTranslate endpoints failed");
-      } catch (libreError: any) {
-        console.log("LibreTranslate error:", libreError.message);
-        
-        // Fall back to MyMemory as a last resort
-        try {
-          console.log("Falling back to MyMemory...");
-          const encodedText = encodeURIComponent(text);
-          
-          // Add timeout to avoid hanging requests
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
-          
-          const myMemoryResponse = await fetch(
-            `https://api.mymemory.translated.net/get?q=${encodedText}&langpair=en|${targetLang}`,
-            { signal: controller.signal }
-          );
-          
-          clearTimeout(timeoutId);
-          
-          if (myMemoryResponse.ok) {
-            const myMemoryData = await myMemoryResponse.json();
-            if (myMemoryData?.responseData?.translatedText) {
-              const translatedText = myMemoryData.responseData.translatedText;
+            if (!translatedText.includes("MYMEMORY WARNING")) {
+              console.log(`MyMemory success: "${translatedText}"`);
               
-              if (!translatedText.includes("MYMEMORY WARNING")) {
-                console.log(`MyMemory success: "${translatedText}"`);
-                
-                // Cache the successful translation
-                cacheTranslation(cacheKey, translatedText);
-                
-                return res.json({ 
-                  translatedText: translatedText,
-                  source: "mymemory"
-                });
-              }
+              // Cache the successful translation
+              cacheTranslation(cacheKey, translatedText);
+              
+              return res.json({ 
+                translatedText: translatedText,
+                source: "mymemory"
+              });
+            } else {
+              console.log("MyMemory returned a warning message:", translatedText);
             }
           }
-          
-          throw new Error("MyMemory translation failed or limit reached");
-        } catch (myMemoryError: any) {
-          console.log("MyMemory error:", myMemoryError.message);
-          
-          // If all translation services fail, return the original text
-          return res.status(200).json({ 
-            translatedText: text, // Return the original text as last resort
-            source: "original"
-          });
         }
+        
+        // If we get here, MyMemory translation failed
+        throw new Error("MyMemory translation failed or limit reached");
+      } catch (error: any) {
+        console.log("MyMemory error:", error.message);
+        
+        // If translation service fails, return the original text
+        return res.status(200).json({ 
+          translatedText: text, // Return the original text as last resort
+          source: "original"
+        });
       }
     } catch (error: any) {
       console.error("Translation error:", error.message);
