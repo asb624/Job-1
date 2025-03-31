@@ -142,7 +142,7 @@ export default function HomePage() {
           </p>
           
           {/* Location Search Bar */}
-          <div className="max-w-md mx-auto mt-4">
+          <div className="max-w-md mx-auto mt-4 relative z-20">
             <LocationSearch 
               onLocationSelect={(location) => {
                 console.log("Selected location on hero:", location);

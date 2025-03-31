@@ -243,7 +243,7 @@ export function LocationSearch({
       {showResults && (
         <div 
           ref={resultsRef}
-          className="absolute top-full left-0 right-0 w-full bg-background border rounded-md shadow-md mt-1 z-50"
+          className="absolute top-full left-0 right-0 w-full bg-background border rounded-md shadow-lg mt-1 z-[100] max-h-[350px] overflow-y-auto"
         >
           <div className="py-2">
             {/* Current location option at the top of the dropdown */}
@@ -268,7 +268,7 @@ export function LocationSearch({
                 <Loader2 className="h-6 w-6 animate-spin text-primary" />
               </div>
             ) : results.length > 0 ? (
-              <div className="max-h-[300px] overflow-auto">
+              <>
                 {results.map((result) => (
                   <button
                     key={result.place_id}
@@ -280,7 +280,7 @@ export function LocationSearch({
                     <span className="line-clamp-2 text-sm">{result.display_name}</span>
                   </button>
                 ))}
-              </div>
+              </>
             ) : searchTerm.length > 1 ? (
               <p className="text-sm text-center py-4 text-muted-foreground">
                 {t('filters.noLocationsFound')}
