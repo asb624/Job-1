@@ -117,7 +117,44 @@ export function RequirementCard({ requirement, onSelect }: RequirementCardProps)
               {translatedTitle}
             </h3>
             
-            {/* Removed pronunciation button */}
+            {/* Pronunciation button */}
+            {isSpeechSupported && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button 
+                      className={`h-7 w-7 rounded-full flex items-center justify-center transition-colors ${
+                        isSpeaking ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-50 text-gray-400 hover:bg-emerald-50 hover:text-emerald-600'
+                      }`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (isSpeaking) {
+                          speechService.stop();
+                          setIsSpeaking(false);
+                        } else {
+                          setIsSpeaking(true);
+                          const text = `Requirement: ${translatedTitle}.. Budget: ${requirement.budget} Rupees.. Category: ${requirement.category}.. Description: ${translatedDescription}.. ${requirement.isRemote ? 'Remote work allowed' : 'In-person only'}`;
+                          
+                          speechService.speak(text, i18n.language)
+                            .then(() => {
+                              setIsSpeaking(false);
+                            })
+                            .catch((error: unknown) => {
+                              console.error("Error reading card:", error);
+                              setIsSpeaking(false);
+                            });
+                        }
+                      }}
+                    >
+                      {isSpeaking ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {isSpeaking ? t('common.stopReading', 'Stop reading') : t('common.readAloud', 'Read aloud')}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
           </div>
           <div className="flex items-center gap-2 flex-wrap self-start">
             <span className="text-base sm:text-lg font-semibold text-emerald-700 bg-emerald-50 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full shadow-sm border border-emerald-100 whitespace-nowrap">
@@ -142,7 +179,43 @@ export function RequirementCard({ requirement, onSelect }: RequirementCardProps)
       <CardContent className="relative z-10 pl-4 sm:pl-6 py-1 sm:py-2 pr-4 sm:pr-6">
         <div className="flex items-start gap-2">
           <p className="text-xs sm:text-sm text-gray-600 line-clamp-3 flex-1">{translatedDescription}</p>
-          {/* Removed description pronunciation button */}
+          
+          {/* Description pronunciation button */}
+          {isSpeechSupported && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button 
+                    className={`h-6 w-6 rounded-full flex-shrink-0 flex items-center justify-center transition-colors ${
+                      isSpeaking ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-50 text-gray-400 hover:bg-emerald-50 hover:text-emerald-600'
+                    }`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (isSpeaking) {
+                        speechService.stop();
+                        setIsSpeaking(false);
+                      } else {
+                        setIsSpeaking(true);
+                        speechService.speak(translatedDescription, i18n.language)
+                          .then(() => {
+                            setIsSpeaking(false);
+                          })
+                          .catch((error: unknown) => {
+                            console.error("Error reading description:", error);
+                            setIsSpeaking(false);
+                          });
+                      }
+                    }}
+                  >
+                    {isSpeaking ? <VolumeX size={12} /> : <Volume2 size={12} />}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {isSpeaking ? t('common.stopReading', 'Stop reading') : t('common.readDescription', 'Read description')}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
         </div>
         
         <div className="mt-3 sm:mt-4 flex flex-wrap gap-2 sm:gap-3 text-[10px] sm:text-xs text-emerald-700">
