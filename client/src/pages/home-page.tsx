@@ -161,20 +161,36 @@ export default function HomePage() {
                 </p>
               </div>
               
-              {/* Quick Post Button - Always Visible */}
-              <Button 
-                className="bg-white text-teal-700 hover:bg-teal-50 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
-                onClick={() => navigate(user?.isServiceProvider ? "/post-requirement" : "/post-service")}
-              >
-                <div className="flex items-center gap-2">
-                  <span className="bg-teal-600 text-white p-1 rounded-full">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M12 5v14M5 12h14"/>
-                    </svg>
-                  </span>
-                  {user?.isServiceProvider ? t("Post Requirement") : t("Post Service")}
-                </div>
-              </Button>
+              {/* Post Buttons */}
+              <div className="flex gap-2">
+                <Button 
+                  className="bg-white text-teal-700 hover:bg-teal-50 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                  onClick={() => navigate("/post-service")}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="bg-teal-600 text-white p-1 rounded-full">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 5v14M5 12h14"/>
+                      </svg>
+                    </span>
+                    {t("Post Service")}
+                  </div>
+                </Button>
+                
+                <Button 
+                  className="bg-white text-emerald-700 hover:bg-emerald-50 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                  onClick={() => navigate("/post-requirement")}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="bg-emerald-600 text-white p-1 rounded-full">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 5v14M5 12h14"/>
+                      </svg>
+                    </span>
+                    {t("Post Requirement")}
+                  </div>
+                </Button>
+              </div>
             </div>
             
             {/* Enhanced Tab Navigation - Custom Design */}
