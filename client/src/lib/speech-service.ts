@@ -210,28 +210,23 @@ class SpeechService {
    */
   public async speak(text: string, languageCode: string = 'en'): Promise<void> {
     try {
-      // Check if the language is better supported by server-side TTS
-      if (this.shouldUseServerSideTTS(languageCode)) {
-        // Try server-side TTS first for Indian languages
+      // Try Web Speech API first for all languages (more reliable)
+      if (this.synthesis) {
         try {
-          await this.playServerSideTTS(text, languageCode);
-          return;
+          return await this.speakWithWebSpeech(text, languageCode);
         } catch (error) {
-          console.warn('Server-side TTS failed, falling back to Web Speech API:', error);
-          // Fall back to Web Speech API if server-side fails
-          if (this.synthesis) {
-            return this.speakWithWebSpeech(text, languageCode);
+          console.warn('Web Speech API failed, falling back to server-side TTS:', error);
+          
+          // Only if Web Speech API fails and language is supported by server-side TTS
+          if (this.shouldUseServerSideTTS(languageCode)) {
+            return this.playServerSideTTS(text, languageCode);
+          } else {
+            throw error; // Re-throw if language isn't supported by server-side
           }
-          throw error; // Re-throw if Web Speech API is not available
         }
       } else {
-        // For non-Indian languages, use Web Speech API
-        if (this.synthesis) {
-          return this.speakWithWebSpeech(text, languageCode);
-        } else {
-          // Fall back to server-side TTS if Web Speech API is not available
-          return this.playServerSideTTS(text, languageCode);
-        }
+        // If Web Speech API isn't available at all, try server-side
+        return this.playServerSideTTS(text, languageCode);
       }
     } catch (error) {
       console.error('All TTS methods failed:', error);
