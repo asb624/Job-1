@@ -793,7 +793,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     abortOnLimit: true
   }));
 
-  // Indic TTS API endpoint with multiple service options
+  // TTS API endpoint using ElevenLabs
   app.post("/api/tts", async (req: Request, res: Response) => {
     try {
       const { text, language } = req.body;
@@ -806,28 +806,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`TTS Request: "${text}" in language: ${language}`);
       
-      // Map our application language codes to Indic TTS language codes
-      const languageMap: Record<string, string> = {
-        'en': 'english',
-        'hi': 'hindi',
-        'ta': 'tamil',
-        'te': 'telugu',
-        'bn': 'bengali',
-        'gu': 'gujarati',
-        'ml': 'malayalam',
-        'mr': 'marathi',
-        'kn': 'kannada',
-        'pa': 'punjabi',
-        'or': 'odia'
-      };
-      
-      // Get the appropriate language code for Indic TTS
-      const ttsLanguage = languageMap[language] || 'english';
-      
       try {
         // Select the correct API endpoint based on language
         let apiUrl = 'https://api.elevenlabs.io/v1/text-to-speech/EXAVITQu4vr4xnSDxMaL';
-        let apiHeaders = {
+        let apiHeaders: Record<string, string> = {
           'Content-Type': 'application/json',
           'Accept': 'audio/mpeg'
         };

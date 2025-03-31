@@ -63,11 +63,11 @@ class SpeechService {
   }
   
   /**
-   * Play audio using our custom TTS service
+   * Play audio using ElevenLabs TTS service
    * @param text Text to convert to speech
    * @param languageCode Language code (e.g., 'hi', 'ta')
    */
-  private async playServerSideTTS(text: string, languageCode: string): Promise<void> {
+  private async playTTS(text: string, languageCode: string): Promise<void> {
     try {
       // Stop any currently playing audio
       this.stop();
@@ -76,7 +76,7 @@ class SpeechService {
       const cacheBuster = new Date().getTime();
       const url = `/api/tts?cacheBuster=${cacheBuster}`;
       
-      console.log(`Using server-side TTS for language ${languageCode}`);
+      console.log(`Using ElevenLabs TTS for language ${languageCode}`);
       
       // Request TTS audio from server
       const response = await axios({
@@ -127,15 +127,15 @@ class SpeechService {
   }
   
   /**
-   * Speak text using our custom TTS service
+   * Speak text using ElevenLabs TTS service
    * @param text The text to speak
    * @param languageCode The i18next language code
    * @returns A promise that resolves when speech is completed or rejects on error
    */
   public async speak(text: string, languageCode: string = 'en'): Promise<void> {
     try {
-      // Always use our server-side TTS
-      await this.playServerSideTTS(text, languageCode);
+      // Always use ElevenLabs TTS
+      await this.playTTS(text, languageCode);
     } catch (error) {
       console.error('TTS failed:', error);
       throw new Error(`Speech synthesis failed: ${error}`);
