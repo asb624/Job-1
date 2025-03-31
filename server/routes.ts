@@ -1,10 +1,12 @@
-import type { Express } from "express";
+import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { setupWebSocket } from "./websocket";
 import { storage } from "./storage";
 import { z } from "zod";
 import fetch from "node-fetch";
+import axios from "axios";
+import fileUpload from "express-fileupload";
 import { 
   insertServiceSchema, insertRequirementSchema, insertBidSchema, 
   insertProfileSchema, insertMessageSchema, insertNotificationSchema,
@@ -122,7 +124,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Translation error:", error.message);
       // Even on error, return the original text to avoid breaking the UI
       return res.status(200).json({ 
-        translatedText: text,
+        translatedText: req.body.text || "",
         source: "error_fallback" 
       });
     }
@@ -782,6 +784,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error in category-based requirement search:", error);
       res.status(500).json({ message: "Error processing category-based search" });
+    }
+  });
+
+  // Initialize file upload middleware
+  app.use(fileUpload({
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB max file size
+    abortOnLimit: true
+  }));
+
+  // Indic TTS API endpoint
+  app.post("/api/tts", async (req: Request, res: Response) => {
+    try {
+      const { text, language } = req.body;
+      
+      if (!text || !language) {
+        return res.status(400).json({ 
+          error: "Missing required parameters. Please provide 'text' and 'language'." 
+        });
+      }
+
+      console.log(`TTS Request: "${text}" in language: ${language}`);
+      
+      // Map our application language codes to Indic TTS language codes
+      const languageMap: Record<string, string> = {
+        'hi': 'hindi',
+        'ta': 'tamil',
+        'te': 'telugu',
+        'bn': 'bengali',
+        'gu': 'gujarati',
+        'ml': 'malayalam',
+        'mr': 'marathi',
+        'kn': 'kannada',
+        'pa': 'punjabi',
+        'or': 'odia'
+      };
+      
+      // Get the appropriate language code for Indic TTS
+      const ttsLanguage = languageMap[language] || 'hindi';
+      
+      // Use Axios for better request handling
+      const response = await axios({
+        method: 'POST',
+        url: 'https://ai4bharat.org/api/tts',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        data: {
+          input: [{ source: text }],
+          config: {
+            gender: 'female',
+            language: {
+              sourceLanguage: ttsLanguage
+            }
+          }
+        },
+        responseType: 'arraybuffer',
+        timeout: 10000 // 10 second timeout
+      });
+      
+      // Send the audio file back to the client
+      res.set('Content-Type', 'audio/mp3');
+      res.set('Cache-Control', 'public, max-age=86400'); // Cache for 1 day
+      res.send(response.data);
+    } catch (error: any) {
+      console.error('TTS Error:', error.message);
+      res.status(500).json({ 
+        error: "Failed to generate speech", 
+        details: error.message 
+      });
     }
   });
 
