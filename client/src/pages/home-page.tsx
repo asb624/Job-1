@@ -14,14 +14,12 @@ import { useState, useEffect } from "react";
 import { ChatbotUI } from "@/components/ai-chatbot/chatbot-ui";
 import { useTranslation } from "react-i18next";
 import { preloadTranslations } from "@/lib/translation-utils";
-import { LocationSearch } from "@/components/location-search";
 
 export default function HomePage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [, navigate] = useLocation();
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
-  const [selectedLocation, setSelectedLocation] = useState<{name: string; displayName: string; latitude: number; longitude: number} | null>(null);
   const { t, i18n } = useTranslation();
 
   const { data: services, isSuccess: servicesLoaded } = useQuery<Service[]>({
@@ -32,95 +30,6 @@ export default function HomePage() {
     queryKey: ["/api/requirements"],
   });
   
-  // State for filtered services and requirements
-  const [filteredServices, setFilteredServices] = useState<Service[]>([]);
-  const [filteredRequirements, setFilteredRequirements] = useState<Requirement[]>([]);
-  
-  // Filter services and requirements based on location selection
-  useEffect(() => {
-    if (services) {
-      if (selectedLocation) {
-        // Calculate distance between selected location and each service
-        // For this simple implementation, we'll filter by city name (case-insensitive)
-        const filtered = services.filter(service => {
-          // If the service has location data, filter by proximity
-          if (service.latitude && service.longitude && selectedLocation.latitude && selectedLocation.longitude) {
-            // Haversine formula to calculate distance (simplified version)
-            const lat1 = service.latitude;
-            const lon1 = service.longitude;
-            const lat2 = selectedLocation.latitude;
-            const lon2 = selectedLocation.longitude;
-            
-            const R = 6371; // Radius of earth in km
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = 
-              Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-              Math.sin(dLon/2) * Math.sin(dLon/2); 
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
-            const distance = R * c; // Distance in km
-            
-            return distance <= 50; // Within 50km (arbitrary, can be adjusted)
-          } 
-          
-          // Fallback to text matching if coordinates aren't available
-          if (service.city) {
-            const searchTermLower = selectedLocation.name.toLowerCase();
-            return service.city.toLowerCase().includes(searchTermLower) ||
-                  (service.state && service.state.toLowerCase().includes(searchTermLower));
-          }
-          
-          return false;
-        });
-        
-        setFilteredServices(filtered);
-      } else {
-        // No location filter, show all services
-        setFilteredServices(services);
-      }
-    }
-    
-    if (requirements) {
-      if (selectedLocation) {
-        // Apply similar filtering logic for requirements
-        const filtered = requirements.filter(requirement => {
-          if (requirement.latitude && requirement.longitude && selectedLocation.latitude && selectedLocation.longitude) {
-            const lat1 = requirement.latitude;
-            const lon1 = requirement.longitude;
-            const lat2 = selectedLocation.latitude;
-            const lon2 = selectedLocation.longitude;
-            
-            const R = 6371; // Radius of earth in km
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = 
-              Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-              Math.sin(dLon/2) * Math.sin(dLon/2); 
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
-            const distance = R * c;
-            
-            return distance <= 50;
-          }
-          
-          if (requirement.city) {
-            const searchTermLower = selectedLocation.name.toLowerCase();
-            return requirement.city.toLowerCase().includes(searchTermLower) ||
-                  (requirement.state && requirement.state.toLowerCase().includes(searchTermLower));
-          }
-          
-          return false;
-        });
-        
-        setFilteredRequirements(filtered);
-      } else {
-        // No location filter, show all requirements
-        setFilteredRequirements(requirements);
-      }
-    }
-  }, [services, requirements, selectedLocation]);
-
   // Preload translations for all service and requirement cards in batches
   useEffect(() => {
     // Only try to preload when data is loaded and we're not in English
@@ -334,10 +243,18 @@ export default function HomePage() {
             </select>
             
             {/* Location Filter */}
-            <LocationSearch 
-              onSelectLocation={setSelectedLocation}
-              selectedLocation={selectedLocation}
-            />
+            <div className="flex items-center gap-1 bg-white border border-teal-200 text-teal-700 rounded-lg px-3 py-1.5">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+              <select className="bg-transparent border-none text-sm focus:outline-none">
+                <option value="">{t("filters.anyLocation")}</option>
+                <option value="delhi">Delhi</option>
+                <option value="mumbai">Mumbai</option>
+                <option value="bangalore">Bangalore</option>
+              </select>
+            </div>
             
             {/* Price Range */}
             <div className="flex items-center gap-1 bg-white border border-teal-200 text-teal-700 rounded-lg px-3 py-1.5">
@@ -410,26 +327,24 @@ export default function HomePage() {
         {/* Main Content Area */}
         <div className="p-4 sm:p-6">
           {/* Services View - This will be controlled by the tab selected */}
-          <div id="services-content" className="transition-all duration-500">
+          <div id="services-content" className={`transition-all duration-500 ${document.querySelector('[data-state="active"][data-tabs-trigger="services"]') ? 'block' : 'hidden'}`}>
             {viewMode === 'map' ? (
               <div className="rounded-xl overflow-hidden border border-teal-100 shadow-md h-[500px]">
                 <ServiceMap 
-                  services={filteredServices} 
-                  requirements={filteredRequirements}
-                  onServiceClick={user ? handleContactProvider : undefined} 
-                  onRequirementClick={user ? handleSelectRequirement : undefined}
+                  services={services || []} 
+                  onContactProvider={user ? handleContactProvider : undefined} 
                 />
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-                {filteredServices.map((service) => (
+                {services?.map((service) => (
                   <ServiceCard
                     key={service.id}
                     service={service}
                     onContact={user ? () => handleContactProvider(service) : undefined}
                   />
                 ))}
-                {filteredServices.length === 0 && (
+                {(services?.length || 0) === 0 && (
                   <div className="col-span-1 sm:col-span-2 lg:col-span-3 py-12 text-center">
                     <div className="inline-flex flex-col items-center justify-center">
                       <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-teal-300 mb-3">
@@ -454,25 +369,16 @@ export default function HomePage() {
           </div>
           
           {/* Requirements View */}
-          <div id="requirements-content" className="transition-all duration-500 hidden">
-            {viewMode === 'map' ? (
-              <div className="rounded-xl overflow-hidden border border-emerald-100 shadow-md h-[500px]">
-                <ServiceMap 
-                  services={[]}
-                  requirements={filteredRequirements}
-                  onRequirementClick={user ? handleSelectRequirement : undefined}
+          <div id="requirements-content" className={`transition-all duration-500 ${document.querySelector('[data-state="active"][data-tabs-trigger="requirements"]') ? 'block' : 'hidden'}`}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+              {requirements?.map((requirement) => (
+                <RequirementCard
+                  key={requirement.id}
+                  requirement={requirement}
+                  onSelect={user ? () => handleSelectRequirement(requirement) : undefined}
                 />
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-                {filteredRequirements.map((requirement) => (
-                  <RequirementCard
-                    key={requirement.id}
-                    requirement={requirement}
-                    onSelect={user ? () => handleSelectRequirement(requirement) : undefined}
-                  />
-                ))}
-                {filteredRequirements.length === 0 && (
+              ))}
+              {(requirements?.length || 0) === 0 && (
                 <div className="col-span-1 sm:col-span-2 lg:col-span-3 py-12 text-center">
                   <div className="inline-flex flex-col items-center justify-center">
                     <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-300 mb-3">
@@ -493,14 +399,13 @@ export default function HomePage() {
                 </div>
               )}
             </div>
-            )}
           </div>
         </div>
         
         {/* Pagination Footer */}
         <div className="bg-teal-50 p-4 border-t border-teal-100 flex justify-between items-center">
           <div className="text-sm text-teal-700">
-            {filteredServices.length ? `${filteredServices.length} ${t("results")}` : ""}
+            {services?.length ? `${services.length} ${t("results")}` : ""}
           </div>
           
           <div className="flex items-center gap-2">

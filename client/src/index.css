@@ -183,22 +183,4 @@
   .dark .theme-toggle {
     @apply bg-gray-800 text-teal-400 hover:bg-gray-700;
   }
-  
-  /* Map styles */
-  .service-marker img {
-    filter: hue-rotate(140deg) saturate(1.5); /* Teal color for services */
-  }
-  
-  .requirement-marker img {
-    filter: hue-rotate(30deg) saturate(1.5); /* Orange color for requirements */
-  }
-  
-  /* Leaflet popup custom styles */
-  .leaflet-popup-content-wrapper {
-    border-radius: 8px;
-  }
-  
-  .leaflet-popup-content {
-    margin: 8px;
-  }
 }
