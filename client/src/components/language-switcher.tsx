@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
-import { Globe } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Globe, ChevronDown } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export function LanguageSwitcher() {
   const { t, i18n } = useTranslation();
+  const isMobile = useIsMobile();
   
   const changeLanguage = (lng: string) => {
     i18n.changeLanguage(lng);
@@ -39,41 +40,41 @@ export function LanguageSwitcher() {
   };
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="flex items-center gap-1.5 text-white hover:bg-teal-500/50 rounded-full px-3 transition-all duration-400 ease-in-out transform hover:scale-105"
-        >
-          <Globe className="h-4 w-4" />
-          <span className="hidden md:inline text-sm font-medium">{getCurrentLanguageLabel()}</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent 
-        align="end" 
-        className="border-teal-100 shadow-lg rounded-xl overflow-hidden w-48 animate-smooth-fade-in"
+    <div className="relative">
+      <Select
+        value={i18n.language}
+        onValueChange={changeLanguage}
       >
-        <div className="bg-gradient-to-r from-teal-600 to-emerald-500 py-2 px-3 text-white text-sm font-medium">
-          {t('language.select')}
-        </div>
-        <div className="max-h-60 overflow-y-auto py-1">
+        <SelectTrigger 
+          className={`flex items-center gap-1.5 text-white hover:bg-teal-500/50 rounded-full px-3 transition-all duration-300 ease-in-out h-8 border-0 focus:ring-1 focus:ring-teal-400 ${isMobile ? 'w-8 pl-1 pr-0 justify-center' : 'min-w-[110px]'}`}
+        >
+          <Globe className="h-4 w-4 flex-shrink-0" />
+          {!isMobile && (
+            <>
+              <SelectValue placeholder={getCurrentLanguageLabel()} className="text-sm font-medium" />
+              <ChevronDown className="h-3 w-3 opacity-70 text-white ml-auto" />
+            </>
+          )}
+        </SelectTrigger>
+        <SelectContent className="border-teal-100 shadow-lg rounded-xl overflow-hidden max-h-60">
+          <div className="bg-gradient-to-r from-teal-600 to-emerald-500 py-2 px-3 text-white text-sm font-medium mb-1">
+            {t('language.select')}
+          </div>
           {languages.map((lang, index) => (
-            <DropdownMenuItem
-              key={lang.code}
-              onClick={() => changeLanguage(lang.code)}
-              className={`${
+            <SelectItem 
+              key={lang.code} 
+              value={lang.code}
+              className={`cursor-pointer transition-all duration-200 ease-in-out ${
                 i18n.language === lang.code 
                   ? 'bg-teal-50 text-teal-700 font-medium border-l-4 border-teal-500' 
                   : 'hover:bg-teal-50 hover:text-teal-600 border-l-4 border-transparent'
-              } cursor-pointer transition-all duration-300 ease-in-out px-4 hover:translate-x-1 animate-slide-in-smooth`}
-              style={{ animationDelay: `${index * 50}ms` }}
+              }`}
             >
               {lang.label}
-            </DropdownMenuItem>
+            </SelectItem>
           ))}
-        </div>
-      </DropdownMenuContent>
-    </DropdownMenu>
+        </SelectContent>
+      </Select>
+    </div>
   );
 }
