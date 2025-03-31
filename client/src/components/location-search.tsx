@@ -191,60 +191,73 @@ export function LocationSearch({
 
   return (
     <div className="relative w-full">
-      <div className="flex flex-col space-y-2 w-full">
-        <div className={`flex items-center relative ${className}`}>
-          <MapPin className="absolute left-3 h-4 w-4 text-muted-foreground z-10" />
-          <Input
-            ref={inputRef}
-            placeholder={placeholder || t('filters.searchLocation')}
-            className="pl-9 pr-10" // Extra padding for clear button
-            value={searchTerm}
-            onChange={handleInputChange}
-            onFocus={() => {
-              if (searchTerm.length > 0) {
-                setShowResults(true);
-              }
-            }}
-          />
-          {searchTerm && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="absolute right-2 h-5 w-5 p-0 z-10"
-              onClick={clearSearch}
-            >
-              <X className="h-3 w-3" />
-              <span className="sr-only">Clear</span>
-            </Button>
-          )}
-        </div>
-
-        {/* Geolocation button to detect current location */}
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="w-full flex items-center justify-center"
-          onClick={detectCurrentLocation}
-          disabled={isLocating}
-        >
-          {isLocating ? (
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-          ) : (
-            <Navigation className="h-4 w-4 mr-2" />
-          )}
-          {t('location.useMyLocation')}
-        </Button>
+      <div className={`flex items-center relative ${className}`}>
+        <MapPin className="absolute left-3 h-4 w-4 text-muted-foreground z-10" />
+        <Input
+          ref={inputRef}
+          placeholder={placeholder || t('filters.searchLocation')}
+          className="pl-9 pr-10" // Extra padding for clear button
+          value={searchTerm}
+          onChange={handleInputChange}
+          onFocus={() => {
+            // Show dropdown with initial option on focus
+            setShowResults(true);
+          }}
+        />
+        {searchTerm ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="absolute right-2 h-5 w-5 p-0 z-10"
+            onClick={clearSearch}
+          >
+            <X className="h-3 w-3" />
+            <span className="sr-only">Clear</span>
+          </Button>
+        ) : (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="absolute right-2 h-5 w-5 p-0 z-10"
+            onClick={detectCurrentLocation}
+            disabled={isLocating}
+          >
+            {isLocating ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Navigation className="h-4 w-4" />
+            )}
+            <span className="sr-only">{t('location.useMyLocation')}</span>
+          </Button>
+        )}
       </div>
 
       {/* Custom dropdown that doesn't use Popover */}
       {showResults && (
         <div 
           ref={resultsRef}
-          className="absolute top-[calc(100%_-_32px)] left-0 right-0 w-full bg-background border rounded-md shadow-md mt-1 z-50"
+          className="absolute top-full left-0 right-0 w-full bg-background border rounded-md shadow-md mt-1 z-50"
         >
           <div className="py-2">
+            {/* Current location option at the top of the dropdown */}
+            {!isLoading && searchTerm.length === 0 && (
+              <button
+                className="w-full text-left px-3 py-2 hover:bg-accent flex items-center gap-2"
+                onClick={detectCurrentLocation}
+                type="button"
+                disabled={isLocating}
+              >
+                <Navigation className="h-4 w-4 shrink-0 text-primary" />
+                <span className="text-sm font-medium">
+                  {isLocating ? t('location.searchingLocation') : t('location.useMyLocation')}
+                </span>
+                {isLocating && <Loader2 className="h-3 w-3 ml-2 animate-spin" />}
+              </button>
+            )}
+
+            {/* Search results or loading state */}
             {isLoading ? (
               <div className="flex items-center justify-center py-4">
                 <Loader2 className="h-6 w-6 animate-spin text-primary" />
@@ -267,11 +280,11 @@ export function LocationSearch({
               <p className="text-sm text-center py-4 text-muted-foreground">
                 {t('filters.noLocationsFound')}
               </p>
-            ) : (
-              <p className="text-sm text-center py-4 text-muted-foreground">
+            ) : searchTerm.length === 0 ? (
+              <p className="text-sm text-center py-2 text-muted-foreground">
                 {t('filters.typeToSearch')}
               </p>
-            )}
+            ) : null}
           </div>
         </div>
       )}
