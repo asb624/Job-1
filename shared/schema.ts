@@ -117,7 +117,16 @@ export const messages = pgTable("messages", {
   conversationId: integer("conversation_id").notNull().references(() => conversations.id),
   senderId: integer("sender_id").notNull().references(() => users.id),
   content: text("content").notNull(),
+  attachments: text("attachments").array(), // URLs to attachments (images, files, etc)
   isRead: boolean("is_read").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const messageReactions = pgTable("message_reactions", {
+  id: serial("id").primaryKey(),
+  messageId: integer("message_id").notNull().references(() => messages.id),
+  userId: integer("user_id").notNull().references(() => users.id),
+  emoji: text("emoji").notNull(), // Unicode emoji
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -212,6 +221,12 @@ export const insertConversationSchema = createInsertSchema(conversations).pick({
 export const insertMessageSchema = createInsertSchema(messages).pick({
   conversationId: true,
   content: true,
+  attachments: true,
+});
+
+export const insertMessageReactionSchema = createInsertSchema(messageReactions).pick({
+  messageId: true,
+  emoji: true,
 });
 
 export const insertNotificationSchema = createInsertSchema(notifications).pick({
@@ -226,6 +241,7 @@ export const insertNotificationSchema = createInsertSchema(notifications).pick({
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertConversation = z.infer<typeof insertConversationSchema>;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
+export type InsertMessageReaction = z.infer<typeof insertMessageReactionSchema>;
 export type InsertNotification = z.infer<typeof insertNotificationSchema>;
 
 export type User = typeof users.$inferSelect;
@@ -236,6 +252,7 @@ export type Bid = typeof bids.$inferSelect;
 export type Review = typeof reviews.$inferSelect;
 export type Conversation = typeof conversations.$inferSelect;
 export type Message = typeof messages.$inferSelect;
+export type MessageReaction = typeof messageReactions.$inferSelect;
 export type Notification = typeof notifications.$inferSelect;
 
 export const serviceCategories = [

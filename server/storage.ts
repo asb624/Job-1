@@ -3,8 +3,8 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import { 
   User, Service, Requirement, Bid, InsertUser, Review,
   users, services, requirements, bids, profiles, Profile,
-  conversations, messages, notifications, reviews,
-  Conversation, Message, Notification
+  conversations, messages, notifications, reviews, messageReactions,
+  Conversation, Message, Notification, MessageReaction, InsertMessageReaction
 } from "@shared/schema";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
@@ -120,6 +120,15 @@ export interface IStorage {
   createMessage(message: Omit<Message, "id" | "isRead" | "createdAt"> & { senderId: number }): Promise<Message>;
   getMessagesByConversationId(conversationId: number): Promise<Message[]>;
   markMessageAsRead(messageId: number): Promise<Message>;
+  
+  // Message typing indicators
+  setUserTyping(conversationId: number, userId: number, isTyping: boolean): Promise<void>;
+  getUserTypingStatus(conversationId: number): Promise<{userId: number, isTyping: boolean}[]>;
+  
+  // Message Reactions
+  addMessageReaction(reaction: Omit<MessageReaction, "id" | "createdAt"> & { userId: number }): Promise<MessageReaction>;
+  getMessageReactions(messageId: number): Promise<MessageReaction[]>;
+  removeMessageReaction(reactionId: number): Promise<void>;
   
   // Review operations
   createReview(review: Omit<Review, "id" | "createdAt">): Promise<Review>;
@@ -531,6 +540,88 @@ export class PostgresStorage implements IStorage {
       .where(eq(messages.id, messageId))
       .returning();
     return result[0];
+  }
+
+  // Message typing indicators using in-memory storage (for real-time performance)
+  private typingUsers = new Map<number, Map<number, boolean>>();
+
+  async setUserTyping(conversationId: number, userId: number, isTyping: boolean): Promise<void> {
+    if (!this.typingUsers.has(conversationId)) {
+      this.typingUsers.set(conversationId, new Map());
+    }
+    
+    const conversationTypingUsers = this.typingUsers.get(conversationId)!;
+    if (isTyping) {
+      conversationTypingUsers.set(userId, true);
+      
+      // Auto-reset typing status after 5 seconds (in case client doesn't send "stopped typing")
+      setTimeout(() => {
+        if (conversationTypingUsers.get(userId)) {
+          conversationTypingUsers.set(userId, false);
+        }
+      }, 5000);
+    } else {
+      conversationTypingUsers.set(userId, false);
+    }
+  }
+
+  async getUserTypingStatus(conversationId: number): Promise<{userId: number, isTyping: boolean}[]> {
+    if (!this.typingUsers.has(conversationId)) {
+      return [];
+    }
+    
+    const result = [];
+    const typingMap = this.typingUsers.get(conversationId)!;
+    
+    for (const [userId, isTyping] of typingMap.entries()) {
+      if (isTyping) {
+        result.push({ userId, isTyping });
+      }
+    }
+    
+    return result;
+  }
+  
+  // Message reactions implementation
+  async addMessageReaction(reaction: Omit<MessageReaction, "id" | "createdAt"> & { userId: number }): Promise<MessageReaction> {
+    // First check if the user already has a reaction with this emoji on this message
+    const existingReaction = await this.db
+      .select()
+      .from(messageReactions)
+      .where(
+        and(
+          eq(messageReactions.messageId, reaction.messageId),
+          eq(messageReactions.userId, reaction.userId),
+          eq(messageReactions.emoji, reaction.emoji)
+        )
+      );
+      
+    // If the reaction already exists, return it without creating a duplicate
+    if (existingReaction.length > 0) {
+      return existingReaction[0];
+    }
+    
+    // Create the new reaction
+    const result = await this.db
+      .insert(messageReactions)
+      .values(reaction)
+      .returning();
+      
+    return result[0];
+  }
+  
+  async getMessageReactions(messageId: number): Promise<MessageReaction[]> {
+    return await this.db
+      .select()
+      .from(messageReactions)
+      .where(eq(messageReactions.messageId, messageId))
+      .orderBy(messageReactions.createdAt);
+  }
+  
+  async removeMessageReaction(reactionId: number): Promise<void> {
+    await this.db
+      .delete(messageReactions)
+      .where(eq(messageReactions.id, reactionId));
   }
 
   async createNotification(notification: Omit<Notification, "id" | "isRead" | "createdAt">): Promise<Notification> {

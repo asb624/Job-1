@@ -2,11 +2,16 @@ import { WebSocket, WebSocketServer } from "ws";
 import { Server } from "http";
 
 // Define message types for type safety
-type WebSocketMessage = {
-  type: 'selection' | 'service' | 'requirement' | 'notification';
+export type WebSocketMessage = {
+  type: 'selection' | 'service' | 'requirement' | 'notification' | 'message' | 'conversation';
   action: 'create' | 'update' | 'delete';
   payload: any;
 };
+
+// Global references for exported functions
+let globalBroadcast: (message: WebSocketMessage) => void;
+let globalSendToUser: (userId: number, message: WebSocketMessage) => void;
+let globalBroadcastToRelevantUsers: (message: WebSocketMessage) => void;
 
 export function setupWebSocket(server: Server) {
   const wss = new WebSocketServer({ 
@@ -111,6 +116,11 @@ export function setupWebSocket(server: Server) {
     if (userId) sendToUser(userId, message);
   }
 
+  // Assign globals for direct export
+  globalBroadcast = broadcast;
+  globalSendToUser = sendToUser;
+  globalBroadcastToRelevantUsers = broadcastToRelevantUsers;
+  
   // Export these functions so they can be used from routes
   return {
     broadcast,
@@ -118,3 +128,28 @@ export function setupWebSocket(server: Server) {
     broadcastToRelevantUsers
   };
 }
+
+// Export the global functions for direct use in other files
+export const broadcast = (message: WebSocketMessage) => {
+  if (globalBroadcast) {
+    globalBroadcast(message);
+  } else {
+    console.warn('WebSocket not initialized. Message not sent.');
+  }
+};
+
+export const sendToUser = (userId: number, message: WebSocketMessage) => {
+  if (globalSendToUser) {
+    globalSendToUser(userId, message);
+  } else {
+    console.warn('WebSocket not initialized. Message not sent to user.');
+  }
+};
+
+export const broadcastToRelevantUsers = (message: WebSocketMessage) => {
+  if (globalBroadcastToRelevantUsers) {
+    globalBroadcastToRelevantUsers(message);
+  } else {
+    console.warn('WebSocket not initialized. Message not broadcast to relevant users.');
+  }
+};

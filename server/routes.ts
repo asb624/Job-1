@@ -1,7 +1,7 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
-import { setupWebSocket } from "./websocket";
+import { setupWebSocket, broadcastToRelevantUsers, sendToUser, broadcast } from "./websocket";
 import { storage } from "./storage";
 import { z } from "zod";
 import fetch from "node-fetch";
@@ -582,6 +582,109 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error marking message as read:', error);
       res.status(500).json({ message: "Failed to mark message as read" });
+    }
+  });
+
+  // Message reactions
+  app.post("/api/messages/:id/reactions", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+    
+    const { emoji } = req.body;
+    if (!emoji) return res.status(400).json({ message: "Emoji is required" });
+    
+    try {
+      const reaction = await storage.addMessageReaction({
+        messageId: parseInt(req.params.id),
+        userId: req.user.id,
+        emoji,
+      });
+      
+      res.json(reaction);
+      
+      // Broadcast the reaction to relevant users via WebSocket
+      const message = await storage.getMessagesByConversationId(reaction.messageId);
+      if (message && message.length > 0) {
+        const targetMessage = message.find(m => m.id === parseInt(req.params.id));
+        if (targetMessage) {
+          broadcastToRelevantUsers({
+            type: 'message',
+            action: 'update',
+            payload: {
+              messageId: targetMessage.id,
+              reaction: reaction
+            }
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error adding reaction:', error);
+      res.status(500).json({ message: "Failed to add reaction" });
+    }
+  });
+  
+  app.get("/api/messages/:id/reactions", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+    
+    try {
+      const reactions = await storage.getMessageReactions(parseInt(req.params.id));
+      res.json(reactions);
+    } catch (error) {
+      console.error('Error fetching reactions:', error);
+      res.status(500).json({ message: "Failed to fetch reactions" });
+    }
+  });
+  
+  app.delete("/api/reactions/:id", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+    
+    try {
+      await storage.removeMessageReaction(parseInt(req.params.id));
+      res.sendStatus(204);
+    } catch (error) {
+      console.error('Error removing reaction:', error);
+      res.status(500).json({ message: "Failed to remove reaction" });
+    }
+  });
+  
+  // Typing indicators
+  app.post("/api/conversations/:id/typing", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+    
+    const { isTyping } = req.body;
+    if (isTyping === undefined) return res.status(400).json({ message: "isTyping field is required" });
+    
+    try {
+      await storage.setUserTyping(parseInt(req.params.id), req.user.id, isTyping);
+      
+      // Get who else is typing
+      const typingUsers = await storage.getUserTypingStatus(parseInt(req.params.id));
+      
+      // Broadcast to the conversation
+      broadcastToRelevantUsers({
+        type: 'conversation',
+        action: 'update',
+        payload: {
+          conversationId: parseInt(req.params.id),
+          typingUsers: typingUsers
+        }
+      });
+      
+      res.sendStatus(204);
+    } catch (error) {
+      console.error('Error updating typing status:', error);
+      res.status(500).json({ message: "Failed to update typing status" });
+    }
+  });
+  
+  app.get("/api/conversations/:id/typing", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+    
+    try {
+      const typingUsers = await storage.getUserTypingStatus(parseInt(req.params.id));
+      res.json(typingUsers);
+    } catch (error) {
+      console.error('Error fetching typing status:', error);
+      res.status(500).json({ message: "Failed to fetch typing status" });
     }
   });
 
