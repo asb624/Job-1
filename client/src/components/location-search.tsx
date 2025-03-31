@@ -192,16 +192,21 @@ export function LocationSearch({
   return (
     <div className="relative w-full">
       <div className={`flex items-center relative ${className}`}>
-        <MapPin className="absolute left-3 h-4 w-4 text-muted-foreground z-10" />
+        <MapPin className="absolute left-3 h-4 w-4 z-10" style={{
+          color: className?.includes('text-white') || className?.includes('bg-white/20') ? 'white' : 'var(--muted-foreground)'
+        }} />
         <Input
           ref={inputRef}
           placeholder={placeholder || t('filters.searchLocation')}
-          className="pl-9 pr-10" // Extra padding for clear button
+          className={`pl-9 pr-10 ${className?.includes('bg-white/20') ? 'bg-white/20 placeholder-white/70 text-white focus-visible:ring-white/50 border-white/30' : ''}`} // Extra padding for clear button
           value={searchTerm}
           onChange={handleInputChange}
           onFocus={() => {
             // Show dropdown with initial option on focus
             setShowResults(true);
+          }}
+          style={{
+            WebkitTextFillColor: className?.includes('text-white') || className?.includes('bg-white/20') ? 'white' : 'inherit'
           }}
         />
         {searchTerm ? (
@@ -209,7 +214,7 @@ export function LocationSearch({
             type="button"
             variant="ghost"
             size="sm"
-            className="absolute right-2 h-5 w-5 p-0 z-10"
+            className={`absolute right-2 h-5 w-5 p-0 z-10 ${className?.includes('text-white') || className?.includes('bg-white/20') ? 'text-white hover:text-white/80 hover:bg-white/10' : ''}`}
             onClick={clearSearch}
           >
             <X className="h-3 w-3" />
@@ -220,12 +225,12 @@ export function LocationSearch({
             type="button"
             variant="ghost"
             size="sm"
-            className="absolute right-2 h-5 w-5 p-0 z-10"
+            className={`absolute right-2 h-5 w-5 p-0 z-10 ${className?.includes('text-white') || className?.includes('bg-white/20') ? 'text-white hover:text-white/80 hover:bg-white/10' : ''}`}
             onClick={detectCurrentLocation}
             disabled={isLocating}
           >
             {isLocating ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className={`h-4 w-4 animate-spin ${className?.includes('text-white') || className?.includes('bg-white/20') ? 'text-white' : ''}`} />
             ) : (
               <Navigation className="h-4 w-4" />
             )}

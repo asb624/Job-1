@@ -137,9 +137,22 @@ export default function HomePage() {
         
         <div className="relative text-center space-y-4 sm:space-y-6 max-w-3xl mx-auto">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight leading-tight">{t("app.title")}</h1>
-          <p className="text-lg sm:text-xl font-light mb-4">
+          <p className="text-lg sm:text-xl font-light">
             {t("app.tagline")}
           </p>
+          
+          {/* Location Search Bar */}
+          <div className="max-w-md mx-auto mt-4">
+            <LocationSearch 
+              onLocationSelect={(location) => {
+                console.log("Selected location on hero:", location);
+                // Here you would typically update your filters state
+                // setFilters(prev => ({ ...prev, location: location }));
+              }}
+              className="bg-white/20 backdrop-blur-sm border border-white/30 text-white rounded-lg shadow-lg"
+              placeholder={t("filters.searchLocation")}
+            />
+          </div>
         </div>
       </div>
 
@@ -266,17 +279,7 @@ export default function HomePage() {
               {/* Add more categories as needed */}
             </select>
             
-            {/* Location Filter */}
-            <div className="w-60">
-              <LocationSearch 
-                onLocationSelect={(location) => {
-                  console.log("Selected location:", location);
-                  // Here you would typically update your filters state
-                  // setFilters(prev => ({ ...prev, location: location }));
-                }}
-                className="w-full"
-              />
-            </div>
+            {/* Location Filter removed - moved to header */}
             
             {/* Price Range */}
             <div className="flex items-center gap-1 bg-white border border-teal-200 text-teal-700 rounded-lg px-3 py-1.5">
