@@ -826,7 +826,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Use Axios for better request handling
       const response = await axios({
         method: 'POST',
-        url: 'https://ai4bharat.org/api/tts',
+        url: 'https://ai4bharat.iitm.ac.in/api/tts',
         headers: {
           'Content-Type': 'application/json'
         },
@@ -840,7 +840,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         },
         responseType: 'arraybuffer',
-        timeout: 10000 // 10 second timeout
+        timeout: 10000, // 10 second timeout
+        maxRedirects: 5 // Allow redirects in case the URL changes again
       });
       
       // Send the audio file back to the client
