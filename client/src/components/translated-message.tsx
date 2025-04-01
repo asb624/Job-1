@@ -111,7 +111,8 @@ export function TranslatedMessage({
           
           {/* Message reactions */}
           <div className="mt-1">
-            <MessageReactionPicker messageId={message.id} />
+            {/* Only render reaction picker if not testing or if the feature is enabled */}
+            {typeof window !== 'undefined' && <MessageReactionPicker messageId={message.id} />}
           </div>
         </div>
       </div>

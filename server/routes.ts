@@ -560,8 +560,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const wsMessage = {
         type: 'message',
         action: 'create',
-        payload: message
+        payload: {
+          ...message,
+          // Include user IDs from the conversation for targeted delivery
+          user1Id: conversation.user1Id,
+          user2Id: conversation.user2Id
+        }
       };
+      
+      console.log(`Sending message WebSocket event to users ${conversation.user1Id} and ${conversation.user2Id}`);
       
       // The websocket will handle broadcasting to the right users
       req.app.emit('websocket', wsMessage);
@@ -602,18 +609,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(reaction);
       
       // Broadcast the reaction to relevant users via WebSocket
-      const message = await storage.getMessagesByConversationId(reaction.messageId);
-      if (message && message.length > 0) {
-        const targetMessage = message.find(m => m.id === parseInt(req.params.id));
+      const messages = await storage.getMessagesByConversationId(reaction.messageId);
+      if (messages && messages.length > 0) {
+        const targetMessage = messages.find(m => m.id === parseInt(req.params.id));
         if (targetMessage) {
-          broadcastToRelevantUsers({
-            type: 'message',
-            action: 'update',
-            payload: {
-              messageId: targetMessage.id,
-              reaction: reaction
-            }
-          });
+          // Get the conversation to find the users
+          const conversations = await storage.getConversationsByUserId(req.user.id);
+          const conversation = conversations.find(conv => conv.id === targetMessage.conversationId);
+          
+          if (conversation) {
+            // Include both users in the payload for targeted delivery
+            broadcastToRelevantUsers({
+              type: 'message',
+              action: 'update',
+              payload: {
+                messageId: targetMessage.id,
+                reaction: reaction,
+                user1Id: conversation.user1Id,
+                user2Id: conversation.user2Id
+              }
+            });
+            
+            console.log(`Sent reaction WebSocket event to users ${conversation.user1Id} and ${conversation.user2Id}`);
+          } else {
+            console.warn(`Could not find conversation for message ${targetMessage.id}`);
+            // Fallback to the normal broadcast mechanism
+            broadcastToRelevantUsers({
+              type: 'message',
+              action: 'update',
+              payload: {
+                messageId: targetMessage.id,
+                reaction: reaction
+              }
+            });
+          }
         }
       }
     } catch (error) {
@@ -659,15 +688,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get who else is typing
       const typingUsers = await storage.getUserTypingStatus(parseInt(req.params.id));
       
-      // Broadcast to the conversation
-      broadcastToRelevantUsers({
-        type: 'conversation',
-        action: 'update',
-        payload: {
-          conversationId: parseInt(req.params.id),
-          typingUsers: typingUsers
-        }
-      });
+      // Get the conversation to find the users
+      const conversations = await storage.getConversationsByUserId(req.user.id);
+      const conversation = conversations.find(conv => conv.id === parseInt(req.params.id));
+      
+      if (conversation) {
+        // Broadcast to the conversation with specific user IDs
+        broadcastToRelevantUsers({
+          type: 'conversation',
+          action: 'update',
+          payload: {
+            conversationId: parseInt(req.params.id),
+            typingUsers: typingUsers,
+            // Include both users for targeted delivery
+            user1Id: conversation.user1Id,
+            user2Id: conversation.user2Id
+          }
+        });
+        
+        console.log(`Sent typing indicator WebSocket event to users ${conversation.user1Id} and ${conversation.user2Id}`);
+      } else {
+        // Fallback if conversation not found
+        broadcastToRelevantUsers({
+          type: 'conversation',
+          action: 'update',
+          payload: {
+            conversationId: parseInt(req.params.id),
+            typingUsers: typingUsers
+          }
+        });
+      }
       
       res.sendStatus(204);
     } catch (error) {

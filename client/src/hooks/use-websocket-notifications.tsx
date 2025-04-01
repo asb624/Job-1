@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { connectWebSocket, subscribeToMessages } from "@/lib/websocket";
+import { useAuth } from "@/hooks/use-auth";
 
 type NotificationContextType = {
   connected: boolean;
@@ -11,12 +12,20 @@ const NotificationContext = createContext<NotificationContextType | null>(null);
 export function NotificationProvider({ children }: { children: React.ReactNode }) {
   const [connected, setConnected] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   useEffect(() => {
-    const socket = connectWebSocket();
+    if (!user) return;
+    
+    // Connect WebSocket with user ID
+    const socket = connectWebSocket(user.id);
     setConnected(socket.readyState === WebSocket.OPEN);
 
+    console.log(`WebSocket connected for user ${user.id}`);
+
     const cleanup = subscribeToMessages((message) => {
+      console.log("WebSocket notification received:", message);
+      
       switch (message.type) {
         case 'bid':
           toast({
@@ -42,13 +51,21 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
             description: message.payload.message,
           });
           break;
+        case 'message':
+          if (message.action === 'create') {
+            toast({
+              title: "New Message",
+              description: `You have received a new message`,
+            });
+          }
+          break;
       }
-    });
+    }, user.id);
 
     return () => {
       cleanup();
     };
-  }, [toast]);
+  }, [toast, user]);
 
   return (
     <NotificationContext.Provider value={{ connected }}>

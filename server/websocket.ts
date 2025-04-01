@@ -30,6 +30,17 @@ export function setupWebSocket(server: Server) {
 
   wss.on("connection", (ws, request) => {
     console.log("WebSocket client connected");
+    
+    // Parse the URL to extract query parameters
+    const url = new URL(request.url || '', `http://${request.headers.host}`);
+    const userId = url.searchParams.get('userId');
+    
+    // Store the user ID in the client map if provided
+    if (userId && !isNaN(parseInt(userId))) {
+      const userIdNum = parseInt(userId);
+      clients.set(userIdNum, ws);
+      console.log(`Client registered with user ID: ${userIdNum}`);
+    }
 
     ws.on("error", (error) => {
       console.error("WebSocket error:", error);
@@ -37,12 +48,12 @@ export function setupWebSocket(server: Server) {
 
     ws.on("close", () => {
       // Remove client from the map
-      for (const [userId, client] of clients.entries()) {
+      clients.forEach((client, userId) => {
         if (client === ws) {
           clients.delete(userId);
-          break;
+          console.log(`Client with userId ${userId} disconnected`);
         }
-      }
+      });
       console.log("WebSocket client disconnected");
     });
 
@@ -62,6 +73,41 @@ export function setupWebSocket(server: Server) {
           case 'requirement':
             // Handle requirement updates
             broadcast(message);
+            break;
+          case 'message':
+            // Handle message updates - send to users in conversation
+            if (message.payload.senderId && message.payload.conversationId) {
+              const senderId = message.payload.senderId;
+              const conversationId = message.payload.conversationId;
+              
+              // If we have user1Id and user2Id in the payload, target them directly
+              if (message.payload.user1Id && message.payload.user2Id) {
+                console.log(`Sending message to users: ${message.payload.user1Id}, ${message.payload.user2Id}`);
+                sendToUser(message.payload.user1Id, message);
+                sendToUser(message.payload.user2Id, message);
+              } else {
+                // If we don't have user IDs, broadcast for now
+                // This should be improved to query the database for conversation users
+                console.log(`Broadcasting message ${message.type} action ${message.action}`);
+                broadcast(message);
+              }
+            }
+            break;
+          case 'conversation':
+            // Handle conversation updates
+            if (message.payload.user1Id && message.payload.user2Id) {
+              // Send to specific users in the conversation
+              console.log(`Sending conversation update to users ${message.payload.user1Id} and ${message.payload.user2Id}`);
+              sendToUser(message.payload.user1Id, message);
+              sendToUser(message.payload.user2Id, message);
+            } else if (message.payload.conversationId) {
+              // Without specific user IDs, broadcast to everyone
+              // In a production app, this should query for conversation participants
+              console.log(`Broadcasting conversation update for conversation ${message.payload.conversationId}`);
+              broadcast(message);
+            } else {
+              broadcast(message);
+            }
             break;
           case 'notification':
             // Handle general notifications
@@ -94,11 +140,11 @@ export function setupWebSocket(server: Server) {
 
   // Helper function to broadcast message to all connected clients
   function broadcast(message: WebSocketMessage) {
-    for (const client of clients.values()) {
+    clients.forEach(client => {
       if (client.readyState === WebSocket.OPEN) {
         client.send(JSON.stringify(message));
       }
-    }
+    });
   }
 
   // Helper function to send message to specific user
@@ -109,11 +155,19 @@ export function setupWebSocket(server: Server) {
     }
   }
 
-  // Helper function to broadcast to users involved in a selection
+  // Helper function to broadcast to users involved in a selection or conversation
   function broadcastToRelevantUsers(message: WebSocketMessage) {
-    const { providerId, userId } = message.payload;
-    if (providerId) sendToUser(providerId, message);
-    if (userId) sendToUser(userId, message);
+    const { providerId, userId, user1Id, user2Id } = message.payload;
+    
+    // Check for conversation participants first
+    if (user1Id) sendToUser(user1Id, message);
+    if (user2Id) sendToUser(user2Id, message);
+    
+    // If no conversation participants found, try provider/user
+    if (!user1Id && !user2Id) {
+      if (providerId) sendToUser(providerId, message);
+      if (userId) sendToUser(userId, message);
+    }
   }
 
   // Assign globals for direct export

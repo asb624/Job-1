@@ -137,8 +137,11 @@ export default function MessagesPage() {
 
     const unsubscribe = subscribeToMessages((message) => {
       if (message.type === 'message' && message.action === 'create') {
+        console.log('Received message via WebSocket:', message);
+        
         // If this message is for the currently selected conversation
         if (selectedConversation && message.payload.conversationId === selectedConversation.id) {
+          console.log('Updating messages for current conversation');
           queryClient.invalidateQueries({ 
             queryKey: ["/api/conversations", selectedConversation.id, "messages"] 
           });
@@ -147,7 +150,7 @@ export default function MessagesPage() {
         // Always update the conversation list to show latest messages
         queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
       }
-    });
+    }, user.id); // Pass user ID to WebSocket connection
 
     return () => {
       if (unsubscribe) unsubscribe();
