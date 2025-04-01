@@ -534,12 +534,29 @@ export class PostgresStorage implements IStorage {
   }
 
   async markMessageAsRead(messageId: number): Promise<Message> {
-    const result = await this.db
+    // First retrieve the message to ensure it exists
+    const existingMessages = await this.db
+      .select()
+      .from(messages)
+      .where(eq(messages.id, messageId));
+      
+    if (existingMessages.length === 0) {
+      throw new Error(`Message with ID ${messageId} not found`);
+    }
+    
+    // Now update the message
+    await this.db
       .update(messages)
       .set({ isRead: true })
-      .where(eq(messages.id, messageId))
-      .returning();
-    return result[0];
+      .where(eq(messages.id, messageId));
+    
+    // Return the updated message
+    const updatedMessages = await this.db
+      .select()
+      .from(messages)
+      .where(eq(messages.id, messageId));
+      
+    return updatedMessages[0];
   }
 
   // Message typing indicators using in-memory storage (for real-time performance)

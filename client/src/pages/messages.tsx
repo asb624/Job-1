@@ -99,7 +99,11 @@ export default function MessagesPage() {
       if (!selectedConversation) throw new Error("No conversation selected");
       return apiRequest<Message>(`/api/conversations/${selectedConversation.id}/messages`, {
         method: "POST",
-        body: JSON.stringify(message),
+        body: JSON.stringify({
+          content: message.content,
+          conversationId: selectedConversation.id,
+          attachments: null
+        }),
       });
     },
     onSuccess: () => {
