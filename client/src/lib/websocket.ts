@@ -58,16 +58,37 @@ export function subscribeToMessages(callback: (message: any) => void, userId?: n
   const messageHandler = (event: MessageEvent) => {
     try {
       const message = JSON.parse(event.data);
+      console.log("WebSocket received message:", message);
       callback(message);
     } catch (error) {
       console.error("Error parsing WebSocket message:", error);
     }
   };
 
+  // Add message listener to the socket
   socket.addEventListener("message", messageHandler);
+
+  // Handle the case when the socket is closed and later reconnected
+  const checkAndReconnect = setInterval(() => {
+    if (socket?.readyState === WebSocket.CLOSED || socket?.readyState === WebSocket.CLOSING) {
+      console.log("WebSocket reconnecting from subscription...");
+      const newSocket = connectWebSocket(userId);
+      
+      // Remove listener from old socket if it exists
+      if (socket) {
+        socket.removeEventListener("message", messageHandler);
+      }
+      
+      // Add listener to new socket
+      newSocket.addEventListener("message", messageHandler);
+    }
+  }, 5000); // Check every 5 seconds
 
   // Return cleanup function
   return () => {
-    socket.removeEventListener("message", messageHandler);
+    if (socket) {
+      socket.removeEventListener("message", messageHandler);
+    }
+    clearInterval(checkAndReconnect);
   };
 }

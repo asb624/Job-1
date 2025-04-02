@@ -1,6 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { WebSocketMessage } from "./websocket";
 
 const app = express();
 app.use(express.json());
@@ -41,18 +42,37 @@ app.use((req, res, next) => {
     const server = await registerRoutes(app);
 
     // Set up WebSocket event listener on app
-    app.on('websocket', (message) => {
+    app.on('websocket', function(message: any) {
+      // Type assertion to handle the WebSocketMessage format
+      const wsMessage = message as WebSocketMessage;
       // This event will be emitted from routes when they need to broadcast via WebSocket
-      console.log('WebSocket broadcast event:', message.type);
+      console.log('WebSocket broadcast event:', wsMessage.type, wsMessage.action);
       
       // The WebSocket server has already attached these methods to the server object
       if (server.hasOwnProperty('broadcast')) {
-        if (message.type === 'notification' && message.payload.userId) {
-          (server as any).sendToUser(message.payload.userId, message);
-        } else if (['bid', 'requirement'].includes(message.type)) {
-          (server as any).broadcastToRelevantUsers(message);
+        if (wsMessage.type === 'notification' && wsMessage.payload && wsMessage.payload.userId) {
+          // Direct notification to specific user
+          console.log(`Sending notification to user ${wsMessage.payload.userId}`);
+          (server as any).sendToUser(wsMessage.payload.userId, wsMessage);
+        } else if (wsMessage.type && ['bid', 'requirement'].includes(wsMessage.type)) {
+          // Broadcast to relevant users for bids and requirements
+          console.log('Broadcasting to relevant users for bid/requirement');
+          (server as any).broadcastToRelevantUsers(wsMessage);
+        } else if (wsMessage.type === 'message') {
+          // For messages, always send to both conversation participants
+          if (wsMessage.payload && wsMessage.payload.user1Id && wsMessage.payload.user2Id) {
+            console.log(`Sending message to users ${wsMessage.payload.user1Id} and ${wsMessage.payload.user2Id}`);
+            (server as any).sendToUser(wsMessage.payload.user1Id, wsMessage);
+            (server as any).sendToUser(wsMessage.payload.user2Id, wsMessage);
+          } else {
+            // Fallback if we don't have user IDs
+            console.log('Broadcasting message to all users (fallback)');
+            (server as any).broadcast(wsMessage);
+          }
         } else {
-          (server as any).broadcast(message);
+          // Default broadcast for other message types
+          console.log('Broadcasting message to all users');
+          (server as any).broadcast(wsMessage);
         }
       }
     });

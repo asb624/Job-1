@@ -174,12 +174,31 @@ export default function MessagesPage() {
     if (!user) return;
 
     const unsubscribe = subscribeToMessages((message) => {
+      console.log('Received WebSocket message:', message);
+      
       if (message.type === 'message' && message.action === 'create') {
-        console.log('Received message via WebSocket:', message);
+        console.log('Received message via WebSocket:', message.payload);
         
         // If this message is for the currently selected conversation
         if (selectedConversation && message.payload.conversationId === selectedConversation.id) {
           console.log('Updating messages for current conversation');
+          
+          // Directly update the message cache to ensure immediate display
+          queryClient.setQueryData(
+            ["/api/conversations", selectedConversation.id, "messages"],
+            (oldData: Message[] | undefined) => {
+              if (!oldData) return [message.payload];
+              
+              // Check if message already exists in the cache
+              const messageExists = oldData.some(msg => msg.id === message.payload.id);
+              if (messageExists) return oldData;
+              
+              // Add the new message to the cache
+              return [...oldData, message.payload];
+            }
+          );
+          
+          // Also invalidate to ensure we get any other updates
           queryClient.invalidateQueries({ 
             queryKey: ["/api/conversations", selectedConversation.id, "messages"] 
           });
