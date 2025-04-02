@@ -126,14 +126,17 @@ export default function MessagesPage() {
           (oldData: Message[] | undefined) => {
             if (!oldData) return [data];
             
-            // Replace any temporary negative IDs with the real message
-            return oldData.map(msg => {
-              // If this is an optimistic message with the same content, replace it
-              if (msg.id < 0 && msg.content === data.content) {
-                return data;
-              }
-              return msg;
-            });
+            // Check if the message already exists in the cache (has same ID)
+            const messageExists = oldData.some(msg => msg.id === data.id);
+            
+            // If message exists (already handled by WebSocket), don't add it again
+            if (messageExists) {
+              return oldData;
+            }
+            
+            // Create new array with optimistic message replaced
+            const newData = oldData.filter(msg => !(msg.id < 0 && msg.content === data.content));
+            return [...newData, data];
           }
         );
         
@@ -227,25 +230,43 @@ export default function MessagesPage() {
         if (selectedConversation && message.payload.conversationId === selectedConversation.id) {
           console.log('Updating messages for current conversation');
           
+          // Special handling for our own messages that we've already handled with optimistic updates
+          const isOwnMessage = message.payload.senderId === user.id;
+          
           // Directly update the message cache to ensure immediate display
           queryClient.setQueryData(
             ["/api/conversations", selectedConversation.id, "messages"],
             (oldData: Message[] | undefined) => {
               if (!oldData) return [message.payload];
               
-              // Check if message already exists in the cache
-              const messageExists = oldData.some(msg => msg.id === message.payload.id);
-              if (messageExists) return oldData;
+              // Check if message already exists in the cache by ID
+              const messageExistsById = oldData.some(msg => msg.id === message.payload.id);
+              if (messageExistsById) return oldData;
               
-              // Add the new message to the cache
+              // For our own messages, check if there's a matching optimistic message to replace
+              if (isOwnMessage) {
+                // Find any optimistic message with the same content (negative ID)
+                const hasOptimisticVersion = oldData.some(msg => 
+                  msg.id < 0 && 
+                  msg.content === message.payload.content &&
+                  msg.senderId === user.id
+                );
+                
+                if (hasOptimisticVersion) {
+                  // Replace the optimistic message with the real one
+                  return oldData.map(msg => {
+                    if (msg.id < 0 && msg.content === message.payload.content && msg.senderId === user.id) {
+                      return message.payload;
+                    }
+                    return msg;
+                  });
+                }
+              }
+              
+              // If it's not our message or we don't have an optimistic version, just add it
               return [...oldData, message.payload];
             }
           );
-          
-          // Also invalidate to ensure we get any other updates
-          queryClient.invalidateQueries({ 
-            queryKey: ["/api/conversations", selectedConversation.id, "messages"] 
-          });
         }
         
         // Always update the conversation list to show latest messages
