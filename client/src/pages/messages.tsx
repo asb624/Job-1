@@ -51,19 +51,19 @@ export default function MessagesPage() {
   const [autoTranslate, setAutoTranslate] = useState(false);
 
   // Fetch conversations
-  const { data: conversations, isLoading: isLoadingConversations } = useQuery({
+  const { data: conversations, isLoading: isLoadingConversations } = useQuery<Conversation[]>({
     queryKey: ["/api/conversations"],
     enabled: !!user,
   });
 
   // Fetch messages for selected conversation
-  const { data: messages, isLoading: isLoadingMessages } = useQuery({
+  const { data: messages, isLoading: isLoadingMessages } = useQuery<Message[]>({
     queryKey: ["/api/conversations", selectedConversation?.id, "messages"],
     enabled: !!selectedConversation && !!user,
   });
 
   // Get all users for potential new conversations
-  const { data: allUsers, isLoading: isLoadingUsers } = useQuery({
+  const { data: allUsers, isLoading: isLoadingUsers } = useQuery<User[]>({
     queryKey: ["/api/users"],
     enabled: !!user,
   });
@@ -192,10 +192,17 @@ export default function MessagesPage() {
   }
 
   // Get the other user's info in a conversation
-  const getOtherUser = (conversation: Conversation) => {
-    const otherUserId = conversation.user1Id === user.id ? conversation.user2Id : conversation.user1Id;
+  const getOtherUser = (conversation: Conversation): User => {
+    const otherUserId = conversation.user1Id === user?.id ? conversation.user2Id : conversation.user1Id;
     // This is a placeholder, you would typically fetch this from your users data
-    return allUsers?.find((u: User) => u.id === otherUserId) || { username: `User ${otherUserId}` };
+    const foundUser = allUsers?.find((u: User) => u.id === otherUserId);
+    return foundUser || { 
+      id: otherUserId, 
+      username: `User ${otherUserId}`,
+      createdAt: new Date(),
+      lastSeen: new Date(),
+      onboardingCompleted: false
+    } as User;
   };
 
   return (
@@ -357,9 +364,9 @@ export default function MessagesPage() {
                       ) : (
                         <ScrollArea className="h-[400px]">
                           <div className="space-y-2 pr-3">
-                            {allUsers
-                              ?.filter((u: User) => u.id !== user.id)
-                              .map((otherUser: User) => (
+                            {allUsers && user 
+                              ? allUsers.filter((u: User) => u.id !== user.id)
+                                  .map((otherUser: User) => (
                                 <Card key={otherUser.id} className="p-3">
                                   <div className="flex justify-between items-center">
                                     <div className="flex items-center gap-2">
@@ -386,7 +393,8 @@ export default function MessagesPage() {
                                     </Button>
                                   </div>
                                 </Card>
-                              ))}
+                              )))
+                          : null}
                           </div>
                           <ScrollBar />
                         </ScrollArea>
@@ -439,9 +447,9 @@ export default function MessagesPage() {
                   ) : (
                     <ScrollArea className="h-[400px]">
                       <div className="space-y-2 pr-3">
-                        {allUsers
-                          ?.filter((u: User) => u.id !== user.id)
-                          .map((otherUser: User) => (
+                        {allUsers && user
+                          ? allUsers.filter((u: User) => u.id !== user.id)
+                              .map((otherUser: User) => (
                             <Card key={otherUser.id} className="p-3">
                               <div className="flex justify-between items-center">
                                 <div className="flex items-center gap-2">
@@ -511,7 +519,11 @@ export default function MessagesPage() {
                         <div className="flex justify-between items-center mb-1">
                           <p className="font-medium truncate">{otherUser?.username}</p>
                           <p className="text-xs text-muted-foreground">
-                            {new Date(conversation.lastMessageAt).toLocaleDateString()}
+                            {conversation.lastMessageAt ? 
+                              (typeof conversation.lastMessageAt === 'string' 
+                                ? new Date(conversation.lastMessageAt).toLocaleDateString() 
+                                : conversation.lastMessageAt.toLocaleDateString())
+                              : "N/A"}
                           </p>
                         </div>
                         <p className="text-sm text-muted-foreground truncate">
