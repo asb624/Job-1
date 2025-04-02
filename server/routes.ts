@@ -1038,27 +1038,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Voice note upload endpoint
   app.post("/api/upload/voice", async (req: Request, res: Response) => {
-    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+    console.log("Voice upload request received");
+    
+    // Check authentication
+    if (!req.isAuthenticated()) {
+      console.log("Voice upload: User not authenticated");
+      return res.status(401).send("Unauthorized");
+    }
+    
+    console.log("Voice upload: User authenticated", req.user.id);
     
     try {
-      if (!req.files || !req.files.voiceNote) {
+      // Log what files were received
+      console.log("Voice upload: Request files:", req.files ? Object.keys(req.files) : "No files");
+      
+      if (!req.files || Object.keys(req.files).length === 0) {
+        console.log("Voice upload: No files were uploaded");
         return res.status(400).json({
-          message: "No voice note file was uploaded"
+          message: "No files were uploaded"
+        });
+      }
+      
+      if (!req.files.voiceNote) {
+        console.log("Voice upload: No voice note file found in request");
+        return res.status(400).json({
+          message: "No voice note file was uploaded. Make sure the file field is named 'voiceNote'"
         });
       }
 
       const voiceFile = req.files.voiceNote as fileUpload.UploadedFile;
+      console.log("Voice upload: Received file:", voiceFile.name, voiceFile.mimetype, voiceFile.size);
       
       // Validate file type (audio files)
       const validMimeTypes = ['audio/wav', 'audio/mpeg', 'audio/mp3', 'audio/webm', 'audio/ogg'];
       if (!validMimeTypes.includes(voiceFile.mimetype)) {
+        console.log(`Voice upload: Invalid mimetype: ${voiceFile.mimetype}`);
         return res.status(400).json({
-          message: "Invalid file type. Only audio files are allowed."
+          message: `Invalid file type: ${voiceFile.mimetype}. Only audio files are allowed.`
         });
       }
       
       // Create a unique filename
-      const fileName = `voice-${Date.now()}-${Math.round(Math.random() * 1000)}${path.extname(voiceFile.name)}`;
+      const fileName = `voice-${Date.now()}-${Math.round(Math.random() * 1000)}${path.extname(voiceFile.name) || '.webm'}`;
       
       // Create the upload path using direct string concatenation instead of path.join
       // This avoids issues with path.join and URL in ES modules
@@ -1066,16 +1087,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Ensure the directory exists
       if (!fs.existsSync(uploadPath)) {
+        console.log(`Voice upload: Creating directory ${uploadPath}`);
         fs.mkdirSync(uploadPath, { recursive: true });
       }
       
-      // Move the file to the upload directory
-      await voiceFile.mv(path.join(uploadPath, fileName));
+      const fullPath = path.join(uploadPath, fileName);
+      console.log(`Voice upload: Moving file to ${fullPath}`);
+      
+      try {
+        // Move the file to the upload directory
+        await voiceFile.mv(fullPath);
+        
+        // Verify the file exists after moving
+        if (!fs.existsSync(fullPath)) {
+          throw new Error(`File was not saved to ${fullPath}`);
+        }
+        
+        const stats = fs.statSync(fullPath);
+        console.log(`Voice upload: File saved, size: ${stats.size} bytes`);
+        
+        if (stats.size === 0) {
+          throw new Error("File was saved but is empty (0 bytes)");
+        }
+      } catch (moveError) {
+        console.error("Voice upload: Error moving file:", moveError);
+        return res.status(500).json({
+          message: "Failed to save the uploaded file",
+          error: (moveError as Error).message
+        });
+      }
       
       // Return the URL to the uploaded file
       const fileUrl = `/uploads/voice/${fileName}`;
       
-      console.log(`Voice note uploaded: ${fileUrl}`);
+      console.log(`Voice note uploaded successfully: ${fileUrl}`);
       
       return res.status(200).json({
         message: "Voice note uploaded successfully",
@@ -1084,7 +1129,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error uploading voice note:', error);
       return res.status(500).json({
-        message: "Failed to upload voice note"
+        message: "Failed to upload voice note",
+        error: (error as Error).message
       });
     }
   });

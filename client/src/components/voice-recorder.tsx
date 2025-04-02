@@ -111,24 +111,53 @@ export function VoiceRecorder({ onRecordingComplete, maxDuration = 60 }: VoiceRe
   // Upload the voice note to the server
   const uploadVoiceNote = async (audioBlob: Blob) => {
     setIsUploading(true);
+    console.log("Starting voice note upload, blob size:", audioBlob.size, "type:", audioBlob.type);
     
     try {
       // Create a FormData object to send the file
       const formData = new FormData();
-      formData.append('voiceNote', audioBlob, `voice-note-${Date.now()}.webm`);
+      const filename = `voice-note-${Date.now()}.webm`;
+      formData.append('voiceNote', audioBlob, filename);
       
-      // Upload the file
+      console.log("Uploading voice note with filename:", filename);
+      
+      // Upload the file with credentials to ensure cookies are sent
       const response = await fetch('/api/upload/voice', {
         method: 'POST',
         body: formData,
-        // No need to set Content-Type header as it's automatically set with FormData
+        credentials: 'include' // Include credentials like cookies for authentication
       });
       
+      console.log("Upload response status:", response.status);
+      
+      // Explicitly handle different error statuses
       if (!response.ok) {
-        throw new Error(`Upload failed with status: ${response.status}`);
+        const errorText = await response.text();
+        console.error("Upload error response:", errorText);
+        
+        // Handle specific status codes
+        if (response.status === 401) {
+          throw new Error("Authentication required. Please log in.");
+        } else if (response.status === 413) {
+          throw new Error("File too large. Maximum size is 5MB.");
+        } else {
+          throw new Error(`Upload failed: ${response.status} ${response.statusText}`);
+        }
       }
       
-      const data = await response.json();
+      // Parse the response JSON
+      let data;
+      try {
+        data = await response.json();
+        console.log("Upload response data:", data);
+      } catch (parseError) {
+        console.error("Error parsing JSON response:", parseError);
+        throw new Error("Invalid response from server");
+      }
+      
+      if (!data.fileUrl) {
+        throw new Error("No file URL returned from server");
+      }
       
       // Callback with the URL of the uploaded file
       onRecordingComplete(data.fileUrl);
@@ -136,12 +165,20 @@ export function VoiceRecorder({ onRecordingComplete, maxDuration = 60 }: VoiceRe
       // Reset state after successful upload
       setIsRecording(false);
       audioChunksRef.current = [];
+      
+      toast({
+        title: "Voice Note Uploaded",
+        description: "Your voice note has been uploaded successfully.",
+        variant: "default"
+      });
+      
     } catch (err) {
       console.error("Error uploading voice note:", err);
-      setError("Failed to upload voice note. Please try again.");
+      const errorMessage = err instanceof Error ? err.message : "Unknown upload error";
+      setError(`Failed to upload voice note: ${errorMessage}`);
       toast({
         title: "Upload Failed",
-        description: "Could not upload voice note. Please try again.",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
