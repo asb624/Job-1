@@ -33,7 +33,7 @@ function Router() {
       <ProtectedRoute path="/post-requirement" component={PostRequirement} />
       <ProtectedRoute path="/post-service" component={PostService} />
       <ProtectedRoute path="/profile" component={Profile} /> 
-      <ProtectedRoute path="/messages" component={MessagesPage} />
+      <ProtectedRoute path="/messages" component={MessagesPage} skipOnboardingCheck={true} />
       <ProtectedRoute path="/preferences" component={PreferencesPage} />
       <Route>
         {() => <NotFound />}
