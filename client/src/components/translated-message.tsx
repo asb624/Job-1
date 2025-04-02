@@ -42,9 +42,11 @@ export function TranslatedMessage({
   
   // Reset display content when message changes
   useEffect(() => {
-    setDisplayContent(message.content || '');
-    setIsTranslated(false);
-  }, [message.content]);
+    if (message && message.content !== undefined) {
+      setDisplayContent(message.content || '');
+      setIsTranslated(false);
+    }
+  }, [message?.content]);
   
   const handleTranslated = (translatedText: string) => {
     setDisplayContent(translatedText);
@@ -148,13 +150,13 @@ export function TranslatedMessageList({
   // Render each message with proper translation handling
   return (
     <div className="flex flex-col space-y-4">
-      {messages.map(message => (
+      {messages && messages.filter(message => message && message.id).map(message => (
         <TranslatedMessage
           key={message.id}
           message={{
             ...message,
-            // Use translated content if available
-            content: translatedContents.get(message.id) || message.content
+            // Use translated content if available and make sure content exists
+            content: (translatedContents.get(message.id) || message.content || '')
           }}
           currentUserId={currentUserId}
           otherUser={otherUser}

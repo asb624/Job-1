@@ -619,7 +619,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
 
     try {
-      const message = await storage.markMessageAsRead(parseInt(req.params.id));
+      const messageId = parseInt(req.params.id);
+      
+      // Add validation to ensure this is a valid message ID
+      if (!messageId || isNaN(messageId) || messageId <= 0) {
+        return res.status(400).json({ message: "Invalid message ID" });
+      }
+      
+      // Check if this is actually a conversation ID instead of a message ID
+      const conversations = await storage.getConversationsByUserId(req.user.id);
+      const isConversationId = conversations.some(c => c.id === messageId);
+      
+      if (isConversationId) {
+        console.log(`Warning: Attempted to mark conversation ID ${messageId} as read`);
+        return res.status(400).json({ message: "Cannot mark a conversation as read" });
+      }
+      
+      const message = await storage.markMessageAsRead(messageId);
       res.json(message);
     } catch (error) {
       console.error('Error marking message as read:', error);

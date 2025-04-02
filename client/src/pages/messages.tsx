@@ -130,13 +130,20 @@ export default function MessagesPage() {
       });
       
       // Directly add new message to cache to ensure immediate display
-      queryClient.setQueryData(
-        ["/api/conversations", selectedConversation?.id, "messages"],
-        (oldData: Message[] | undefined) => {
-          if (!oldData) return [data];
-          return [...oldData, data];
-        }
-      );
+      try {
+        queryClient.setQueryData(
+          ["/api/conversations", selectedConversation?.id, "messages"],
+          (oldData: Message[] | undefined) => {
+            if (!oldData) return [data];
+            // Make sure we don't add duplicate messages
+            const messageExists = oldData.some(msg => msg.id === data.id);
+            if (messageExists) return oldData;
+            return [...oldData, data];
+          }
+        );
+      } catch (error) {
+        console.error("Error updating cache:", error);
+      }
     },
     onError: (error: Error) => {
       console.error("Message sending error:", error);
@@ -192,13 +199,34 @@ export default function MessagesPage() {
   useEffect(() => {
     if (!selectedConversation || !messages || !user) return;
 
-    messages.forEach((message: Message) => {
-      // Only mark messages from other users as read and ensure the message has a valid ID
-      if (!message.isRead && message.senderId !== user.id && message.id && message.id > 0) {
+    const conversationId = selectedConversation.id;
+    
+    // Filter and validate messages before marking them as read
+    const unreadMessages = messages.filter((message: Message) => {
+      return (
+        // Only mark messages from other users as read
+        message.senderId !== user.id &&
+        // Check that isRead is false
+        !message.isRead &&
+        // Make sure we have a valid message ID
+        message.id && 
+        message.id > 0 &&
+        // Check that the message belongs to the current conversation
+        message.conversationId === conversationId &&
+        // Double-check we're not using the conversation ID as a message ID
+        message.id !== conversationId
+      );
+    });
+    
+    // Mark filtered messages as read one by one
+    if (unreadMessages.length > 0) {
+      console.log(`Found ${unreadMessages.length} unread messages to mark as read`);
+      
+      unreadMessages.forEach((message: Message) => {
         console.log(`Marking message ${message.id} as read`);
         markAsReadMutation.mutate(message.id);
-      }
-    });
+      });
+    }
   }, [messages, selectedConversation, user]);
 
   // Handle sending a message
@@ -207,6 +235,7 @@ export default function MessagesPage() {
     if (!messageText.trim()) return;
 
     sendMessageMutation.mutate({ content: messageText });
+    setMessageText(''); // Clear input after sending
   };
 
   // Create a new conversation with a user
