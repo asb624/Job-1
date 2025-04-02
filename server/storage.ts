@@ -62,6 +62,7 @@ export interface IStorage {
   // User operations
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  getUsers(): Promise<User[]>;
   createUser(user: InsertUser): Promise<User>;
   updateUserLastSeen(userId: number): Promise<User>;
   updateOnboardingStatus(userId: number, completed: boolean): Promise<User>;
@@ -167,6 +168,10 @@ export class PostgresStorage implements IStorage {
   async getUserByUsername(username: string): Promise<User | undefined> {
     const result = await this.db.select().from(users).where(eq(users.username, username));
     return result[0];
+  }
+  
+  async getUsers(): Promise<User[]> {
+    return await this.db.select().from(users);
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {

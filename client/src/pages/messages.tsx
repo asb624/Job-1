@@ -492,15 +492,59 @@ export default function MessagesPage() {
   // Get the other user's info in a conversation
   const getOtherUser = (conversation: Conversation): User => {
     const otherUserId = conversation.user1Id === user?.id ? conversation.user2Id : conversation.user1Id;
-    // This is a placeholder, you would typically fetch this from your users data
+    
+    // Search for the user in our loaded users data
     const foundUser = allUsers?.find((u: User) => u.id === otherUserId);
-    return foundUser || { 
+    
+    if (foundUser) {
+      return foundUser;
+    }
+    
+    // If we can't find the user in our loaded data, load and cache them
+    console.log(`User ${otherUserId} not found in loaded users, loading separately`);
+    
+    // Return a temporary placeholder but trigger a fetch for this user
+    const placeholderUser = { 
       id: otherUserId, 
-      username: `User ${otherUserId}`,
+      username: `Loading...`,
       createdAt: new Date(),
       lastSeen: new Date(),
       onboardingCompleted: false
     } as User;
+    
+    // Fetch this specific user if not already loading
+    const userQueryKey = [`/api/users/${otherUserId}`];
+    const queryState = queryClient.getQueryState(userQueryKey);
+    const isUserLoading = queryState?.status === 'loading' || queryState?.status === 'pending';
+    
+    if (!isUserLoading) {
+      queryClient.fetchQuery({
+        queryKey: userQueryKey,
+        queryFn: async () => {
+          try {
+            const userData = await apiRequest<User>(`/api/users/${otherUserId}`);
+            console.log(`Loaded user data for ${otherUserId}:`, userData);
+            
+            // Update both specific user cache and all users cache with this data
+            queryClient.setQueryData(userQueryKey, userData);
+            
+            // Add this user to the allUsers cache if not already there
+            queryClient.setQueryData(["/api/users"], (oldData: User[] | undefined) => {
+              if (!oldData) return [userData];
+              if (oldData.some(u => u.id === userData.id)) return oldData;
+              return [...oldData, userData];
+            });
+            
+            return userData;
+          } catch (error) {
+            console.error(`Failed to load user ${otherUserId}:`, error);
+            return null;
+          }
+        }
+      });
+    }
+    
+    return placeholderUser;
   };
 
   return (

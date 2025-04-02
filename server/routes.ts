@@ -481,6 +481,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(bids);
   });
 
+  // User routes
+  app.get("/api/user", (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).send("Not authenticated");
+    }
+    res.json(req.user);
+  });
+  
+  app.get("/api/users", async (req, res) => {
+    try {
+      // Get all users (could add pagination later)
+      const users = await storage.getUsers();
+      res.json(users);
+    } catch (error) {
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+  
+  app.get("/api/users/:id", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      if (isNaN(userId)) {
+        return res.status(400).json({ error: "Invalid user ID" });
+      }
+      
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      res.json(user);
+    } catch (error) {
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+  
   // Conversations & Messages
   app.post("/api/conversations", async (req, res) => {
     if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
