@@ -111,10 +111,12 @@ export function TranslatedMessage({
             )}
           </div>
           
-          {/* Message reactions */}
+          {/* Message reactions - Only show reactions for non-optimistic messages (positive IDs) */}
           <div className="mt-1">
-            {/* Only render reaction picker if not testing or if the feature is enabled */}
-            {typeof window !== 'undefined' && <MessageReactionPicker messageId={message.id} />}
+            {/* Only render reaction picker if not testing, if the feature is enabled, and if it's not an optimistic message */}
+            {typeof window !== 'undefined' && message.id > 0 && (
+              <MessageReactionPicker messageId={message.id} />
+            )}
           </div>
         </div>
       </div>
@@ -150,19 +152,22 @@ export function TranslatedMessageList({
   // Render each message with proper translation handling
   return (
     <div className="flex flex-col space-y-4">
-      {messages && messages.filter(message => message && message.id).map(message => (
-        <TranslatedMessage
-          key={message.id}
-          message={{
-            ...message,
-            // Use translated content if available and make sure content exists
-            content: (translatedContents.get(message.id) || message.content || '')
-          }}
-          currentUserId={currentUserId}
-          otherUser={otherUser}
-          shouldAutoTranslate={autoTranslate}
-        />
-      ))}
+      {messages && messages
+        .filter(message => message && message.id)
+        .map(message => (
+          <TranslatedMessage
+            key={message.id < 0 ? `temp-${Math.abs(message.id)}` : message.id}
+            message={{
+              ...message,
+              // Use translated content if available and make sure content exists
+              content: (translatedContents.get(message.id) || message.content || '')
+            }}
+            currentUserId={currentUserId}
+            otherUser={otherUser}
+            shouldAutoTranslate={message.id > 0 ? autoTranslate : false} // Don't auto-translate optimistic messages
+          />
+        ))
+      }
     </div>
   );
 }

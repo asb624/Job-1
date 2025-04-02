@@ -118,35 +118,50 @@ export default function MessagesPage() {
     },
     onSuccess: (data) => {
       console.log("Message sent successfully:", data);
-      setMessageText("");
       
-      // Invalidate both conversations list and messages for this conversation
-      queryClient.invalidateQueries({ 
-        queryKey: ["/api/conversations"]
-      });
-      
-      queryClient.invalidateQueries({ 
-        queryKey: ["/api/conversations", selectedConversation?.id, "messages"] 
-      });
-      
-      // Directly add new message to cache to ensure immediate display
+      // Replace optimistic message with real one from server
       try {
         queryClient.setQueryData(
           ["/api/conversations", selectedConversation?.id, "messages"],
           (oldData: Message[] | undefined) => {
             if (!oldData) return [data];
-            // Make sure we don't add duplicate messages
-            const messageExists = oldData.some(msg => msg.id === data.id);
-            if (messageExists) return oldData;
-            return [...oldData, data];
+            
+            // Replace any temporary negative IDs with the real message
+            return oldData.map(msg => {
+              // If this is an optimistic message with the same content, replace it
+              if (msg.id < 0 && msg.content === data.content) {
+                return data;
+              }
+              return msg;
+            });
           }
         );
+        
+        // Also update the conversations list to show the latest message
+        queryClient.invalidateQueries({ 
+          queryKey: ["/api/conversations"]
+        });
       } catch (error) {
         console.error("Error updating cache:", error);
       }
     },
     onError: (error: Error) => {
       console.error("Message sending error:", error);
+      
+      // Remove any optimistic messages on error to clean up the UI
+      try {
+        queryClient.setQueryData(
+          ["/api/conversations", selectedConversation?.id, "messages"],
+          (oldData: Message[] | undefined) => {
+            if (!oldData) return [];
+            // Remove any messages with negative IDs (optimistic ones)
+            return oldData.filter(msg => msg.id > 0);
+          }
+        );
+      } catch (err) {
+        console.error("Error cleaning up optimistic messages:", err);
+      }
+      
       toast({
         title: "Failed to send message",
         description: error.message,
@@ -251,8 +266,28 @@ export default function MessagesPage() {
   // Handle sending a message
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!messageText.trim()) return;
+    if (!messageText.trim() || !selectedConversation || !user) return;
 
+    // Create optimistic message
+    const optimisticMessage: Message = {
+      id: -(Date.now()), // Temporary negative ID to distinguish from real messages
+      conversationId: selectedConversation.id,
+      senderId: user.id,
+      content: messageText,
+      isRead: false,
+      attachments: [],
+      createdAt: new Date()
+    };
+
+    // Add optimistic message to the cache immediately
+    queryClient.setQueryData(
+      ["/api/conversations", selectedConversation.id, "messages"],
+      (oldData: Message[] | undefined) => {
+        return oldData ? [...oldData, optimisticMessage] : [optimisticMessage];
+      }
+    );
+
+    // Send message to server
     sendMessageMutation.mutate({ content: messageText });
     setMessageText(''); // Clear input after sending
   };
