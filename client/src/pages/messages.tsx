@@ -364,37 +364,38 @@ export default function MessagesPage() {
                       ) : (
                         <ScrollArea className="h-[400px]">
                           <div className="space-y-2 pr-3">
-                            {allUsers && user 
-                              ? allUsers.filter((u: User) => u.id !== user.id)
-                                  .map((otherUser: User) => (
-                                <Card key={otherUser.id} className="p-3">
-                                  <div className="flex justify-between items-center">
-                                    <div className="flex items-center gap-2">
-                                      <Avatar>
-                                        <AvatarImage src={otherUser.avatar || ""} />
-                                        <AvatarFallback>
-                                          {otherUser.username.charAt(0).toUpperCase()}
-                                        </AvatarFallback>
-                                      </Avatar>
-                                      <div>
-                                        <p className="font-medium">{otherUser.username}</p>
-                                        {otherUser.isServiceProvider && (
-                                          <Badge variant="secondary" className="mt-1">
-                                            Service Provider
-                                          </Badge>
-                                        )}
+                            {allUsers && user ? (
+                              allUsers
+                                .filter((u: User) => u.id !== user.id)
+                                .map((otherUser: User) => (
+                                  <Card key={otherUser.id} className="p-3">
+                                    <div className="flex justify-between items-center">
+                                      <div className="flex items-center gap-2">
+                                        <Avatar>
+                                          <AvatarImage src={otherUser.avatar || ""} />
+                                          <AvatarFallback>
+                                            {otherUser.username.charAt(0).toUpperCase()}
+                                          </AvatarFallback>
+                                        </Avatar>
+                                        <div>
+                                          <p className="font-medium">{otherUser.username}</p>
+                                          {otherUser.isServiceProvider && (
+                                            <Badge variant="secondary" className="mt-1">
+                                              Service Provider
+                                            </Badge>
+                                          )}
+                                        </div>
                                       </div>
+                                      <Button 
+                                        size="sm" 
+                                        onClick={() => startConversation(otherUser.id)}
+                                      >
+                                        Message
+                                      </Button>
                                     </div>
-                                    <Button 
-                                      size="sm" 
-                                      onClick={() => startConversation(otherUser.id)}
-                                    >
-                                      Message
-                                    </Button>
-                                  </div>
-                                </Card>
-                              )))
-                          : null}
+                                  </Card>
+                                ))
+                            ) : null}
                           </div>
                           <ScrollBar />
                         </ScrollArea>
@@ -447,36 +448,38 @@ export default function MessagesPage() {
                   ) : (
                     <ScrollArea className="h-[400px]">
                       <div className="space-y-2 pr-3">
-                        {allUsers && user
-                          ? allUsers.filter((u: User) => u.id !== user.id)
-                              .map((otherUser: User) => (
-                            <Card key={otherUser.id} className="p-3">
-                              <div className="flex justify-between items-center">
-                                <div className="flex items-center gap-2">
-                                  <Avatar>
-                                    <AvatarImage src={otherUser.avatar || ""} />
-                                    <AvatarFallback>
-                                      {otherUser.username.charAt(0).toUpperCase()}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  <div>
-                                    <p className="font-medium">{otherUser.username}</p>
-                                    {otherUser.isServiceProvider && (
-                                      <Badge variant="secondary" className="mt-1">
-                                        Service Provider
-                                      </Badge>
-                                    )}
+                        {allUsers && user ? (
+                          allUsers
+                            .filter((u: User) => u.id !== user.id)
+                            .map((otherUser: User) => (
+                              <Card key={otherUser.id} className="p-3">
+                                <div className="flex justify-between items-center">
+                                  <div className="flex items-center gap-2">
+                                    <Avatar>
+                                      <AvatarImage src={otherUser.avatar || ""} />
+                                      <AvatarFallback>
+                                        {otherUser.username.charAt(0).toUpperCase()}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                    <div>
+                                      <p className="font-medium">{otherUser.username}</p>
+                                      {otherUser.isServiceProvider && (
+                                        <Badge variant="secondary" className="mt-1">
+                                          Service Provider
+                                        </Badge>
+                                      )}
+                                    </div>
                                   </div>
+                                  <Button 
+                                    size="sm" 
+                                    onClick={() => startConversation(otherUser.id)}
+                                  >
+                                    Message
+                                  </Button>
                                 </div>
-                                <Button 
-                                  size="sm" 
-                                  onClick={() => startConversation(otherUser.id)}
-                                >
-                                  Message
-                                </Button>
-                              </div>
-                            </Card>
-                          ))}
+                              </Card>
+                            ))
+                        ) : null}
                       </div>
                       <ScrollBar />
                     </ScrollArea>
