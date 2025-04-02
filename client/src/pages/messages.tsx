@@ -59,6 +59,53 @@ export default function MessagesPage() {
   // Fetch messages for selected conversation
   const { data: messages, isLoading: isLoadingMessages } = useQuery<Message[]>({
     queryKey: ["/api/conversations", selectedConversation?.id, "messages"],
+    queryFn: async () => {
+      if (!selectedConversation) return [];
+      
+      try {
+        // Get messages from API
+        const apiMessages = await apiRequest<Message[]>(`/api/conversations/${selectedConversation.id}/messages`);
+        console.log("📥 Fetched messages from API:", apiMessages);
+        
+        // Check if we have any backup messages in session storage for this conversation
+        const backupMessages: Message[] = [];
+        
+        try {
+          // Look through session storage for message backups
+          for (let i = 0; i < sessionStorage.length; i++) {
+            const key = sessionStorage.key(i);
+            if (key && key.startsWith('msg_backup_')) {
+              const item = sessionStorage.getItem(key);
+              if (item) {
+                const backupMsg = JSON.parse(item) as Message;
+                // Only include if it's for this conversation
+                if (backupMsg.conversationId === selectedConversation.id) {
+                  // Check if this message already exists in the API response
+                  const exists = apiMessages.some(msg => msg.id === backupMsg.id);
+                  if (!exists) {
+                    console.log("📥 Found backup message in storage:", backupMsg);
+                    backupMessages.push(backupMsg);
+                  }
+                }
+              }
+            }
+          }
+        } catch (err) {
+          console.error("Error retrieving backup messages:", err);
+        }
+        
+        // Combine API messages with any valid backup messages
+        if (backupMessages.length > 0) {
+          console.log("📥 Adding backup messages to results:", backupMessages);
+          return [...apiMessages, ...backupMessages];
+        }
+        
+        return apiMessages;
+      } catch (error) {
+        console.error("Error fetching messages:", error);
+        return [];
+      }
+    },
     enabled: !!selectedConversation && !!user,
   });
 
@@ -221,52 +268,96 @@ export default function MessagesPage() {
     if (!user) return;
 
     const unsubscribe = subscribeToMessages((message) => {
-      console.log('Received WebSocket message:', message);
+      console.log('🔵 WS RECEIVED: WebSocket message:', message);
       
       if (message.type === 'message' && message.action === 'create') {
-        console.log('Received message via WebSocket:', message.payload);
+        console.log('🔵 WS RECEIVED: New message payload:', message.payload);
+        
+        // Save real message to session storage as a backup
+        try {
+          // First check if we already have a backup
+          const existingBackup = sessionStorage.getItem(`msg_backup_${message.payload.id}`);
+          if (!existingBackup) {
+            sessionStorage.setItem(`msg_backup_${message.payload.id}`, JSON.stringify(message.payload));
+            console.log(`🔵 WS RECEIVED: Backed up message ${message.payload.id} to session storage`);
+          }
+        } catch (err) {
+          console.error('Error backing up message to session storage:', err);
+        }
         
         // If this message is for the currently selected conversation
         if (selectedConversation && message.payload.conversationId === selectedConversation.id) {
-          console.log('Updating messages for current conversation');
+          console.log('🔵 WS RECEIVED: Updating messages for current conversation');
           
           // Special handling for our own messages that we've already handled with optimistic updates
           const isOwnMessage = message.payload.senderId === user.id;
+          console.log('🔵 WS RECEIVED: Is own message?', isOwnMessage);
           
-          // Directly update the message cache to ensure immediate display
-          queryClient.setQueryData(
-            ["/api/conversations", selectedConversation.id, "messages"],
-            (oldData: Message[] | undefined) => {
-              if (!oldData) return [message.payload];
-              
-              // Check if message already exists in the cache by ID
-              const messageExistsById = oldData.some(msg => msg.id === message.payload.id);
-              if (messageExistsById) return oldData;
-              
-              // For our own messages, check if there's a matching optimistic message to replace
-              if (isOwnMessage) {
-                // Find any optimistic message with the same content (negative ID)
-                const hasOptimisticVersion = oldData.some(msg => 
-                  msg.id < 0 && 
-                  msg.content === message.payload.content &&
-                  msg.senderId === user.id
-                );
-                
-                if (hasOptimisticVersion) {
-                  // Replace the optimistic message with the real one
-                  return oldData.map(msg => {
-                    if (msg.id < 0 && msg.content === message.payload.content && msg.senderId === user.id) {
-                      return message.payload;
-                    }
-                    return msg;
-                  });
-                }
-              }
-              
-              // If it's not our message or we don't have an optimistic version, just add it
-              return [...oldData, message.payload];
+          // Get current messages
+          const currentMessages = queryClient.getQueryData(["/api/conversations", selectedConversation.id, "messages"]) as Message[] | undefined;
+          console.log('🔵 WS RECEIVED: Current messages in cache:', currentMessages);
+          
+          if (currentMessages) {
+            // 1. Check if the exact message already exists
+            const exactMessageExists = currentMessages.some(msg => msg.id === message.payload.id);
+            
+            // 2. Check if we have an optimistic version to replace (for our messages)
+            const hasOptimisticVersion = isOwnMessage && currentMessages.some(msg => 
+              msg.id < 0 && 
+              msg.content === message.payload.content && 
+              msg.senderId === user.id
+            );
+            
+            console.log('🔵 WS RECEIVED: Exact message exists?', exactMessageExists);
+            console.log('🔵 WS RECEIVED: Has optimistic version?', hasOptimisticVersion);
+            
+            // 3. Determine what to do
+            if (exactMessageExists) {
+              // Message already in cache, no need to do anything
+              console.log('🔵 WS RECEIVED: Message already in cache, not updating');
+            } else if (hasOptimisticVersion) {
+              // Replace optimistic message with real one
+              console.log('🔵 WS RECEIVED: Replacing optimistic message with real one');
+              queryClient.setQueryData(
+                ["/api/conversations", selectedConversation.id, "messages"],
+                currentMessages.map(msg => {
+                  if (msg.id < 0 && msg.content === message.payload.content && msg.senderId === user.id) {
+                    console.log('🔵 WS RECEIVED: Found optimistic message to replace:', msg);
+                    return message.payload;
+                  }
+                  return msg;
+                })
+              );
+            } else {
+              // Just add the new message
+              console.log('🔵 WS RECEIVED: Adding new message to cache');
+              queryClient.setQueryData(
+                ["/api/conversations", selectedConversation.id, "messages"],
+                [...currentMessages, message.payload]
+              );
             }
-          );
+          } else {
+            // No messages in cache yet, just set this one
+            console.log('🔵 WS RECEIVED: No messages in cache, setting just this one');
+            queryClient.setQueryData(
+              ["/api/conversations", selectedConversation.id, "messages"],
+              [message.payload]
+            );
+          }
+          
+          // Double check after our update that the message is actually in the cache
+          const afterUpdateMessages = queryClient.getQueryData(["/api/conversations", selectedConversation.id, "messages"]) as Message[] | undefined;
+          const messageInCache = afterUpdateMessages?.some(msg => msg.id === message.payload.id);
+          console.log('🔵 WS RECEIVED: Message in cache after update?', messageInCache);
+          
+          // If somehow our message still didn't make it to the cache, force add it
+          if (!messageInCache && afterUpdateMessages) {
+            console.log('🔵 WS RECEIVED: Message STILL not in cache, force adding it');
+            queryClient.setQueryData(
+              ["/api/conversations", selectedConversation.id, "messages"],
+              [...afterUpdateMessages, message.payload]
+            );
+          }
         }
         
         // Always update the conversation list to show latest messages
@@ -318,28 +409,73 @@ export default function MessagesPage() {
     e.preventDefault();
     if (!messageText.trim() || !selectedConversation || !user) return;
 
-    // Create optimistic message
+    console.log("🚀 SEND MESSAGE: Starting to send message:", messageText);
+
+    // Store message text to avoid race conditions with input clearing
+    const messageToSend = messageText;
+    
+    // Create optimistic message with unique ID
+    const optimisticId = -(Date.now());
     const optimisticMessage: Message = {
-      id: -(Date.now()), // Temporary negative ID to distinguish from real messages
+      id: optimisticId, // Temporary negative ID to distinguish from real messages
       conversationId: selectedConversation.id,
       senderId: user.id,
-      content: messageText,
+      content: messageToSend,
       isRead: false,
       attachments: [],
       createdAt: new Date()
     };
 
+    console.log("🚀 SEND MESSAGE: Created optimistic message:", optimisticMessage);
+
     // Add optimistic message to the cache immediately
     queryClient.setQueryData(
       ["/api/conversations", selectedConversation.id, "messages"],
       (oldData: Message[] | undefined) => {
-        return oldData ? [...oldData, optimisticMessage] : [optimisticMessage];
+        console.log("🚀 SEND MESSAGE: Current messages in cache:", oldData);
+        const newData = oldData ? [...oldData, optimisticMessage] : [optimisticMessage];
+        console.log("🚀 SEND MESSAGE: New messages with optimistic:", newData);
+        return newData;
       }
     );
 
+    // Clear input before network request to improve UX responsiveness
+    setMessageText('');
+
+    // Debug - Log the current message cache
+    const currentCache = queryClient.getQueryData(["/api/conversations", selectedConversation.id, "messages"]);
+    console.log("🚀 SEND MESSAGE: Current message cache after optimistic update:", currentCache);
+
     // Send message to server
-    sendMessageMutation.mutate({ content: messageText });
-    setMessageText(''); // Clear input after sending
+    sendMessageMutation.mutate(
+      { content: messageToSend },
+      {
+        onSuccess: (data) => {
+          console.log("🚀 SEND SUCCESS: Message successfully sent to server:", data);
+          
+          // Manually check if our message is still in the cache
+          const cacheAfterSuccess = queryClient.getQueryData(["/api/conversations", selectedConversation.id, "messages"]) as Message[] | undefined;
+          console.log("🚀 SEND SUCCESS: Messages in cache after success:", cacheAfterSuccess);
+          
+          const optimisticStillExists = cacheAfterSuccess?.some(msg => msg.id === optimisticId);
+          console.log("🚀 SEND SUCCESS: Optimistic message still in cache:", optimisticStillExists);
+          
+          // If the optimistic message disappeared, put it back but with the real ID
+          if (!optimisticStillExists && cacheAfterSuccess) {
+            console.log("🚀 SEND SUCCESS: Optimistic message disappeared, adding real message back to cache");
+            queryClient.setQueryData(
+              ["/api/conversations", selectedConversation.id, "messages"],
+              [...cacheAfterSuccess, data]
+            );
+          }
+        },
+        onError: (error) => {
+          console.log("🚀 SEND ERROR: Message sending failed:", error);
+          // Restore the message text on error so user can try again
+          setMessageText(messageToSend);
+        }
+      }
+    );
   };
 
   // Create a new conversation with a user
