@@ -102,7 +102,8 @@ export default function MessagesPage() {
         body: JSON.stringify({
           content: message.content,
           conversationId: selectedConversation.id,
-          attachments: null
+          // Don't send attachments if they're null
+          ...(message.content.trim().length > 0 && { attachments: [] })
         }),
       });
     },
@@ -113,6 +114,7 @@ export default function MessagesPage() {
       });
     },
     onError: (error: Error) => {
+      console.error("Message sending error:", error);
       toast({
         title: "Failed to send message",
         description: error.message,

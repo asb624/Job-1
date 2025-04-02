@@ -117,7 +117,8 @@ export const messages = pgTable("messages", {
   conversationId: integer("conversation_id").notNull().references(() => conversations.id),
   senderId: integer("sender_id").notNull().references(() => users.id),
   content: text("content").notNull(),
-  attachments: text("attachments").array(), // URLs to attachments (images, files, etc)
+  // Make attachments optional and default to empty array
+  attachments: text("attachments").array().default([]), // URLs to attachments (images, files, etc)
   isRead: boolean("is_read").default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -218,11 +219,15 @@ export const insertConversationSchema = createInsertSchema(conversations).pick({
   user2Id: true,
 });
 
-export const insertMessageSchema = createInsertSchema(messages).pick({
-  conversationId: true,
-  content: true,
-  attachments: true,
-});
+export const insertMessageSchema = createInsertSchema(messages)
+  .pick({
+    conversationId: true,
+    content: true,
+    attachments: true,
+  })
+  .partial({
+    attachments: true,
+  });
 
 export const insertMessageReactionSchema = createInsertSchema(messageReactions).pick({
   messageId: true,

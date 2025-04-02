@@ -527,19 +527,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/conversations/:id/messages", async (req, res) => {
     if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
 
+    console.log("Received message request:", req.body);
+
     const parsed = insertMessageSchema.safeParse({
       ...req.body,
       // Ensure conversationId is set from the URL parameter
       conversationId: parseInt(req.params.id)
     });
     
-    if (!parsed.success) return res.status(400).json(parsed.error);
+    if (!parsed.success) {
+      console.error("Message validation error:", parsed.error);
+      return res.status(400).json(parsed.error);
+    }
 
     try {
       const message = await storage.createMessage({
         conversationId: parsed.data.conversationId,
         content: parsed.data.content,
-        attachments: parsed.data.attachments || null,
+        // Use empty array as default for attachments
+        attachments: parsed.data.attachments || [],
         senderId: req.user.id,
       });
 
