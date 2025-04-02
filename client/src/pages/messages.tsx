@@ -116,11 +116,27 @@ export default function MessagesPage() {
         }),
       });
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log("Message sent successfully:", data);
       setMessageText("");
+      
+      // Invalidate both conversations list and messages for this conversation
+      queryClient.invalidateQueries({ 
+        queryKey: ["/api/conversations"]
+      });
+      
       queryClient.invalidateQueries({ 
         queryKey: ["/api/conversations", selectedConversation?.id, "messages"] 
       });
+      
+      // Directly add new message to cache to ensure immediate display
+      queryClient.setQueryData(
+        ["/api/conversations", selectedConversation?.id, "messages"],
+        (oldData: Message[] | undefined) => {
+          if (!oldData) return [data];
+          return [...oldData, data];
+        }
+      );
     },
     onError: (error: Error) => {
       console.error("Message sending error:", error);

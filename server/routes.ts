@@ -555,12 +555,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json(parsed.error);
       }
 
+      // Create the message with proper data
+      console.log("Creating message with:", {
+        conversationId: parsed.data.conversationId,
+        content: parsed.data.content,
+        attachments: parsed.data.attachments || [],
+        senderId: req.user.id
+      });
+      
       const message = await storage.createMessage({
         conversationId: parsed.data.conversationId,
         content: parsed.data.content,
         attachments: parsed.data.attachments || [],
         senderId: req.user.id,
       });
+      
+      console.log("Message created successfully:", message);
 
       // Get the conversation details
       const conversations = await storage.getConversationsByUserId(req.user.id);
