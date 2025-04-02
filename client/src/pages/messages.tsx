@@ -97,13 +97,22 @@ export default function MessagesPage() {
   const sendMessageMutation = useMutation({
     mutationFn: async (message: { content: string }) => {
       if (!selectedConversation) throw new Error("No conversation selected");
+      
+      // Log what we're sending for debugging
+      console.log("Sending message:", {
+        content: message.content,
+        conversationId: selectedConversation.id
+      });
+      
       return apiRequest<Message>(`/api/conversations/${selectedConversation.id}/messages`, {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
         body: JSON.stringify({
           content: message.content,
           conversationId: selectedConversation.id,
-          // Don't send attachments if they're null
-          ...(message.content.trim().length > 0 && { attachments: [] })
+          attachments: [] // Always send an empty array for attachments
         }),
       });
     },
@@ -168,7 +177,9 @@ export default function MessagesPage() {
     if (!selectedConversation || !messages || !user) return;
 
     messages.forEach((message: Message) => {
-      if (!message.isRead && message.senderId !== user.id) {
+      // Only mark messages from other users as read and ensure the message has a valid ID
+      if (!message.isRead && message.senderId !== user.id && message.id && message.id > 0) {
+        console.log(`Marking message ${message.id} as read`);
         markAsReadMutation.mutate(message.id);
       }
     });

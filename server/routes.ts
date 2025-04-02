@@ -527,24 +527,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/conversations/:id/messages", async (req, res) => {
     if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
 
-    console.log("Received message request:", req.body);
-
-    const parsed = insertMessageSchema.safeParse({
-      ...req.body,
-      // Ensure conversationId is set from the URL parameter
-      conversationId: parseInt(req.params.id)
-    });
+    // Log the complete request for debugging
+    console.log("Message API request body:", JSON.stringify(req.body));
+    console.log("Message API raw request:", req.body, typeof req.body);
     
-    if (!parsed.success) {
-      console.error("Message validation error:", parsed.error);
-      return res.status(400).json(parsed.error);
+    // Check if the body is empty or not properly parsed
+    if (!req.body || typeof req.body !== 'object' || Object.keys(req.body).length === 0) {
+      return res.status(400).json({
+        message: "Request body is empty or invalid. Ensure you're sending valid JSON with the correct Content-Type header."
+      });
     }
-
+    
     try {
+      // Create a clean object with required fields
+      const messageData = {
+        conversationId: parseInt(req.params.id),
+        content: req.body.content,
+        attachments: Array.isArray(req.body.attachments) ? req.body.attachments : []
+      };
+      
+      console.log("Formatted message data:", messageData);
+      
+      const parsed = insertMessageSchema.safeParse(messageData);
+      
+      if (!parsed.success) {
+        console.error("Message validation error:", parsed.error);
+        return res.status(400).json(parsed.error);
+      }
+
       const message = await storage.createMessage({
         conversationId: parsed.data.conversationId,
         content: parsed.data.content,
-        // Use empty array as default for attachments
         attachments: parsed.data.attachments || [],
         senderId: req.user.id,
       });
