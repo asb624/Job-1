@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Play, Pause, Volume2, VolumeX } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 
@@ -15,34 +15,33 @@ export function AudioPlayer({ src, className = '' }: AudioPlayerProps) {
   const [isMuted, setIsMuted] = useState(false);
   const [volume, setVolume] = useState(1);
   const [showVolumeControls, setShowVolumeControls] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const animationRef = useRef<number>();
   
   useEffect(() => {
-    // Initialize the audio element
-    const audio = new Audio(src);
-    audioRef.current = audio;
+    console.log('Audio Player: Loading file from source:', src);
+    // We no longer initialize audio here since we're using the actual audio element
+    // in the component render. This ensures better browser compatibility.
     
-    // Set up event listeners
-    audio.addEventListener('loadedmetadata', handleLoadedMetadata);
-    audio.addEventListener('ended', handleEnded);
-    
-    // Cleanup function
     return () => {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }
       
-      // Remove event listeners and pause audio
+      // Pause audio on cleanup
       if (audioRef.current) {
         audioRef.current.pause();
-        audioRef.current.removeEventListener('loadedmetadata', handleLoadedMetadata);
-        audioRef.current.removeEventListener('ended', handleEnded);
       }
     };
   }, [src]);
   
+  // Handle audio loading errors
+  const handleError = () => {
+    console.error('Audio Player: Error loading audio file');
+    setError('Could not load audio file. Try again later.');
+  };
   // Handle when audio metadata is loaded (duration, etc.)
   const handleLoadedMetadata = () => {
     if (audioRef.current) {
@@ -131,69 +130,87 @@ export function AudioPlayer({ src, className = '' }: AudioPlayerProps) {
 
   return (
     <div className={`flex flex-col gap-2 w-full ${className}`}>
-      <div className="flex items-center gap-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8"
-          onClick={togglePlayPause}
-        >
-          {isPlaying ? (
-            <Pause className="h-4 w-4" />
-          ) : (
-            <Play className="h-4 w-4" />
-          )}
-        </Button>
-        
-        <div className="flex-1 flex items-center gap-2">
-          <Slider 
-            value={[currentTime]} 
-            min={0} 
-            max={duration || 1} 
-            step={0.01} 
-            onValueChange={handleProgressChange}
-            className="flex-1"
-          />
+      {error ? (
+        <div className="flex items-center text-destructive gap-1 text-sm">
+          <AlertCircle className="h-4 w-4" />
+          <span>{error}</span>
         </div>
-        
-        <div className="text-xs text-muted-foreground w-12 text-right">
-          {formatTime(currentTime)}/{formatTime(duration)}
-        </div>
-        
-        <div className="relative">
+      ) : (
+        <div className="flex items-center gap-2">
           <Button
             variant="ghost"
             size="icon"
             className="h-8 w-8"
-            onClick={toggleMute}
-            onMouseEnter={() => setShowVolumeControls(true)}
-            onMouseLeave={() => setShowVolumeControls(false)}
+            onClick={togglePlayPause}
           >
-            {isMuted || volume === 0 ? (
-              <VolumeX className="h-4 w-4" />
+            {isPlaying ? (
+              <Pause className="h-4 w-4" />
             ) : (
-              <Volume2 className="h-4 w-4" />
+              <Play className="h-4 w-4" />
             )}
           </Button>
           
-          {showVolumeControls && (
-            <div 
-              className="absolute bottom-full right-0 p-2 bg-popover shadow-md rounded-lg w-32"
+          <div className="flex-1 flex items-center gap-2">
+            <Slider 
+              value={[currentTime]} 
+              min={0} 
+              max={duration || 1} 
+              step={0.01} 
+              onValueChange={handleProgressChange}
+              className="flex-1"
+            />
+          </div>
+          
+          <div className="text-xs text-muted-foreground w-12 text-right">
+            {formatTime(currentTime)}/{formatTime(duration)}
+          </div>
+          
+          <div className="relative">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={toggleMute}
               onMouseEnter={() => setShowVolumeControls(true)}
               onMouseLeave={() => setShowVolumeControls(false)}
             >
-              <Slider
-                value={[isMuted ? 0 : volume]}
-                min={0}
-                max={1}
-                step={0.01}
-                onValueChange={handleVolumeChange}
-                orientation="horizontal"
-              />
-            </div>
-          )}
+              {isMuted || volume === 0 ? (
+                <VolumeX className="h-4 w-4" />
+              ) : (
+                <Volume2 className="h-4 w-4" />
+              )}
+            </Button>
+            
+            {showVolumeControls && (
+              <div 
+                className="absolute bottom-full right-0 p-2 bg-popover shadow-md rounded-lg w-32"
+                onMouseEnter={() => setShowVolumeControls(true)}
+                onMouseLeave={() => setShowVolumeControls(false)}
+              >
+                <Slider
+                  value={[isMuted ? 0 : volume]}
+                  min={0}
+                  max={1}
+                  step={0.01}
+                  onValueChange={handleVolumeChange}
+                  orientation="horizontal"
+                />
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
+      
+      {/* Add an actual audio element to ensure browser compatibility */}
+      <audio
+        ref={(el) => { audioRef.current = el; }}
+        src={src}
+        preload="metadata"
+        onLoadedMetadata={handleLoadedMetadata}
+        onEnded={handleEnded}
+        onError={handleError}
+        style={{ display: 'none' }}
+      />
     </div>
   );
 }
