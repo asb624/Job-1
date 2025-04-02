@@ -108,10 +108,16 @@ export function VoiceRecorder({ onRecordingComplete, maxDuration = 60 }: VoiceRe
     await uploadVoiceNote(audioBlob);
   };
   
-  // Upload the voice note to the server
+  // Upload the voice note to the server with enhanced error handling and debugging
   const uploadVoiceNote = async (audioBlob: Blob) => {
     setIsUploading(true);
-    console.log("Starting voice note upload, blob size:", audioBlob.size, "type:", audioBlob.type);
+    console.log("Starting voice note upload, blob size:", audioBlob.size, "bytes, type:", audioBlob.type);
+    
+    if (audioBlob.size === 0) {
+      setError("Recording failed: audio file is empty (0 bytes)");
+      setIsUploading(false);
+      return;
+    }
     
     try {
       // Create a FormData object to send the file
@@ -121,6 +127,16 @@ export function VoiceRecorder({ onRecordingComplete, maxDuration = 60 }: VoiceRe
       
       console.log("Uploading voice note with filename:", filename);
       
+      // Log browser details for debugging
+      console.log("Browser details:", 
+        navigator.userAgent, 
+        "localStorage available:", typeof localStorage !== 'undefined'
+      );
+      
+      // Create a URL for the blob for debugging
+      const blobUrl = URL.createObjectURL(audioBlob);
+      console.log("Local Blob URL (for debugging):", blobUrl);
+      
       // Upload the file with credentials to ensure cookies are sent
       const response = await fetch('/api/upload/voice', {
         method: 'POST',
@@ -128,12 +144,25 @@ export function VoiceRecorder({ onRecordingComplete, maxDuration = 60 }: VoiceRe
         credentials: 'include' // Include credentials like cookies for authentication
       });
       
-      console.log("Upload response status:", response.status);
+      console.log("Upload response status:", response.status, response.statusText);
+      
+      // Get and log response headers for debugging
+      const headers: Record<string, string> = {};
+      response.headers.forEach((value, key) => {
+        headers[key] = value;
+      });
+      console.log("Response headers:", headers);
       
       // Explicitly handle different error statuses
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Upload error response:", errorText);
+        let errorText;
+        try {
+          errorText = await response.text();
+          console.error("Upload error response:", errorText);
+        } catch (textError) {
+          console.error("Could not read error response text:", textError);
+          errorText = "Could not read error details";
+        }
         
         // Handle specific status codes
         if (response.status === 401) {
@@ -141,7 +170,7 @@ export function VoiceRecorder({ onRecordingComplete, maxDuration = 60 }: VoiceRe
         } else if (response.status === 413) {
           throw new Error("File too large. Maximum size is 5MB.");
         } else {
-          throw new Error(`Upload failed: ${response.status} ${response.statusText}`);
+          throw new Error(`Upload failed: ${response.status} ${response.statusText} - ${errorText}`);
         }
       }
       
@@ -159,6 +188,14 @@ export function VoiceRecorder({ onRecordingComplete, maxDuration = 60 }: VoiceRe
         throw new Error("No file URL returned from server");
       }
       
+      // Log the returned URL for debugging
+      console.log("Server returned file URL:", data.fileUrl);
+      
+      // Verify the URL format
+      if (!data.fileUrl.startsWith('/uploads/') && !data.fileUrl.startsWith('http')) {
+        console.warn("Warning: Returned URL may not be properly formatted:", data.fileUrl);
+      }
+      
       // Callback with the URL of the uploaded file
       onRecordingComplete(data.fileUrl);
       
@@ -171,6 +208,9 @@ export function VoiceRecorder({ onRecordingComplete, maxDuration = 60 }: VoiceRe
         description: "Your voice note has been uploaded successfully.",
         variant: "default"
       });
+      
+      // Clean up the blob URL
+      URL.revokeObjectURL(blobUrl);
       
     } catch (err) {
       console.error("Error uploading voice note:", err);
