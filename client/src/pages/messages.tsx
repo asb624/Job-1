@@ -184,6 +184,35 @@ export default function MessagesPage() {
     },
   });
 
+  // Handle conversation selection from URL query parameters
+  useEffect(() => {
+    if (!user || !conversations) return;
+    
+    // Check for conversation parameter in URL
+    const params = new URLSearchParams(window.location.search);
+    const conversationId = params.get('conversation');
+    
+    if (conversationId) {
+      const conversationIdNum = parseInt(conversationId);
+      
+      // Find and select the conversation if it exists
+      const foundConversation = conversations.find(c => c.id === conversationIdNum);
+      if (foundConversation) {
+        setSelectedConversation(foundConversation);
+        
+        // On mobile, close the sidebar when a conversation is selected from URL
+        if (isMobile) {
+          setSidebarOpen(false);
+        }
+        
+        // Clean URL to prevent reselection on page refresh
+        const url = new URL(window.location.href);
+        url.searchParams.delete('conversation');
+        window.history.replaceState({}, '', url);
+      }
+    }
+  }, [user, conversations, isMobile]);
+
   // Subscribe to realtime message updates
   useEffect(() => {
     if (!user) return;

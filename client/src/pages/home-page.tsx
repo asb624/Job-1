@@ -73,15 +73,26 @@ export default function HomePage() {
   // Create a new conversation with a service provider
   const createConversationMutation = useMutation({
     mutationFn: async (providerId: number) => {
-      return apiRequest("POST", "/api/conversations", { recipientId: providerId });
+      return apiRequest<{ id: number }>("/api/conversations", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ recipientId: providerId })
+      });
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
       toast({
         title: "Conversation created",
-        description: "You can now start messaging this provider",
+        description: "You can now start messaging this user",
       });
-      navigate("/messages");
+      // Navigate to the specific conversation if available
+      if (data && data.id) {
+        navigate(`/messages?conversation=${data.id}`);
+      } else {
+        navigate("/messages");
+      }
     },
     onError: (error: Error) => {
       toast({
@@ -107,22 +118,20 @@ export default function HomePage() {
     createConversationMutation.mutate(service.providerId);
   };
 
-  // Handler for selecting a requirement (placeholder for now)
+  // Handler for selecting a requirement and opening a conversation with the user
   const handleSelectRequirement = (requirement: Requirement) => {
     if (!user) {
       toast({
         title: "Login required",
-        description: "You need to login to select this requirement",
+        description: "You need to login to contact this user",
         variant: "destructive",
       });
       navigate("/auth");
       return;
     }
     
-    toast({
-      title: "Selection feature coming soon",
-      description: "The selection functionality will be implemented soon",
-    });
+    // Create conversation with the requirement creator
+    createConversationMutation.mutate(requirement.userId);
   };
 
   return (
