@@ -7,6 +7,8 @@ import { z } from "zod";
 import fetch from "node-fetch";
 import axios from "axios";
 import fileUpload from "express-fileupload";
+import path from "path";
+import fs from "fs";
 import { 
   insertServiceSchema, insertRequirementSchema, insertBidSchema, 
   insertProfileSchema, insertMessageSchema, insertNotificationSchema,
@@ -1032,6 +1034,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     limits: { fileSize: 5 * 1024 * 1024 }, // 5MB max file size
     abortOnLimit: true
   }));
+  
+  // Voice note upload endpoint
+  app.post("/api/upload/voice", async (req: Request, res: Response) => {
+    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+    
+    try {
+      if (!req.files || !req.files.voiceNote) {
+        return res.status(400).json({
+          message: "No voice note file was uploaded"
+        });
+      }
+
+      const voiceFile = req.files.voiceNote as fileUpload.UploadedFile;
+      
+      // Validate file type (audio files)
+      const validMimeTypes = ['audio/wav', 'audio/mpeg', 'audio/mp3', 'audio/webm', 'audio/ogg'];
+      if (!validMimeTypes.includes(voiceFile.mimetype)) {
+        return res.status(400).json({
+          message: "Invalid file type. Only audio files are allowed."
+        });
+      }
+      
+      // Create a unique filename
+      const fileName = `voice-${Date.now()}-${Math.round(Math.random() * 1000)}${path.extname(voiceFile.name)}`;
+      const uploadPath = path.join(__dirname, '..', 'public', 'uploads', 'voice');
+      
+      // Ensure the directory exists
+      if (!fs.existsSync(uploadPath)) {
+        fs.mkdirSync(uploadPath, { recursive: true });
+      }
+      
+      // Move the file to the upload directory
+      await voiceFile.mv(path.join(uploadPath, fileName));
+      
+      // Return the URL to the uploaded file
+      const fileUrl = `/uploads/voice/${fileName}`;
+      
+      console.log(`Voice note uploaded: ${fileUrl}`);
+      
+      return res.status(200).json({
+        message: "Voice note uploaded successfully",
+        fileUrl
+      });
+    } catch (error) {
+      console.error('Error uploading voice note:', error);
+      return res.status(500).json({
+        message: "Failed to upload voice note"
+      });
+    }
+  });
 
   // TTS API endpoint using ElevenLabs
   app.post("/api/tts", async (req: Request, res: Response) => {

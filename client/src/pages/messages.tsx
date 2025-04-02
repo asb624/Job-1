@@ -37,7 +37,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 
-import { MessageCircle, Send, Menu, UserPlus, Languages } from "lucide-react";
+import { MessageCircle, Send, Menu, UserPlus, Languages, Mic } from "lucide-react";
+import { VoiceRecorder } from "@/components/voice-recorder";
 
 export default function MessagesPage() {
   const { user } = useAuth();
@@ -142,13 +143,14 @@ export default function MessagesPage() {
 
   // Send a message
   const sendMessageMutation = useMutation({
-    mutationFn: async (message: { content: string }) => {
+    mutationFn: async (message: { content: string, attachments?: string[] }) => {
       if (!selectedConversation) throw new Error("No conversation selected");
       
       // Log what we're sending for debugging
       console.log("Sending message:", {
         content: message.content,
-        conversationId: selectedConversation.id
+        conversationId: selectedConversation.id,
+        attachments: message.attachments || []
       });
       
       return apiRequest<Message>(`/api/conversations/${selectedConversation.id}/messages`, {
@@ -159,7 +161,7 @@ export default function MessagesPage() {
         body: JSON.stringify({
           content: message.content,
           conversationId: selectedConversation.id,
-          attachments: [] // Always send an empty array for attachments
+          attachments: message.attachments || [] // Use provided attachments or empty array
         }),
       });
     },
@@ -664,16 +666,92 @@ export default function MessagesPage() {
                 </ScrollArea>
               </CardContent>
               <CardFooter className="p-4 border-t">
-                <form onSubmit={handleSendMessage} className="flex w-full gap-2">
-                  <Input
-                    placeholder="Type your message..."
-                    value={messageText}
-                    onChange={(e) => setMessageText(e.target.value)}
-                    className="flex-1"
-                  />
-                  <Button type="submit" size="icon" disabled={sendMessageMutation.isPending}>
-                    <Send className="h-4 w-4" />
-                  </Button>
+                <form onSubmit={handleSendMessage} className="flex w-full gap-2 flex-col">
+                  <div className="flex gap-2 w-full">
+                    <Input
+                      placeholder="Type your message..."
+                      value={messageText}
+                      onChange={(e) => setMessageText(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Button type="submit" size="icon" disabled={sendMessageMutation.isPending}>
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="mt-2">
+                    <VoiceRecorder 
+                      onRecordingComplete={(audioUrl) => {
+                        // Send the voice message with the uploaded audio URL
+                        if (selectedConversation && user) {
+                          // Create optimistic message with unique ID for voice message
+                          const optimisticId = -(Date.now());
+                          const optimisticMessage: Message = {
+                            id: optimisticId,
+                            conversationId: selectedConversation.id,
+                            senderId: user.id,
+                            content: "",  // Empty content for voice messages
+                            isRead: false,
+                            attachments: [audioUrl],
+                            createdAt: new Date()
+                          };
+                          
+                          // Add optimistic voice message to cache
+                          queryClient.setQueryData(
+                            ["/api/conversations", selectedConversation.id, "messages"],
+                            (oldData: Message[] | undefined) => {
+                              console.log("🎤 VOICE MESSAGE: Adding optimistic voice message to cache");
+                              const newData = oldData ? [...oldData, optimisticMessage] : [optimisticMessage];
+                              return newData;
+                            }
+                          );
+                          
+                          // Send to server
+                          sendMessageMutation.mutate(
+                            { 
+                              content: "", 
+                              attachments: [audioUrl]
+                            },
+                            {
+                              onSuccess: (data) => {
+                                toast({
+                                  title: "Voice message sent",
+                                  description: "Your voice message has been sent successfully"
+                                });
+                                
+                                // Replace the optimistic message with the real one
+                                queryClient.setQueryData(
+                                  ["/api/conversations", selectedConversation.id, "messages"],
+                                  (oldData: Message[] | undefined) => {
+                                    if (!oldData) return [data];
+                                    return oldData.map(msg => 
+                                      msg.id === optimisticId ? data : msg
+                                    );
+                                  }
+                                );
+                              },
+                              onError: (error) => {
+                                toast({
+                                  title: "Failed to send voice message",
+                                  description: error.message,
+                                  variant: "destructive"
+                                });
+                                
+                                // Remove the optimistic message on failure
+                                queryClient.setQueryData(
+                                  ["/api/conversations", selectedConversation.id, "messages"],
+                                  (oldData: Message[] | undefined) => {
+                                    if (!oldData) return [];
+                                    return oldData.filter(msg => msg.id !== optimisticId);
+                                  }
+                                );
+                              }
+                            }
+                          );
+                        }
+                      }}
+                      maxDuration={60}
+                    />
+                  </div>
                 </form>
               </CardFooter>
             </>

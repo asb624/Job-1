@@ -3,10 +3,11 @@ import { Message } from '../../../shared/schema';
 import { MessageTranslationButton } from './message-translation-button';
 import { useMessageTranslation } from '../lib/message-translation-service';
 import { Card } from '@/components/ui/card';
-import { User, Bot } from 'lucide-react';
+import { User, Bot, Mic } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { formatDistanceToNow } from 'date-fns';
 import { MessageReactionPicker } from './message-reaction-picker';
+import { VoiceMessage } from './voice-message';
 
 interface TranslatedMessageProps {
   message: Message;
@@ -81,28 +82,37 @@ export function TranslatedMessage({
         
         {/* Message content */}
         <div className={`flex flex-col ${isOwnMessage ? 'items-end' : 'items-start'}`}>
-          <Card className={`p-3 ${isOwnMessage ? 'bg-primary/10' : 'bg-muted'}`}>
-            <div className="flex items-start justify-between gap-2">
-              <div className="whitespace-pre-wrap break-words">
-                {displayContent}
+          {/* Check if this is a voice message */}
+          {message.attachments && message.attachments.length > 0 && message.attachments[0].startsWith('/uploads/voice/') ? (
+            <VoiceMessage 
+              src={message.attachments[0]} 
+              isCurrentUser={isOwnMessage} 
+              timestamp={message.createdAt ? new Date(message.createdAt) : new Date()} 
+            />
+          ) : (
+            <Card className={`p-3 ${isOwnMessage ? 'bg-primary/10' : 'bg-muted'}`}>
+              <div className="flex items-start justify-between gap-2">
+                <div className="whitespace-pre-wrap break-words">
+                  {displayContent}
+                </div>
+                
+                {/* Translation button - only show if not auto-translated */}
+                {!shouldAutoTranslate && (
+                  <MessageTranslationButton
+                    message={message}
+                    onTranslated={handleTranslated}
+                  />
+                )}
               </div>
               
-              {/* Translation button - only show if not auto-translated */}
-              {!shouldAutoTranslate && (
-                <MessageTranslationButton
-                  message={message}
-                  onTranslated={handleTranslated}
-                />
+              {/* Translation indicator */}
+              {isTranslated && (
+                <div className="text-xs text-muted-foreground mt-1 italic">
+                  Translated
+                </div>
               )}
-            </div>
-            
-            {/* Translation indicator */}
-            {isTranslated && (
-              <div className="text-xs text-muted-foreground mt-1 italic">
-                Translated
-              </div>
-            )}
-          </Card>
+            </Card>
+          )}
           
           <div className="flex items-center mt-1 text-xs text-muted-foreground">
             <span>{timeAgo}</span>
