@@ -9,6 +9,7 @@ import axios from "axios";
 import fileUpload from "express-fileupload";
 import path from "path";
 import fs from "fs";
+import { fileURLToPath } from "url";
 import { 
   insertServiceSchema, insertRequirementSchema, insertBidSchema, 
   insertProfileSchema, insertMessageSchema, insertNotificationSchema,
@@ -1058,7 +1059,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Create a unique filename
       const fileName = `voice-${Date.now()}-${Math.round(Math.random() * 1000)}${path.extname(voiceFile.name)}`;
-      const uploadPath = path.join(__dirname, '..', 'public', 'uploads', 'voice');
+      
+      // Create the upload path using direct string concatenation instead of path.join
+      // This avoids issues with path.join and URL in ES modules
+      const uploadPath = './public/uploads/voice';
       
       // Ensure the directory exists
       if (!fs.existsSync(uploadPath)) {
