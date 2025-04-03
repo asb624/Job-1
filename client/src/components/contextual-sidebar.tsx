@@ -424,7 +424,7 @@ export function ContextualSidebar({ className }: SidebarNavProps) {
                         <Link href="/dashboard?filter=services">
                           <div className="flex items-start gap-2">
                             <Briefcase className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                            <span className="line-clamp-2">{t('services.manageServices')}</span>
+                            <span className="line-clamp-2">Manage Services</span>
                           </div>
                         </Link>
                       </SidebarMenuSubButton>
@@ -434,7 +434,7 @@ export function ContextualSidebar({ className }: SidebarNavProps) {
                         <Link href="/dashboard?filter=bids">
                           <div className="flex items-start gap-2">
                             <FileText className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                            <span className="line-clamp-2">{t('services.manageBids')}</span>
+                            <span className="line-clamp-2">Manage Bids</span>
                           </div>
                         </Link>
                       </SidebarMenuSubButton>
@@ -483,7 +483,7 @@ export function ContextualSidebar({ className }: SidebarNavProps) {
                         <Link href="/dashboard?filter=requirements">
                           <div className="flex items-start gap-2">
                             <FileText className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                            <span className="line-clamp-2">{t('requirements.manageRequirements')}</span>
+                            <span className="line-clamp-2">Manage Requirements</span>
                           </div>
                         </Link>
                       </SidebarMenuSubButton>
