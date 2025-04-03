@@ -31,10 +31,15 @@ if (!fs.existsSync(voiceUploadsDir)) {
   log(`Created voice uploads directory: ${voiceUploadsDir}`);
 }
 
-// Serve static files with improved caching and MIME type support
+// Serve static files with improved caching, CORS, and MIME type support
 app.use('/uploads', express.static(path.join(process.cwd(), 'public/uploads'), {
   maxAge: '1d', // Cache for one day
   setHeaders: (res, filePath) => {
+    // Enable CORS for audio files
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Range');
+    
     // Set proper content types for audio files
     if (filePath.endsWith('.webm')) {
       res.setHeader('Content-Type', 'audio/webm');
@@ -45,6 +50,9 @@ app.use('/uploads', express.static(path.join(process.cwd(), 'public/uploads'), {
     } else if (filePath.endsWith('.wav')) {
       res.setHeader('Content-Type', 'audio/wav');
     }
+    
+    // Log detailed information about file access
+    log(`Serving file: ${filePath}, Content-Type: ${res.getHeader('Content-Type')}`);
   }
 }));
 

@@ -271,6 +271,7 @@ export function AudioPlayer({ src, className = '' }: AudioPlayerProps) {
         onLoadedMetadata={handleLoadedMetadata}
         onEnded={handleEnded}
         onError={handleError}
+        crossOrigin="anonymous"
         style={{ display: 'none' }}
       />
       
