@@ -66,7 +66,7 @@ interface SidebarProps {
 
 const Sidebar = ({ children, className }: SidebarProps) => {
   const { collapsed } = useSidebar();
-  const width = collapsed ? "w-16" : "w-64";
+  const width = collapsed ? "w-16" : "w-72"; // Increased width from w-64 to w-72
 
   return (
     <div 
@@ -170,7 +170,7 @@ const SidebarMenuButton = ({ children, onClick, isActive, className }: SidebarMe
       variant={isActive ? "secondary" : "ghost"} 
       onClick={onClick}
       className={cn(
-        "w-full justify-start", 
+        "w-full justify-start whitespace-normal text-left h-auto py-2", 
         className
       )}
     >
@@ -192,7 +192,7 @@ const SidebarMenuSub = ({ children, className }: SidebarMenuSubProps) => {
   }
   
   return (
-    <div className={cn("ml-6 flex flex-col gap-1 overflow-hidden", className)}>
+    <div className={cn("ml-4 flex flex-col gap-1 overflow-hidden pr-1 max-w-full", className)}>
       {children}
     </div>
   );
@@ -226,7 +226,7 @@ const SidebarMenuSubButton = ({ children, onClick, isActive, className }: Sideba
       size="sm"
       onClick={onClick}
       className={cn(
-        "w-full justify-start", 
+        "w-full justify-start whitespace-normal text-left h-auto py-2", 
         className
       )}
     >

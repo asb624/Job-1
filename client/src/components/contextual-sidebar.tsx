@@ -412,9 +412,9 @@ export function ContextualSidebar({ className }: SidebarNavProps) {
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton isActive={location === "/post-service"}>
                         <Link href="/post-service">
-                          <div className="flex items-center gap-2">
-                            <CirclePlus className="h-4 w-4" />
-                            <span>{t('navigation.postService')}</span>
+                          <div className="flex items-start gap-2">
+                            <CirclePlus className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                            <span className="line-clamp-2">{t('navigation.postService')}</span>
                           </div>
                         </Link>
                       </SidebarMenuSubButton>
@@ -422,9 +422,9 @@ export function ContextualSidebar({ className }: SidebarNavProps) {
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton>
                         <Link href="/dashboard?filter=services">
-                          <div className="flex items-center gap-2">
-                            <Briefcase className="h-4 w-4" />
-                            <span>{t('services.manageServices')}</span>
+                          <div className="flex items-start gap-2">
+                            <Briefcase className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                            <span className="line-clamp-2">{t('services.manageServices')}</span>
                           </div>
                         </Link>
                       </SidebarMenuSubButton>
@@ -432,9 +432,9 @@ export function ContextualSidebar({ className }: SidebarNavProps) {
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton>
                         <Link href="/dashboard?filter=bids">
-                          <div className="flex items-center gap-2">
-                            <FileText className="h-4 w-4" />
-                            <span>{t('services.manageBids')}</span>
+                          <div className="flex items-start gap-2">
+                            <FileText className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                            <span className="line-clamp-2">{t('services.manageBids')}</span>
                           </div>
                         </Link>
                       </SidebarMenuSubButton>
@@ -471,9 +471,9 @@ export function ContextualSidebar({ className }: SidebarNavProps) {
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton isActive={location === "/post-requirement"}>
                         <Link href="/post-requirement">
-                          <div className="flex items-center gap-2">
-                            <CirclePlus className="h-4 w-4" />
-                            <span>{t('navigation.postRequirement')}</span>
+                          <div className="flex items-start gap-2">
+                            <CirclePlus className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                            <span className="line-clamp-2">{t('navigation.postRequirement')}</span>
                           </div>
                         </Link>
                       </SidebarMenuSubButton>
@@ -481,9 +481,9 @@ export function ContextualSidebar({ className }: SidebarNavProps) {
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton>
                         <Link href="/dashboard?filter=requirements">
-                          <div className="flex items-center gap-2">
-                            <FileText className="h-4 w-4" />
-                            <span>{t('requirements.manageRequirements')}</span>
+                          <div className="flex items-start gap-2">
+                            <FileText className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                            <span className="line-clamp-2">{t('requirements.manageRequirements')}</span>
                           </div>
                         </Link>
                       </SidebarMenuSubButton>
@@ -558,9 +558,9 @@ export function ContextualSidebar({ className }: SidebarNavProps) {
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton isActive={location === "/profile"}>
                         <Link href="/profile">
-                          <div className="flex items-center gap-2">
-                            <User className="h-4 w-4" />
-                            <span>{t('navigation.profile')}</span>
+                          <div className="flex items-start gap-2">
+                            <User className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                            <span className="line-clamp-2">{t('navigation.profile')}</span>
                           </div>
                         </Link>
                       </SidebarMenuSubButton>
@@ -568,9 +568,9 @@ export function ContextualSidebar({ className }: SidebarNavProps) {
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton isActive={location === "/preferences"}>
                         <Link href="/preferences">
-                          <div className="flex items-center gap-2">
-                            <Palette className="h-4 w-4" />
-                            <span>{t('navigation.preferences')}</span>
+                          <div className="flex items-start gap-2">
+                            <Palette className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                            <span className="line-clamp-2">{t('navigation.preferences')}</span>
                           </div>
                         </Link>
                       </SidebarMenuSubButton>
