@@ -103,7 +103,7 @@ interface SidebarContentProps {
 
 const SidebarContent = ({ children, className }: SidebarContentProps) => {
   return (
-    <div className={cn("flex-1 overflow-hidden px-2", className)}>
+    <div className={cn("flex-1 overflow-hidden px-2 flex flex-col", className)}>
       {children}
     </div>
   );
@@ -116,7 +116,7 @@ interface SidebarFooterProps {
 
 const SidebarFooter = ({ children, className }: SidebarFooterProps) => {
   return (
-    <div className={cn("px-2 py-2 overflow-hidden", className)}>
+    <div className={cn("px-2 py-2 overflow-hidden flex flex-col", className)}>
       {children}
     </div>
   );
@@ -137,7 +137,7 @@ interface SidebarMenuProps {
 
 const SidebarMenu = ({ children, className }: SidebarMenuProps) => {
   return (
-    <div className={cn("flex flex-col gap-1 py-2 overflow-hidden", className)}>
+    <div className={cn("flex flex-col gap-1 py-2 overflow-hidden w-full", className)}>
       {children}
     </div>
   );
@@ -150,7 +150,7 @@ interface SidebarMenuItemProps {
 
 const SidebarMenuItem = ({ children, className }: SidebarMenuItemProps) => {
   return (
-    <div className={cn("flex", className)}>
+    <div className={cn("flex flex-col w-full", className)}>
       {children}
     </div>
   );
@@ -192,7 +192,7 @@ const SidebarMenuSub = ({ children, className }: SidebarMenuSubProps) => {
   }
   
   return (
-    <div className={cn("ml-4 flex flex-col gap-1 overflow-hidden pr-1 max-w-full", className)}>
+    <div className={cn("ml-4 flex flex-col gap-1 overflow-hidden pr-1 w-full", className)}>
       {children}
     </div>
   );
@@ -205,7 +205,7 @@ interface SidebarMenuSubItemProps {
 
 const SidebarMenuSubItem = ({ children, className }: SidebarMenuSubItemProps) => {
   return (
-    <div className={cn("flex", className)}>
+    <div className={cn("flex flex-col w-full", className)}>
       {children}
     </div>
   );
