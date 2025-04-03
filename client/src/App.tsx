@@ -30,8 +30,8 @@ function Router() {
       <Route path="/auth" component={AuthPage} />
       <ProtectedRoute path="/onboarding" component={OnboardingPage} skipOnboardingCheck={true} />
       <ProtectedRoute path="/dashboard" component={Dashboard} />
-      <ProtectedRoute path="/post-requirement" component={PostRequirement} />
-      <ProtectedRoute path="/post-service" component={PostService} />
+      <ProtectedRoute path="/post-requirement" component={PostRequirement} skipOnboardingCheck={true} />
+      <ProtectedRoute path="/post-service" component={PostService} skipOnboardingCheck={true} />
       <ProtectedRoute path="/profile" component={Profile} /> 
       <ProtectedRoute path="/messages" component={MessagesPage} skipOnboardingCheck={true} />
       <ProtectedRoute path="/preferences" component={PreferencesPage} />
