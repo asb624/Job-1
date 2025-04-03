@@ -1,5 +1,16 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Service, Requirement } from "@shared/schema";
+import { Service as BaseService, Requirement as BaseRequirement } from "@shared/schema";
+
+// Extended types to include distance information
+interface Service extends BaseService {
+  distance?: number;
+  distanceLabel?: string;
+}
+
+interface Requirement extends BaseRequirement {
+  distance?: number;
+  distanceLabel?: string;
+}
 import { ServiceCard } from "@/components/service-card";
 import { RequirementCard } from "@/components/requirement-card";
 import { useAuth } from "@/hooks/use-auth";
@@ -22,14 +33,59 @@ export default function HomePage() {
   const [, navigate] = useLocation();
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   const [activeTab, setActiveTab] = useState<'services' | 'requirements'>('services');
+  const [locationFilter, setLocationFilter] = useState<{
+    displayName: string;
+    lat: number;
+    lon: number;
+    radius: number;
+  } | null>(null);
   const { t, i18n } = useTranslation();
 
-  const { data: services, isSuccess: servicesLoaded } = useQuery<Service[]>({
-    queryKey: ["/api/services"],
+  // Queries for services based on location filter
+  const { data: services, isSuccess: servicesLoaded, isLoading: servicesLoading } = useQuery<Service[]>({
+    queryKey: ["/api/services", locationFilter],
+    queryFn: async () => {
+      if (locationFilter) {
+        // Use location-based API endpoint when filter is active
+        const response = await fetch(
+          `/api/services?lat=${locationFilter.lat}&lng=${locationFilter.lon}&radius=${locationFilter.radius}&isRemote=true`
+        );
+        if (!response.ok) {
+          throw new Error('Failed to fetch location filtered services');
+        }
+        return response.json();
+      } else {
+        // Default API endpoint when no location filter
+        const response = await fetch('/api/services');
+        if (!response.ok) {
+          throw new Error('Failed to fetch services');
+        }
+        return response.json();
+      }
+    }
   });
 
-  const { data: requirements, isSuccess: requirementsLoaded } = useQuery<Requirement[]>({
-    queryKey: ["/api/requirements"],
+  const { data: requirements, isSuccess: requirementsLoaded, isLoading: requirementsLoading } = useQuery<Requirement[]>({
+    queryKey: ["/api/requirements", locationFilter],
+    queryFn: async () => {
+      if (locationFilter) {
+        // Use location-based API endpoint when filter is active
+        const response = await fetch(
+          `/api/requirements?lat=${locationFilter.lat}&lng=${locationFilter.lon}&radius=${locationFilter.radius}&isRemote=true`
+        );
+        if (!response.ok) {
+          throw new Error('Failed to fetch location filtered requirements');
+        }
+        return response.json();
+      } else {
+        // Default API endpoint when no location filter
+        const response = await fetch('/api/requirements');
+        if (!response.ok) {
+          throw new Error('Failed to fetch requirements');
+        }
+        return response.json();
+      }
+    }
   });
   
   // Preload translations for all service and requirement cards in batches
@@ -155,8 +211,16 @@ export default function HomePage() {
             <LocationSearch 
               onLocationSelect={(location) => {
                 console.log("Selected location on hero:", location);
-                // Here you would typically update your filters state
-                // setFilters(prev => ({ ...prev, location: location }));
+                // Set location filter with 10km radius
+                setLocationFilter({
+                  ...location,
+                  radius: 10 // 10km radius around the selected location
+                });
+                toast({
+                  title: t("location.filterApplied"),
+                  description: t("location.showing10km", "Showing services within 10km of {{location}}", { location: location.displayName }),
+                  duration: 4000,
+                });
               }}
               className="bg-white/20 backdrop-blur-sm border border-white/30 text-white rounded-lg shadow-lg"
               placeholder={t("filters.searchLocation")}
@@ -288,75 +352,76 @@ export default function HomePage() {
               {/* Add more categories as needed */}
             </select>
             
-            {/* Location Filter removed - moved to header */}
+            {/* Location Filter Indicator */}
+            {locationFilter && (
+              <div className="flex items-center gap-1.5 bg-emerald-100 text-emerald-800 px-3 py-1.5 rounded-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
+                  <circle cx="12" cy="10" r="3"/>
+                </svg>
+                <span className="text-sm font-medium truncate max-w-[150px] sm:max-w-[200px]">
+                  {locationFilter.displayName}
+                </span>
+                <button 
+                  className="ml-1 text-emerald-700 hover:text-emerald-900"
+                  onClick={() => {
+                    setLocationFilter(null);
+                    toast({
+                      title: t("location.filterRemoved"),
+                      description: t("location.showingAll"),
+                      duration: 3000,
+                    });
+                  }}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M18 6 6 18"/>
+                    <path d="m6 6 12 12"/>
+                  </svg>
+                </button>
+              </div>
+            )}
             
-            {/* Price Range */}
-            <div className="flex items-center gap-1 bg-white border border-teal-200 text-teal-700 rounded-lg px-3 py-1.5">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10"/>
-                <path d="M12 6v12M9 9h6M8 12h8M9 15h6"/>
-              </svg>
-              <select className="bg-transparent border-none text-sm focus:outline-none">
-                <option value="">{t("filters.anyPrice")}</option>
-                <option value="0-1000">₹0 - ₹1,000</option>
-                <option value="1000-5000">₹1,000 - ₹5,000</option>
-                <option value="5000-10000">₹5,000 - ₹10,000</option>
-                <option value="10000+">₹10,000+</option>
-              </select>
-            </div>
+            {/* Price Range Filter - To be implemented */}
+            <select 
+              className="bg-white border border-teal-200 text-teal-700 rounded-lg text-sm py-1.5 px-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
+            >
+              <option value="">{t("filters.priceRange")}</option>
+              <option value="0-1000">₹0 - ₹1,000</option>
+              <option value="1000-5000">₹1,000 - ₹5,000</option>
+              <option value="5000-10000">₹5,000 - ₹10,000</option>
+              <option value="10000+">{t("filters.above")} ₹10,000</option>
+            </select>
           </div>
           
-          {/* View Toggle */}
-          <div className="flex items-center gap-2 bg-white rounded-lg p-1 border border-teal-200 shadow-sm">
-            <Button
-              variant="ghost"
-              size="sm" 
+          {/* View Mode Switcher */}
+          <div className="flex items-center p-1 bg-teal-100 rounded-lg">
+            <button
               onClick={() => setViewMode('list')}
-              className={`rounded-md ${viewMode === 'list' ? 'bg-teal-600 text-white' : 'text-teal-700'} transition-all duration-300 text-xs`}
+              className={`p-1.5 rounded ${viewMode === 'list' ? 'bg-white shadow-sm' : 'text-teal-700 hover:bg-teal-50'}`}
+              title={t("services.listView", "List View")}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
-                <rect width="7" height="7" x="3" y="3" rx="1"/>
-                <rect width="7" height="7" x="14" y="3" rx="1"/>
-                <rect width="7" height="7" x="14" y="14" rx="1"/>
-                <rect width="7" height="7" x="3" y="14" rx="1"/>
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-teal-700">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
               </svg>
-              {t("services.listView")}
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
+            </button>
+            <button
               onClick={() => setViewMode('map')}
-              className={`rounded-md ${viewMode === 'map' ? 'bg-teal-600 text-white' : 'text-teal-700'} transition-all duration-300 text-xs`}
+              className={`p-1.5 rounded ${viewMode === 'map' ? 'bg-white shadow-sm' : 'text-teal-700 hover:bg-teal-50'}`}
+              title={t("services.mapView", "Map View")}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
-                <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
-                <line x1="9" x2="9" y1="3" y2="18"/>
-                <line x1="15" x2="15" y1="6" y2="21"/>
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-teal-700">
+                <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
+                <line x1="8" y1="2" x2="8" y2="18"></line>
+                <line x1="16" y1="6" x2="16" y2="22"></line>
               </svg>
-              {t("services.mapView")}
-            </Button>
+            </button>
           </div>
         </div>
-        
-        {/* Tabs Content Area - Hidden but still functioning */}
-        <Tabs defaultValue="services" className="hidden">
-          <TabsList className="hidden">
-            <TabsTrigger value="services" data-tabs-trigger="services">
-              {t("services.title")}
-            </TabsTrigger>
-            <TabsTrigger value="requirements" data-tabs-trigger="requirements">
-              {t("requirements.title")}
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="services" className="block space-y-0">
-            {/* This container will be displayed in the main content area */}
-          </TabsContent>
-
-          <TabsContent value="requirements" className="block space-y-0">
-            {/* This container will be displayed in the main content area */}
-          </TabsContent>
-        </Tabs>
         
         {/* Main Content Area */}
         <div className="p-4 sm:p-6">
@@ -370,32 +435,54 @@ export default function HomePage() {
                 />
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-                {services?.map((service) => (
-                  <ServiceCard
-                    key={service.id}
-                    service={service}
-                    onContact={user ? () => handleContactProvider(service) : undefined}
-                  />
-                ))}
-                {(services?.length || 0) === 0 && (
-                  <div className="col-span-1 sm:col-span-2 lg:col-span-3 py-12 text-center">
-                    <div className="inline-flex flex-col items-center justify-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-teal-300 mb-3">
-                        <circle cx="12" cy="12" r="10"/>
-                        <line x1="12" x2="12" y1="8" y2="12"/>
-                        <line x1="12" x2="12.01" y1="16" y2="16"/>
-                      </svg>
-                      <p className="text-teal-600 font-medium text-lg">{t("No services available at the moment")}</p>
-                      <p className="text-teal-500 text-sm mt-1">{t("Check back later or post your own service")}</p>
-                      <Button 
-                        variant="outline" 
-                        className="mt-4 border-teal-500 text-teal-600 hover:bg-teal-50"
-                        onClick={() => navigate("/post-service")}
-                      >
-                        {t("Post a Service")}
-                      </Button>
+              <div>
+                {/* Show loading indicator while location filter is being applied */}
+                {servicesLoading && locationFilter && (
+                  <div className="flex items-center justify-center p-10">
+                    <div className="flex flex-col items-center gap-4">
+                      <div className="w-12 h-12 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin"></div>
+                      <p className="text-emerald-700 font-medium">{t("location.loadingServices", "Loading services in this area...")}</p>
                     </div>
+                  </div>
+                )}
+                
+                {!servicesLoading && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+                    {services?.map((service) => (
+                      <ServiceCard
+                        key={service.id}
+                        service={{
+                          ...service,
+                          // Add distance label if available in service object
+                          distanceLabel: 'distance' in service && typeof service.distance === 'number'
+                            ? service.distance < 1
+                              ? `${Math.round(service.distance * 1000)}m away`
+                              : `${service.distance.toFixed(1)}km away`
+                            : undefined
+                        }}
+                        onContact={user ? () => handleContactProvider(service) : undefined}
+                      />
+                    ))}
+                    {(services?.length || 0) === 0 && (
+                      <div className="col-span-1 sm:col-span-2 lg:col-span-3 py-12 text-center">
+                        <div className="inline-flex flex-col items-center justify-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-teal-300 mb-3">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" x2="12" y1="8" y2="12"/>
+                            <line x1="12" x2="12.01" y1="16" y2="16"/>
+                          </svg>
+                          <p className="text-teal-600 font-medium text-lg">{t("No services available at the moment")}</p>
+                          <p className="text-teal-500 text-sm mt-1">{t("Check back later or post your own service")}</p>
+                          <Button 
+                            variant="outline" 
+                            className="mt-4 border-teal-500 text-teal-600 hover:bg-teal-50"
+                            onClick={() => navigate("/post-service")}
+                          >
+                            {t("Post a Service")}
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -404,35 +491,55 @@ export default function HomePage() {
           
           {/* Requirements View */}
           <div id="requirements-content" className={`transition-all duration-500 ${activeTab === 'requirements' ? 'block' : 'hidden'}`}>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-              {requirements?.map((requirement) => (
-                <RequirementCard
-                  key={requirement.id}
-                  requirement={requirement}
-                  onSelect={user ? () => handleSelectRequirement(requirement) : undefined}
-                />
-              ))}
-              {(requirements?.length || 0) === 0 && (
-                <div className="col-span-1 sm:col-span-2 lg:col-span-3 py-12 text-center">
-                  <div className="inline-flex flex-col items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-300 mb-3">
-                      <circle cx="12" cy="12" r="10"/>
-                      <line x1="12" x2="12" y1="8" y2="12"/>
-                      <line x1="12" x2="12.01" y1="16" y2="16"/>
-                    </svg>
-                    <p className="text-emerald-600 font-medium text-lg">{t("No requirements available at the moment")}</p>
-                    <p className="text-emerald-500 text-sm mt-1">{t("Check back later or post your own requirement")}</p>
-                    <Button 
-                      variant="outline" 
-                      className="mt-4 border-emerald-500 text-emerald-600 hover:bg-emerald-50"
-                      onClick={() => navigate("/post-requirement")}
-                    >
-                      {t("Post a Requirement")}
-                    </Button>
-                  </div>
+            {/* Show loading indicator while location filter is being applied */}
+            {requirementsLoading && locationFilter && (
+              <div className="flex items-center justify-center p-10">
+                <div className="flex flex-col items-center gap-4">
+                  <div className="w-12 h-12 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin"></div>
+                  <p className="text-emerald-700 font-medium">{t("location.loadingRequirements", "Loading requirements in this area...")}</p>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
+            
+            {!requirementsLoading && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+                {requirements?.map((requirement) => (
+                  <RequirementCard
+                    key={requirement.id}
+                    requirement={{
+                      ...requirement,
+                      // Add distance label if available in requirement object
+                      distanceLabel: 'distance' in requirement && typeof requirement.distance === 'number'
+                        ? requirement.distance < 1
+                          ? `${Math.round(requirement.distance * 1000)}m away`
+                          : `${requirement.distance.toFixed(1)}km away`
+                        : undefined
+                    }}
+                    onSelect={user ? () => handleSelectRequirement(requirement) : undefined}
+                  />
+                ))}
+                {(requirements?.length || 0) === 0 && (
+                  <div className="col-span-1 sm:col-span-2 lg:col-span-3 py-12 text-center">
+                    <div className="inline-flex flex-col items-center justify-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-300 mb-3">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" x2="12" y1="8" y2="12"/>
+                        <line x1="12" x2="12.01" y1="16" y2="16"/>
+                      </svg>
+                      <p className="text-emerald-600 font-medium text-lg">{t("No requirements available at the moment")}</p>
+                      <p className="text-emerald-500 text-sm mt-1">{t("Check back later or post your own requirement")}</p>
+                      <Button 
+                        variant="outline" 
+                        className="mt-4 border-emerald-500 text-emerald-600 hover:bg-emerald-50"
+                        onClick={() => navigate("/post-requirement")}
+                      >
+                        {t("Post a Requirement")}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
         
@@ -457,8 +564,6 @@ export default function HomePage() {
           </div>
         </div>
       </div>
-      
-      {/* We don't need the JavaScript DOM manipulation anymore as we're using React state */}
       
       {/* AI Chatbot */}
       <ChatbotUI />

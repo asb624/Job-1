@@ -10,7 +10,9 @@ import { speechService } from "@/lib/speech-service";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface RequirementCardProps {
-  requirement: Requirement;
+  requirement: Requirement & {
+    distanceLabel?: string; // Optional distance label for location-based filtering
+  };
   onSelect?: () => void;
 }
 
@@ -202,6 +204,15 @@ export function RequirementCard({ requirement, onSelect }: RequirementCardProps)
                 : t('services.inPersonOnly', 'In-person Only')}
             </span>
           </div>
+          {/* Show distance label if available */}
+          {requirement.distanceLabel && (
+            <div className="flex items-center gap-1 bg-emerald-100 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full">
+              <MapPin size={12} className="sm:h-3.5 sm:w-3.5" />
+              <span className="font-medium">
+                {requirement.distanceLabel}
+              </span>
+            </div>
+          )}
         </div>
       </CardContent>
       

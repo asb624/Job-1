@@ -15,7 +15,10 @@ import {
 } from "@/components/ui/tooltip";
 
 interface ServiceCardProps {
-  service: Service & { averageRating?: number };
+  service: Service & { 
+    averageRating?: number;
+    distanceLabel?: string; // Optional distance label for location-based filtering
+  };
   onContact?: () => void;
 }
 
@@ -209,6 +212,15 @@ export function ServiceCard({ service, onContact }: ServiceCardProps) {
               {service.isRemote ? t('services.remote') : t('services.inPersonOnly', 'In-person Only')}
             </span>
           </div>
+          {/* Show distance label if available */}
+          {service.distanceLabel && (
+            <div className="flex items-center gap-1 bg-teal-100 px-2 py-1 rounded-full">
+              <MapPin size={12} className="sm:h-3.5 sm:w-3.5" />
+              <span className="text-[10px] sm:text-xs font-medium">
+                {service.distanceLabel}
+              </span>
+            </div>
+          )}
         </div>
       </CardContent>
       
