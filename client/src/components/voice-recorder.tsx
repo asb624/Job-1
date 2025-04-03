@@ -34,11 +34,23 @@ export function VoiceRecorder({ onRecordingComplete, maxDuration = 60 }: VoiceRe
       setError(null);
       audioChunksRef.current = [];
       
-      // Request microphone access
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      // Use our helper function to request microphone access with better error reporting
+      const stream = await requestMicrophoneAccess();
+      
+      // If we couldn't get microphone access, exit early (the helper function already set an error)
+      if (!stream) {
+        return;
+      }
       
       // Try to use audio codecs that are more widely supported
-      const mimeTypes = ['audio/mpeg', 'audio/mp3', 'audio/webm;codecs=opus'];
+      const mimeTypes = [
+        'audio/mp3', 
+        'audio/mpeg', 
+        'audio/wav', 
+        'audio/ogg',
+        'audio/webm;codecs=opus',
+        'audio/webm'
+      ];
       let selectedMimeType = 'audio/webm';
       
       // Find the first supported MIME type
@@ -55,6 +67,9 @@ export function VoiceRecorder({ onRecordingComplete, maxDuration = 60 }: VoiceRe
       // Create a new MediaRecorder instance with the selected MIME type
       const mediaRecorder = new MediaRecorder(stream, { mimeType: selectedMimeType });
       mediaRecorderRef.current = mediaRecorder;
+      
+      // Check the actual MIME type the recorder is using
+      console.log(`MediaRecorder created with actual mimeType: ${mediaRecorder.mimeType}`);
       
       // Set up data handling with improved logging
       mediaRecorder.ondataavailable = (e) => {
@@ -97,8 +112,8 @@ export function VoiceRecorder({ onRecordingComplete, maxDuration = 60 }: VoiceRe
         });
       }, 1000);
     } catch (err) {
-      setError("Could not access microphone. Please ensure microphone access is allowed.");
-      console.error("Error accessing microphone:", err);
+      console.error("Error starting recording:", err);
+      setError(`Could not start recording: ${err instanceof Error ? err.message : "Unknown error"}`);
     }
   };
 
@@ -112,13 +127,77 @@ export function VoiceRecorder({ onRecordingComplete, maxDuration = 60 }: VoiceRe
         clearInterval(timerRef.current);
         timerRef.current = null;
       }
+    } else {
+      console.log("Stop recording called but recorder was not active");
+    }
+  };
+  
+  // Helper to request and validate microphone access
+  const requestMicrophoneAccess = async (): Promise<MediaStream | null> => {
+    try {
+      console.log("Requesting microphone access...");
+      
+      // Check if browser supports getUserMedia
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error("Your browser doesn't support microphone access");
+      }
+      
+      // Try to get access with audio only
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          channelCount: 1,
+          echoCancellation: true,
+          noiseSuppression: true,
+        }
+      });
+      
+      console.log("Microphone access granted:", stream.getAudioTracks().length, "audio tracks");
+      return stream;
+    } catch (err: any) {
+      console.error("Error accessing microphone:", err);
+      
+      // Provide more specific error messages based on the error
+      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        setError("Microphone access denied. Please allow microphone access in your browser settings.");
+      } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+        setError("No microphone found. Please connect a microphone and try again.");
+      } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+        setError("Could not start microphone. It may be in use by another application.");
+      } else if (err.name === 'OverconstrainedError') {
+        setError("Microphone constraints cannot be satisfied. Please try different settings.");
+      } else {
+        setError(`Could not access microphone: ${err.message || err.name || "Unknown error"}`);
+      }
+      
+      return null;
     }
   };
 
   // Handle the recording after it's complete - upload to server
   const handleRecordingComplete = async () => {
-    // Create a blob from all audio chunks with a more widely-supported format
-    const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/mp3' });
+    // Determine the best output format based on the chunks we received
+    // Try to preserve the original format from the recorder when possible
+    let outputType = 'audio/mp3'; // Default fallback
+    
+    // Check if we have chunks with a specific type
+    if (audioChunksRef.current.length > 0 && audioChunksRef.current[0].type) {
+      const firstChunkType = audioChunksRef.current[0].type;
+      console.log(`First chunk has type: ${firstChunkType}`);
+      
+      // Use the original type if it's one of our supported formats
+      if (firstChunkType.includes('mp3') || 
+          firstChunkType.includes('mpeg') || 
+          firstChunkType.includes('wav') ||
+          firstChunkType.includes('ogg') ||
+          firstChunkType.includes('webm')) {
+        outputType = firstChunkType;
+        console.log(`Using original format: ${outputType}`);
+      }
+    }
+    
+    // Create a blob from all audio chunks with the determined format
+    const audioBlob = new Blob(audioChunksRef.current, { type: outputType });
+    console.log(`Created final blob with type: ${outputType}, size: ${audioBlob.size} bytes`);
     
     // Upload the audio file to the server
     await uploadVoiceNote(audioBlob);
@@ -138,7 +217,21 @@ export function VoiceRecorder({ onRecordingComplete, maxDuration = 60 }: VoiceRe
     try {
       // Create a FormData object to send the file
       const formData = new FormData();
-      const filename = `voice-note-${Date.now()}.mp3`;
+      
+      // Get the appropriate file extension based on the mime type
+      let fileExtension = '.mp3'; // Default
+      if (audioBlob.type.includes('webm')) {
+        fileExtension = '.webm';
+      } else if (audioBlob.type.includes('wav')) {
+        fileExtension = '.wav';
+      } else if (audioBlob.type.includes('ogg')) {
+        fileExtension = '.ogg';
+      } else if (audioBlob.type.includes('mpeg') || audioBlob.type.includes('mp3')) {
+        fileExtension = '.mp3';
+      }
+      
+      const filename = `voice-note-${Date.now()}${fileExtension}`;
+      console.log(`Using filename with extension: ${filename} for type: ${audioBlob.type}`);
       formData.append('voiceNote', audioBlob, filename);
       
       console.log("Uploading voice note with filename:", filename);
