@@ -1078,8 +1078,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Create a unique filename
-      const fileName = `voice-${Date.now()}-${Math.round(Math.random() * 1000)}${path.extname(voiceFile.name) || '.webm'}`;
+      // Create a unique filename with appropriate extension based on mimetype
+      let fileExtension = '.webm';
+      
+      // Set correct extension based on the actual mime type
+      if (voiceFile.mimetype === 'audio/mp3' || voiceFile.mimetype === 'audio/mpeg') {
+        fileExtension = '.mp3';
+      } else if (voiceFile.mimetype === 'audio/wav') {
+        fileExtension = '.wav';
+      } else if (voiceFile.mimetype === 'audio/ogg') {
+        fileExtension = '.ogg';
+      }
+      
+      // If the extension is already in the filename, use that; otherwise use detected extension
+      const fileName = `voice-${Date.now()}-${Math.round(Math.random() * 1000)}${
+        path.extname(voiceFile.name) || fileExtension
+      }`;
       
       // Create the upload path using direct string concatenation instead of path.join
       // This avoids issues with path.join and URL in ES modules

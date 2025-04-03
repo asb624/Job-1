@@ -37,14 +37,30 @@ export function VoiceRecorder({ onRecordingComplete, maxDuration = 60 }: VoiceRe
       // Request microphone access
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       
-      // Create a new MediaRecorder instance
-      const mediaRecorder = new MediaRecorder(stream);
+      // Try to use audio codecs that are more widely supported
+      const mimeTypes = ['audio/mpeg', 'audio/mp3', 'audio/webm;codecs=opus'];
+      let selectedMimeType = 'audio/webm';
+      
+      // Find the first supported MIME type
+      for (const type of mimeTypes) {
+        if (MediaRecorder.isTypeSupported(type)) {
+          selectedMimeType = type;
+          console.log(`Using supported audio MIME type: ${type}`);
+          break;
+        }
+      }
+      
+      console.log(`Final selected MIME type for recording: ${selectedMimeType}`);
+      
+      // Create a new MediaRecorder instance with the selected MIME type
+      const mediaRecorder = new MediaRecorder(stream, { mimeType: selectedMimeType });
       mediaRecorderRef.current = mediaRecorder;
       
-      // Set up data handling
+      // Set up data handling with improved logging
       mediaRecorder.ondataavailable = (e) => {
         if (e.data.size > 0) {
           audioChunksRef.current.push(e.data);
+          console.log(`Received audio chunk: ${e.data.size} bytes, type: ${e.data.type}`);
         }
       };
       
@@ -101,8 +117,8 @@ export function VoiceRecorder({ onRecordingComplete, maxDuration = 60 }: VoiceRe
 
   // Handle the recording after it's complete - upload to server
   const handleRecordingComplete = async () => {
-    // Create a blob from all audio chunks
-    const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+    // Create a blob from all audio chunks with a more widely-supported format
+    const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/mp3' });
     
     // Upload the audio file to the server
     await uploadVoiceNote(audioBlob);
@@ -122,7 +138,7 @@ export function VoiceRecorder({ onRecordingComplete, maxDuration = 60 }: VoiceRe
     try {
       // Create a FormData object to send the file
       const formData = new FormData();
-      const filename = `voice-note-${Date.now()}.webm`;
+      const filename = `voice-note-${Date.now()}.mp3`;
       formData.append('voiceNote', audioBlob, filename);
       
       console.log("Uploading voice note with filename:", filename);

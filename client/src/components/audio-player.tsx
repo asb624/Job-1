@@ -16,6 +16,7 @@ export function AudioPlayer({ src, className = '' }: AudioPlayerProps) {
   const [volume, setVolume] = useState(1);
   const [showVolumeControls, setShowVolumeControls] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const animationRef = useRef<number>();
@@ -53,20 +54,70 @@ export function AudioPlayer({ src, className = '' }: AudioPlayerProps) {
     };
   }, [src]);
   
-  // Handle audio loading errors with more detailed logging
-  const handleError = () => {
-    console.error(`Audio Player: Error loading audio file from: ${audioSrc}`);
+  // Handle audio loading errors with more detailed logging and diagnostics
+  const handleError = (event: any) => {
+    console.error(`Audio Player: Error loading audio file from: ${audioSrc}`, event);
+    setIsLoading(false); // Stop loading state even on error
     
-    // Check if file exists with a HEAD request
+    // Try to get MediaError information if available
+    let mediaErrorCode = null;
+    let mediaErrorMessage = '';
+    
+    if (event?.target?.error) {
+      const error = event.target.error;
+      mediaErrorCode = error.code;
+      
+      switch (error.code) {
+        case MediaError.MEDIA_ERR_ABORTED:
+          mediaErrorMessage = 'Playback aborted by the system';
+          break;
+        case MediaError.MEDIA_ERR_NETWORK:
+          mediaErrorMessage = 'Network error while loading audio';
+          break;
+        case MediaError.MEDIA_ERR_DECODE:
+          mediaErrorMessage = 'Audio file format not supported by your browser';
+          break;
+        case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
+          mediaErrorMessage = 'Audio format not supported or file not found';
+          break;
+        default:
+          mediaErrorMessage = `Unknown error (code: ${error.code})`;
+      }
+      
+      console.error(`Audio Player: Media error code ${mediaErrorCode}: ${mediaErrorMessage}`);
+    }
+    
+    // Check if file exists with a HEAD request for more diagnostics
     if (audioSrc && audioSrc.startsWith(window.location.origin)) {
+      console.log(`Audio Player: Checking if file exists at ${audioSrc}`);
+      
       fetch(audioSrc, { method: 'HEAD' })
         .then(response => {
           if (!response.ok) {
             console.error(`Audio Player: File not found, status: ${response.status}`);
             setError(`Audio file not found (${response.status}). Try again later.`);
           } else {
-            console.log(`Audio Player: File exists but couldn't be played`);
-            setError('Audio file exists but could not be played. Format may be unsupported.');
+            // File exists but couldn't be played - add detailed diagnostic info
+            const headers: Record<string, string> = {};
+            response.headers.forEach((value, key) => {
+              headers[key] = value;
+            });
+            
+            console.log(`Audio Player: File exists with headers:`, headers);
+            console.log(`Audio Player: Content-Type: ${headers['content-type'] || 'unknown'}`);
+            
+            let errorMsg = 'Audio file exists but could not be played. Format may be unsupported.';
+            if (mediaErrorMessage) {
+              errorMsg += ` (${mediaErrorMessage})`;
+            }
+            
+            setError(errorMsg);
+            
+            // Try re-encoding advice
+            if (headers['content-type']?.includes('webm')) {
+              console.log('Audio Player: WebM format detected, which may have compatibility issues in some browsers');
+              errorMsg += ' Try recording in MP3 format instead of WebM for better compatibility.';
+            }
           }
         })
         .catch(err => {
@@ -74,13 +125,21 @@ export function AudioPlayer({ src, className = '' }: AudioPlayerProps) {
           setError('Could not load audio file. Network error or file does not exist.');
         });
     } else {
-      setError('Could not load audio file. Try again later.');
+      let errorMsg = 'Could not load audio file. Try again later.';
+      if (mediaErrorMessage) {
+        errorMsg += ` (${mediaErrorMessage})`;
+      }
+      setError(errorMsg);
     }
   };
   // Handle when audio metadata is loaded (duration, etc.)
   const handleLoadedMetadata = () => {
+    console.log('Audio Player: Metadata loaded successfully');
+    setIsLoading(false); // Audio is ready to play
+    
     if (audioRef.current) {
       setDuration(audioRef.current.duration);
+      console.log(`Audio Player: Duration loaded: ${audioRef.current.duration}s`);
     }
   };
   
@@ -196,6 +255,18 @@ export function AudioPlayer({ src, className = '' }: AudioPlayerProps) {
         <div className="flex items-center text-destructive gap-1 text-sm">
           <AlertCircle className="h-4 w-4" />
           <span>{error}</span>
+        </div>
+      ) : isLoading ? (
+        <div className="flex items-center gap-2">
+          <div className="h-8 w-8 flex items-center justify-center">
+            <div className="animate-spin h-4 w-4 border-2 border-primary rounded-full border-t-transparent"></div>
+          </div>
+          <div className="flex-1 h-1 bg-secondary rounded">
+            <div className="h-full w-0 bg-primary rounded"></div>
+          </div>
+          <div className="text-xs text-muted-foreground w-12 text-right">
+            0:00/0:00
+          </div>
         </div>
       ) : (
         <div className="flex items-center gap-2">
