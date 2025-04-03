@@ -71,12 +71,14 @@ const Sidebar = ({ children, className }: SidebarProps) => {
   return (
     <div 
       className={cn(
-        "h-screen shrink-0 border-r border-border bg-background transition-all duration-300 ease-in-out",
+        "h-screen shrink-0 border-r border-border bg-background transition-all duration-300 ease-in-out overflow-hidden",
         width,
         className
       )}
     >
-      {children}
+      <div className="flex flex-col h-full overflow-hidden">
+        {children}
+      </div>
     </div>
   );
 };
@@ -101,7 +103,7 @@ interface SidebarContentProps {
 
 const SidebarContent = ({ children, className }: SidebarContentProps) => {
   return (
-    <div className={cn("flex-1 overflow-auto px-2", className)}>
+    <div className={cn("flex-1 overflow-hidden px-2", className)}>
       {children}
     </div>
   );
@@ -114,7 +116,7 @@ interface SidebarFooterProps {
 
 const SidebarFooter = ({ children, className }: SidebarFooterProps) => {
   return (
-    <div className={cn("px-2 py-2", className)}>
+    <div className={cn("px-2 py-2 overflow-hidden", className)}>
       {children}
     </div>
   );
@@ -135,7 +137,7 @@ interface SidebarMenuProps {
 
 const SidebarMenu = ({ children, className }: SidebarMenuProps) => {
   return (
-    <div className={cn("flex flex-col gap-1 py-2", className)}>
+    <div className={cn("flex flex-col gap-1 py-2 overflow-hidden", className)}>
       {children}
     </div>
   );
@@ -190,7 +192,7 @@ const SidebarMenuSub = ({ children, className }: SidebarMenuSubProps) => {
   }
   
   return (
-    <div className={cn("ml-6 flex flex-col gap-1", className)}>
+    <div className={cn("ml-6 flex flex-col gap-1 overflow-hidden", className)}>
       {children}
     </div>
   );
