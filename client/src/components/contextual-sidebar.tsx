@@ -401,9 +401,11 @@ export function ContextualSidebar({ className }: SidebarNavProps) {
               ) : (
                 <SidebarMenuItem>
                   <SidebarMenuButton isActive={activeGroup === "post" && location.includes("service")}>
-                    <div className="flex items-center gap-3">
-                      <Briefcase className="h-5 w-5" />
-                      <span>{t('services.title')}</span>
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex items-center gap-3">
+                        <Briefcase className="h-5 w-5" />
+                        <span>{t('services.title')}</span>
+                      </div>
                     </div>
                   </SidebarMenuButton>
                   <SidebarMenuSub>
@@ -458,9 +460,11 @@ export function ContextualSidebar({ className }: SidebarNavProps) {
               ) : (
                 <SidebarMenuItem>
                   <SidebarMenuButton isActive={activeGroup === "post" && location.includes("requirement")}>
-                    <div className="flex items-center gap-3">
-                      <FileText className="h-5 w-5" />
-                      <span>{t('requirements.title')}</span>
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex items-center gap-3">
+                        <FileText className="h-5 w-5" />
+                        <span>{t('requirements.title')}</span>
+                      </div>
                     </div>
                   </SidebarMenuButton>
                   <SidebarMenuSub>
@@ -505,9 +509,11 @@ export function ContextualSidebar({ className }: SidebarNavProps) {
               ) : (
                 <SidebarMenuItem>
                   <SidebarMenuButton>
-                    <div className="flex items-center gap-3">
-                      <Bookmark className="h-5 w-5" />
-                      <span>{t('navigation.saved')}</span>
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex items-center gap-3">
+                        <Bookmark className="h-5 w-5" />
+                        <span>{t('navigation.saved')}</span>
+                      </div>
                     </div>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -541,9 +547,11 @@ export function ContextualSidebar({ className }: SidebarNavProps) {
               ) : (
                 <SidebarMenuItem>
                   <SidebarMenuButton isActive={activeGroup === "user"}>
-                    <div className="flex items-center gap-3">
-                      <User className="h-5 w-5" />
-                      <span>{t('profile.title')}</span>
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex items-center gap-3">
+                        <User className="h-5 w-5" />
+                        <span>{t('profile.title')}</span>
+                      </div>
                     </div>
                   </SidebarMenuButton>
                   <SidebarMenuSub>
@@ -591,9 +599,11 @@ export function ContextualSidebar({ className }: SidebarNavProps) {
               ) : (
                 <SidebarMenuItem>
                   <SidebarMenuButton onClick={() => logoutMutation.mutate()}>
-                    <div className="flex items-center gap-3">
-                      <LogOut className="h-5 w-5" />
-                      <span>{t('navigation.logout')}</span>
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex items-center gap-3">
+                        <LogOut className="h-5 w-5" />
+                        <span>{t('navigation.logout')}</span>
+                      </div>
                     </div>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
