@@ -35,7 +35,13 @@
     "check_back_requirement": "Check back later or post your own requirement",
     "post_a_service": "Post a Service",
     "post_a_requirement": "Post a Requirement",
-    "results": "results"
+    "results": "results",
+    "no_search_results": "No services matching '{{query}}'",
+    "no_search_results_req": "No requirements matching '{{query}}'",
+    "try_different_search": "Try a different search term or check back later",
+    "location_required": "Services without location information are hidden. All services must include location details.",
+    "location_required_req": "Requirements without location information are hidden. All requirements must include location details.",
+    "search": "Search"
   },
   "services": {
     "title": "Services",

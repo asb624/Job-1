@@ -43,15 +43,21 @@ export default function HomePage() {
   const { t, i18n } = useTranslation();
 
   // Queries for services based on location filter
-  // Helper function to filter by search query
+  // Helper function to filter by search query and ensure location exists
   const filterBySearchQuery = <T extends { title?: string; description?: string; city?: string; category?: string; }>(
     items: T[] | undefined,
     query: string
   ): T[] => {
     if (!items) return [];
-    if (!query) return items;
     
-    return items.filter(item => 
+    // First filter out items without city information
+    const itemsWithLocation = items.filter(item => item.city && item.city.trim() !== '');
+    
+    // If no query, return all items with location
+    if (!query) return itemsWithLocation;
+    
+    // Apply search filtering on items with location
+    return itemsWithLocation.filter(item => 
       (item.title && item.title.toLowerCase().includes(query.toLowerCase())) || 
       (item.description && item.description.toLowerCase().includes(query.toLowerCase())) || 
       (item.city && item.city.toLowerCase().includes(query.toLowerCase())) ||
@@ -536,6 +542,16 @@ export default function HomePage() {
                               : t("marketplace.check_back_service")
                             }
                           </p>
+                          
+                          {/* Note about missing location data if services exist but none with location */}
+                          {services && services.length > 0 && filterBySearchQuery(services, searchQuery).length === 0 && (
+                            <div className="mt-3 px-4 py-2 bg-amber-50 border border-amber-200 rounded-lg max-w-md mx-auto">
+                              <p className="text-amber-700 text-sm">
+                                {t("marketplace.location_required", "Services without location information are hidden. All services must include location details.")}
+                              </p>
+                            </div>
+                          )}
+                          
                           <Button 
                             variant="outline" 
                             className="mt-4 border-teal-500 text-teal-600 hover:bg-teal-50"
@@ -601,6 +617,16 @@ export default function HomePage() {
                           : t("marketplace.check_back_requirement")
                         }
                       </p>
+                      
+                      {/* Note about missing location data if requirements exist but none with location */}
+                      {requirements && requirements.length > 0 && filterBySearchQuery(requirements, searchQuery).length === 0 && (
+                        <div className="mt-3 px-4 py-2 bg-amber-50 border border-amber-200 rounded-lg max-w-md mx-auto">
+                          <p className="text-amber-700 text-sm">
+                            {t("marketplace.location_required_req", "Requirements without location information are hidden. All requirements must include location details.")}
+                          </p>
+                        </div>
+                      )}
+                      
                       <Button 
                         variant="outline" 
                         className="mt-4 border-emerald-500 text-emerald-600 hover:bg-emerald-50"
