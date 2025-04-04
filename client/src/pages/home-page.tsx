@@ -33,6 +33,7 @@ export default function HomePage() {
   const [, navigate] = useLocation();
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   const [activeTab, setActiveTab] = useState<'services' | 'requirements'>('services');
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const [locationFilter, setLocationFilter] = useState<{
     displayName: string;
     lat: number;
@@ -42,6 +43,22 @@ export default function HomePage() {
   const { t, i18n } = useTranslation();
 
   // Queries for services based on location filter
+  // Helper function to filter by search query
+  const filterBySearchQuery = <T extends { title?: string; description?: string; city?: string; category?: string; }>(
+    items: T[] | undefined,
+    query: string
+  ): T[] => {
+    if (!items) return [];
+    if (!query) return items;
+    
+    return items.filter(item => 
+      (item.title && item.title.toLowerCase().includes(query.toLowerCase())) || 
+      (item.description && item.description.toLowerCase().includes(query.toLowerCase())) || 
+      (item.city && item.city.toLowerCase().includes(query.toLowerCase())) ||
+      (item.category && item.category.toLowerCase().includes(query.toLowerCase()))
+    );
+  };
+  
   const { data: services, isSuccess: servicesLoaded, isLoading: servicesLoading } = useQuery<Service[]>({
     queryKey: ["/api/services", locationFilter],
     queryFn: async () => {
@@ -330,6 +347,8 @@ export default function HomePage() {
                   </svg>
                   <input 
                     type="text" 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder={t("marketplace.search")}
                     className="bg-transparent border-none text-white placeholder-white/70 focus:outline-none text-sm ml-2 w-32 sm:w-auto"
                   />
@@ -425,6 +444,38 @@ export default function HomePage() {
           </div>
         </div>
         
+        {/* Search Bar for Services/Requirements */}
+        <div className="bg-white border-b border-teal-100 py-3 px-4 sm:px-6">
+          <div className="max-w-2xl mx-auto">
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-teal-600">
+                  <circle cx="11" cy="11" r="8"/>
+                  <path d="m21 21-4.3-4.3"/>
+                </svg>
+              </div>
+              <input
+                type="text"
+                placeholder={t(activeTab === 'services' ? "services.search_placeholder" : "requirements.search_placeholder", "Search for " + (activeTab === 'services' ? "services" : "requirements") + "...")}
+                className="w-full bg-teal-50 border border-teal-200 text-teal-800 text-sm rounded-lg pl-10 p-2.5 focus:ring-teal-500 focus:border-teal-500"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              {searchQuery && (
+                <button 
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-teal-600 hover:text-teal-800"
+                  onClick={() => setSearchQuery('')}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M18 6 6 18"/>
+                    <path d="m6 6 12 12"/>
+                  </svg>
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+        
         {/* Main Content Area */}
         <div className="p-4 sm:p-6">
           {/* Services View - This will be controlled by the tab state */}
@@ -450,7 +501,7 @@ export default function HomePage() {
                 
                 {!servicesLoading && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-                    {services?.map((service) => (
+                    {filterBySearchQuery(services, searchQuery).map((service) => (
                       <ServiceCard
                         key={service.id}
                         service={{
@@ -465,7 +516,7 @@ export default function HomePage() {
                         onContact={user ? () => handleContactProvider(service) : undefined}
                       />
                     ))}
-                    {(services?.length || 0) === 0 && (
+                    {(filterBySearchQuery(services, searchQuery).length === 0) && (
                       <div className="col-span-1 sm:col-span-2 lg:col-span-3 py-12 text-center">
                         <div className="inline-flex flex-col items-center justify-center">
                           <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-teal-300 mb-3">
@@ -473,8 +524,18 @@ export default function HomePage() {
                             <line x1="12" x2="12" y1="8" y2="12"/>
                             <line x1="12" x2="12.01" y1="16" y2="16"/>
                           </svg>
-                          <p className="text-teal-600 font-medium text-lg">{t("marketplace.no_services")}</p>
-                          <p className="text-teal-500 text-sm mt-1">{t("marketplace.check_back_service")}</p>
+                          <p className="text-teal-600 font-medium text-lg">
+                            {searchQuery 
+                              ? t("marketplace.no_search_results", "No services matching '{{query}}'", {query: searchQuery})
+                              : t("marketplace.no_services")
+                            }
+                          </p>
+                          <p className="text-teal-500 text-sm mt-1">
+                            {searchQuery 
+                              ? t("marketplace.try_different_search", "Try a different search term or check back later")
+                              : t("marketplace.check_back_service")
+                            }
+                          </p>
                           <Button 
                             variant="outline" 
                             className="mt-4 border-teal-500 text-teal-600 hover:bg-teal-50"
@@ -505,7 +566,7 @@ export default function HomePage() {
             
             {!requirementsLoading && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-                {requirements?.map((requirement) => (
+                {filterBySearchQuery(requirements, searchQuery).map((requirement) => (
                   <RequirementCard
                     key={requirement.id}
                     requirement={{
@@ -520,7 +581,7 @@ export default function HomePage() {
                     onSelect={user ? () => handleSelectRequirement(requirement) : undefined}
                   />
                 ))}
-                {(requirements?.length || 0) === 0 && (
+                {(filterBySearchQuery(requirements, searchQuery).length === 0) && (
                   <div className="col-span-1 sm:col-span-2 lg:col-span-3 py-12 text-center">
                     <div className="inline-flex flex-col items-center justify-center">
                       <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-300 mb-3">
@@ -528,8 +589,18 @@ export default function HomePage() {
                         <line x1="12" x2="12" y1="8" y2="12"/>
                         <line x1="12" x2="12.01" y1="16" y2="16"/>
                       </svg>
-                      <p className="text-emerald-600 font-medium text-lg">{t("marketplace.no_requirements")}</p>
-                      <p className="text-emerald-500 text-sm mt-1">{t("marketplace.check_back_requirement")}</p>
+                      <p className="text-emerald-600 font-medium text-lg">
+                        {searchQuery 
+                          ? t("marketplace.no_search_results_req", "No requirements matching '{{query}}'", {query: searchQuery})
+                          : t("marketplace.no_requirements")
+                        }
+                      </p>
+                      <p className="text-emerald-500 text-sm mt-1">
+                        {searchQuery 
+                          ? t("marketplace.try_different_search", "Try a different search term or check back later")
+                          : t("marketplace.check_back_requirement")
+                        }
+                      </p>
                       <Button 
                         variant="outline" 
                         className="mt-4 border-emerald-500 text-emerald-600 hover:bg-emerald-50"
@@ -548,7 +619,10 @@ export default function HomePage() {
         {/* Pagination Footer */}
         <div className="bg-teal-50 p-4 border-t border-teal-100 flex justify-between items-center">
           <div className="text-sm text-teal-700">
-            {services?.length ? `${services.length} ${t("marketplace.results")}` : ""}
+            {services ? 
+              `${filterBySearchQuery(services, searchQuery).length} ${t("marketplace.results")}` 
+              : ""
+            }
           </div>
           
           <div className="flex items-center gap-2">
