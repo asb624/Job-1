@@ -39,7 +39,7 @@ export default function AuthPage() {
     <div className="flex min-h-[80vh] items-center justify-center">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Welcome to ServiceMarket</CardTitle>
+          <CardTitle>Welcome to Job Bazaar</CardTitle>
           <CardDescription>
             Connect with service providers or offer your services
           </CardDescription>
