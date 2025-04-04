@@ -1,5 +1,6 @@
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
+import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,7 +14,7 @@ import { insertUserSchema, type InsertUser } from "@shared/schema";
 export default function AuthPage() {
   const [_, setLocation] = useLocation();
   const { user, loginMutation, registerMutation } = useAuth();
-
+  
   const loginForm = useForm<InsertUser>({
     resolver: zodResolver(insertUserSchema),
     defaultValues: {
@@ -30,8 +31,22 @@ export default function AuthPage() {
     },
   });
 
+  // Watch for successful registration and redirect to language selection
+  useEffect(() => {
+    if (user) {
+      // Check if the user has selected a language preference
+      const hasLanguagePreference = localStorage.getItem('preferredLanguage') !== null;
+      
+      if (!hasLanguagePreference) {
+        setLocation('/language-selection');
+      } else {
+        setLocation('/');
+      }
+    }
+  }, [user, setLocation]);
+
   if (user) {
-    setLocation("/");
+    // Return null to prevent rendering while redirect happens
     return null;
   }
 
