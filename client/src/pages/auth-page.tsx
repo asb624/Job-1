@@ -41,7 +41,7 @@ export default function AuthPage() {
         <CardHeader>
           <CardTitle>Welcome to Job Bazaar</CardTitle>
           <CardDescription>
-            Connect with service providers or offer your services
+            Connect with service providers or offer your services in your preferred language
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -133,6 +133,9 @@ export default function AuthPage() {
 
 
 
+                  <div className="text-xs text-gray-500 mb-2 bg-blue-50 p-2 rounded">
+                    After registration, you'll be able to select your preferred language from our 17 supported Indian languages.
+                  </div>
                   <Button
                     type="submit"
                     className="w-full"

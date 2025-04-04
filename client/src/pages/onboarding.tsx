@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -23,10 +23,20 @@ import {
 } from "lucide-react";
 
 export default function OnboardingPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [_, navigate] = useLocation();
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 3;
+  
+  // Ensure user has selected a language before onboarding
+  useEffect(() => {
+    const preferredLanguage = localStorage.getItem("preferredLanguage");
+    if (!preferredLanguage) {
+      navigate("/language-selection");
+    } else if (i18n.language !== preferredLanguage) {
+      i18n.changeLanguage(preferredLanguage);
+    }
+  }, [navigate, i18n]);
   
   const handleComplete = async () => {
     try {

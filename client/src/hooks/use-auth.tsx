@@ -87,6 +87,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     onSuccess: (user: SelectUser) => {
       queryClient.setQueryData(["/api/user"], user);
+      
+      // Redirect to language selection page after successful registration
+      window.location.href = "/language-selection";
     },
     onError: (error: Error) => {
       toast({

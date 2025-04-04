@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -13,6 +13,14 @@ export function LanguageSwitcher({ collapsed = false }: LanguageSwitcherProps) {
   const { t, i18n } = useTranslation();
   const isMobile = useIsMobile();
   const [isOpen, setIsOpen] = useState(false);
+  
+  // Load preferred language from localStorage on component mount
+  useEffect(() => {
+    const preferredLanguage = localStorage.getItem('preferredLanguage');
+    if (preferredLanguage && preferredLanguage !== i18n.language) {
+      i18n.changeLanguage(preferredLanguage);
+    }
+  }, [i18n]);
   
   const changeLanguage = (lng: string) => {
     i18n.changeLanguage(lng);

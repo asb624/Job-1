@@ -31,13 +31,28 @@ export function ProtectedRoute({
     );
   }
 
-  // Check if user has completed onboarding (unless we're specifically skipping this check)
-  if (!skipOnboardingCheck && user.onboardingCompleted === false && path !== '/onboarding') {
-    return (
-      <Route path={path}>
-        <Redirect to="/onboarding" />
-      </Route>
-    );
+  // Check if user needs to go through language selection and onboarding flow
+  // If this is a newly registered user, send them to language selection first
+  const hasSelectedLanguage = localStorage.getItem("preferredLanguage") !== null;
+  
+  if (!skipOnboardingCheck && path !== '/language-selection' && path !== '/onboarding') {
+    // First check if they need language selection
+    if (!hasSelectedLanguage) {
+      return (
+        <Route path={path}>
+          <Redirect to="/language-selection" />
+        </Route>
+      );
+    }
+    
+    // Then check if they need onboarding
+    if (user.onboardingCompleted === false) {
+      return (
+        <Route path={path}>
+          <Redirect to="/onboarding" />
+        </Route>
+      );
+    }
   }
 
   return (

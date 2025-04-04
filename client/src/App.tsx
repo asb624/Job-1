@@ -20,6 +20,7 @@ import PostService from "@/pages/post-service";
 import Profile from "@/pages/profile"; 
 import MessagesPage from "@/pages/messages";
 import OnboardingPage from "@/pages/onboarding";
+import LanguageSelectionPage from "@/pages/language-selection";
 import PreferencesPage from "@/pages/preferences";
 import NotFound from "@/pages/not-found";
 
@@ -28,6 +29,7 @@ function Router() {
     <Switch>
       <Route path="/" component={HomePage} />
       <Route path="/auth" component={AuthPage} />
+      <ProtectedRoute path="/language-selection" component={LanguageSelectionPage} skipOnboardingCheck={true} />
       <ProtectedRoute path="/onboarding" component={OnboardingPage} skipOnboardingCheck={true} />
       <ProtectedRoute path="/dashboard" component={Dashboard} />
       <ProtectedRoute path="/post-requirement" component={PostRequirement} skipOnboardingCheck={true} />
