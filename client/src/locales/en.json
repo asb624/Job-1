@@ -25,7 +25,17 @@
   },
   "marketplace": {
     "browse": "Browse Services & Requirements",
-    "description": "Find skilled professionals or post your requirements"
+    "description": "Find skilled professionals or post your requirements",
+    "find_projects": "Find Projects",
+    "find_services": "Find Services",
+    "learn_more": "Learn More",
+    "no_services": "No services available at the moment",
+    "no_requirements": "No requirements available at the moment",
+    "check_back_service": "Check back later or post your own service",
+    "check_back_requirement": "Check back later or post your own requirement",
+    "post_a_service": "Post a Service",
+    "post_a_requirement": "Post a Requirement",
+    "results": "results"
   },
   "services": {
     "title": "Services",
@@ -254,7 +264,11 @@
     "timeout": "Location detection timed out",
     "unavailable": "Location service unavailable",
     "accuracyLow": "Location accuracy is low",
-    "searchingLocation": "Searching for your location..."
+    "searchingLocation": "Searching for your location...",
+    "loadingRequirements": "Loading requirements in this area...",
+    "loadingServices": "Loading services in this area...",
+    "meters_away": "{{distance}}m away",
+    "kilometers_away": "{{distance}}km away"
   },
   "filters": {
     "allCategories": "All Categories",
@@ -280,11 +294,6 @@
     "images": "Images",
     "addImages": "Add Images"
   },
-  "Find Projects": "Find Projects",
-  "Find Services": "Find Services",
-  "Learn More": "Learn More",
-  "No services available at the moment": "No services available at the moment",
-  "No requirements available at the moment": "No requirements available at the moment",
   "Mathematics Tutor": "Mathematics Tutor",
   "English Language Teacher": "English Language Teacher",
   "Computer Programming Coach": "Computer Programming Coach",

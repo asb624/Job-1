@@ -260,7 +260,7 @@ export default function HomePage() {
                         <path d="M12 5v14M5 12h14"/>
                       </svg>
                     </span>
-                    {t("Post Service")}
+                    {t("navigation.postService")}
                   </div>
                 </Button>
                 
@@ -274,7 +274,7 @@ export default function HomePage() {
                         <path d="M12 5v14M5 12h14"/>
                       </svg>
                     </span>
-                    {t("Post Requirement")}
+                    {t("navigation.postRequirement")}
                   </div>
                 </Button>
               </div>
@@ -441,7 +441,7 @@ export default function HomePage() {
                   <div className="flex items-center justify-center p-10">
                     <div className="flex flex-col items-center gap-4">
                       <div className="w-12 h-12 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin"></div>
-                      <p className="text-emerald-700 font-medium">{t("location.loadingServices", "Loading services in this area...")}</p>
+                      <p className="text-emerald-700 font-medium">{t("location.loadingServices")}</p>
                     </div>
                   </div>
                 )}
@@ -456,8 +456,8 @@ export default function HomePage() {
                           // Add distance label if available in service object
                           distanceLabel: 'distance' in service && typeof service.distance === 'number'
                             ? service.distance < 1
-                              ? `${Math.round(service.distance * 1000)}m away`
-                              : `${service.distance.toFixed(1)}km away`
+                              ? t('location.meters_away', { distance: Math.round(service.distance * 1000) })
+                              : t('location.kilometers_away', { distance: service.distance.toFixed(1) })
                             : undefined
                         }}
                         onContact={user ? () => handleContactProvider(service) : undefined}
@@ -471,14 +471,14 @@ export default function HomePage() {
                             <line x1="12" x2="12" y1="8" y2="12"/>
                             <line x1="12" x2="12.01" y1="16" y2="16"/>
                           </svg>
-                          <p className="text-teal-600 font-medium text-lg">{t("No services available at the moment")}</p>
-                          <p className="text-teal-500 text-sm mt-1">{t("Check back later or post your own service")}</p>
+                          <p className="text-teal-600 font-medium text-lg">{t("marketplace.no_services")}</p>
+                          <p className="text-teal-500 text-sm mt-1">{t("marketplace.check_back_service")}</p>
                           <Button 
                             variant="outline" 
                             className="mt-4 border-teal-500 text-teal-600 hover:bg-teal-50"
                             onClick={() => navigate("/post-service")}
                           >
-                            {t("Post a Service")}
+                            {t("navigation.postService")}
                           </Button>
                         </div>
                       </div>
@@ -496,7 +496,7 @@ export default function HomePage() {
               <div className="flex items-center justify-center p-10">
                 <div className="flex flex-col items-center gap-4">
                   <div className="w-12 h-12 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin"></div>
-                  <p className="text-emerald-700 font-medium">{t("location.loadingRequirements", "Loading requirements in this area...")}</p>
+                  <p className="text-emerald-700 font-medium">{t("location.loadingRequirements")}</p>
                 </div>
               </div>
             )}
@@ -511,8 +511,8 @@ export default function HomePage() {
                       // Add distance label if available in requirement object
                       distanceLabel: 'distance' in requirement && typeof requirement.distance === 'number'
                         ? requirement.distance < 1
-                          ? `${Math.round(requirement.distance * 1000)}m away`
-                          : `${requirement.distance.toFixed(1)}km away`
+                          ? t('location.meters_away', { distance: Math.round(requirement.distance * 1000) })
+                          : t('location.kilometers_away', { distance: requirement.distance.toFixed(1) })
                         : undefined
                     }}
                     onSelect={user ? () => handleSelectRequirement(requirement) : undefined}
@@ -526,14 +526,14 @@ export default function HomePage() {
                         <line x1="12" x2="12" y1="8" y2="12"/>
                         <line x1="12" x2="12.01" y1="16" y2="16"/>
                       </svg>
-                      <p className="text-emerald-600 font-medium text-lg">{t("No requirements available at the moment")}</p>
-                      <p className="text-emerald-500 text-sm mt-1">{t("Check back later or post your own requirement")}</p>
+                      <p className="text-emerald-600 font-medium text-lg">{t("marketplace.no_requirements")}</p>
+                      <p className="text-emerald-500 text-sm mt-1">{t("marketplace.check_back_requirement")}</p>
                       <Button 
                         variant="outline" 
                         className="mt-4 border-emerald-500 text-emerald-600 hover:bg-emerald-50"
                         onClick={() => navigate("/post-requirement")}
                       >
-                        {t("Post a Requirement")}
+                        {t("navigation.postRequirement")}
                       </Button>
                     </div>
                   </div>
@@ -546,7 +546,7 @@ export default function HomePage() {
         {/* Pagination Footer */}
         <div className="bg-teal-50 p-4 border-t border-teal-100 flex justify-between items-center">
           <div className="text-sm text-teal-700">
-            {services?.length ? `${services.length} ${t("results")}` : ""}
+            {services?.length ? `${services.length} ${t("marketplace.results")}` : ""}
           </div>
           
           <div className="flex items-center gap-2">
