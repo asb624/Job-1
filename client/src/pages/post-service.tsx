@@ -104,8 +104,7 @@ export default function PostService() {
 
   const createServiceMutation = useMutation({
     mutationFn: async (data: any) => {
-      const res = await apiRequest("POST", "/api/services", data);
-      return res.json();
+      return await apiRequest<any>("POST", "/api/services", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/services"] });
@@ -353,7 +352,11 @@ export default function PostService() {
 
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <FormLabel>{t('postService.location')}</FormLabel>
+                    <div className="flex space-x-2 items-center">
+                      <FormLabel>{t('postService.location')}</FormLabel>
+                      <span className="text-destructive ml-1">*</span>
+                      <span className="text-sm text-muted-foreground ml-2">(Required)</span>
+                    </div>
                     <div className="flex space-x-2">
                       <Button 
                         type="button" 

@@ -90,8 +90,7 @@ export default function Dashboard() {
   const createSelectionMutation = useMutation({
     mutationFn: async (data: any) => {
       // We're using "selections" in our UI, but the backend still uses "bids"
-      const res = await apiRequest("POST", "/api/bids", data);
-      return res.json();
+      return await apiRequest<any>("POST", "/api/bids", data);
     },
     onSuccess: (_, variables) => {
       // Note: API still uses "bids", though our UI uses "selections"

@@ -34,8 +34,7 @@ export default function Profile() {
   const { data: profile, isLoading } = useQuery<ProfileType>({
     queryKey: ["/api/profile"],
     queryFn: async () => {
-      const res = await apiRequest("GET", "/api/profile");
-      return res.json();
+      return await apiRequest<ProfileType>("GET", "/api/profile");
     },
   });
 
@@ -50,8 +49,7 @@ export default function Profile() {
 
   const updateProfileMutation = useMutation({
     mutationFn: async (data: Partial<ProfileType>) => {
-      const res = await apiRequest("PUT", "/api/profile", data);
-      return res.json();
+      return await apiRequest<ProfileType>("PUT", "/api/profile", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/profile"] });

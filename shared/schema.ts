@@ -42,14 +42,14 @@ export const services = pgTable("services", {
   category: text("category").notNull(),
   providerId: integer("provider_id").notNull().references(() => users.id),
   price: integer("price").notNull(),
-  // Location data
-  address: text("address"),
-  city: text("city"),
-  state: text("state"),
-  country: text("country"),
+  // Location data - all required except postal code
+  address: text("address").notNull(),
+  city: text("city").notNull(),
+  state: text("state").notNull(),
+  country: text("country").notNull(),
   postalCode: text("postal_code"),
-  latitude: doublePrecision("latitude"),
-  longitude: doublePrecision("longitude"),
+  latitude: doublePrecision("latitude").notNull(),
+  longitude: doublePrecision("longitude").notNull(),
   serviceRadius: integer("service_radius"), // in kilometers
   isRemote: boolean("is_remote").default(false),
   imageUrls: text("image_urls").array(),
@@ -64,14 +64,14 @@ export const requirements = pgTable("requirements", {
   userId: integer("user_id").notNull().references(() => users.id),
   budget: integer("budget").notNull(),
   status: text("status").notNull().default("open"),
-  // Location data
-  address: text("address"),
-  city: text("city"),
-  state: text("state"),
-  country: text("country"),
+  // Location data - all required except postal code
+  address: text("address").notNull(),
+  city: text("city").notNull(),
+  state: text("state").notNull(),
+  country: text("country").notNull(),
   postalCode: text("postal_code"),
-  latitude: doublePrecision("latitude"),
-  longitude: doublePrecision("longitude"),
+  latitude: doublePrecision("latitude").notNull(),
+  longitude: doublePrecision("longitude").notNull(),
   isRemote: boolean("is_remote").default(false),
   imageUrls: text("image_urls").array(),
   createdAt: timestamp("created_at").defaultNow(),
@@ -182,6 +182,14 @@ export const insertServiceSchema = createInsertSchema(services).pick({
   serviceRadius: true,
   isRemote: true,
   imageUrls: true,
+}).extend({
+  // Enforce that location fields cannot be undefined (only latitude and longitude are strictly required)
+  latitude: z.number({
+    required_error: "Location is required. Please select a location on the map."
+  }),
+  longitude: z.number({
+    required_error: "Location is required. Please select a location on the map."
+  }),
 });
 
 export const insertRequirementSchema = createInsertSchema(requirements).pick({
@@ -199,6 +207,14 @@ export const insertRequirementSchema = createInsertSchema(requirements).pick({
   longitude: true,
   isRemote: true,
   imageUrls: true,
+}).extend({
+  // Enforce that location fields cannot be undefined (only latitude and longitude are strictly required)
+  latitude: z.number({
+    required_error: "Location is required. Please select a location on the map."
+  }),
+  longitude: z.number({
+    required_error: "Location is required. Please select a location on the map."
+  }),
 });
 
 export const insertBidSchema = createInsertSchema(bids).pick({

@@ -97,8 +97,7 @@ export default function PostRequirement() {
 
   const createRequirementMutation = useMutation({
     mutationFn: async (data: any) => {
-      const res = await apiRequest("POST", "/api/requirements", data);
-      return res.json();
+      return await apiRequest<any>("POST", "/api/requirements", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/requirements"] });
@@ -254,7 +253,11 @@ export default function PostRequirement() {
             {!form.watch("isRemote") && (
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
-                  <FormLabel>{t('postRequirement.location', 'Location')}</FormLabel>
+                  <div className="flex space-x-2 items-center">
+                    <FormLabel>{t('postRequirement.location', 'Location')}</FormLabel>
+                    <span className="text-destructive ml-1">*</span>
+                    <span className="text-sm text-muted-foreground ml-2">(Required)</span>
+                  </div>
                   <div className="flex space-x-2">
                     <Button 
                       type="button" 
