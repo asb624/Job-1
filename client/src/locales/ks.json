@@ -153,5 +153,35 @@
     "delete": "डिलीट करयुव",
     "edit": "एडिट करयुव",
     "close": "बंद करयुव"
+  },
+  "marketplace": {
+    "browse": "Browse Services & Requirements",
+    "description": "Find skilled professionals or post your requirements",
+    "find_projects": "Find Projects",
+    "find_services": "Find Services",
+    "learn_more": "Learn More",
+    "no_services": "No services available at the moment",
+    "no_requirements": "No requirements available at the moment",
+    "check_back_service": "Check back later or post your own service",
+    "check_back_requirement": "Check back later or post your own requirement",
+    "post_a_service": "Post a Service",
+    "post_a_requirement": "Post a Requirement",
+    "results": "results"
+  },
+  "location": {
+    "useMyLocation": "Use my current location",
+    "detectionFailed": "Could not detect your location. Please allow location access or try again.",
+    "currentLocation": "Current Location",
+    "coordinatesDetected": "Coordinates detected successfully",
+    "locationDetected": "Location detected",
+    "permissionDenied": "Location permission denied",
+    "timeout": "Location detection timed out",
+    "unavailable": "Location service unavailable",
+    "accuracyLow": "Location accuracy is low",
+    "searchingLocation": "Searching for your location...",
+    "loadingRequirements": "Loading requirements in this area...",
+    "loadingServices": "Loading services in this area...",
+    "meters_away": "{{distance}}m away",
+    "kilometers_away": "{{distance}}km away"
   }
 }
