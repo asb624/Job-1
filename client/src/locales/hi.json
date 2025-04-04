@@ -61,8 +61,38 @@
     "posted": "पोस्ट किया गया",
     "remoteAllowed": "रिमोट की अनुमति है"
   },
+  "marketplace": {
+    "browse": "सेवाएं और आवश्यकताएं ब्राउज़ करें",
+    "description": "कुशल पेशेवरों को खोजें या अपनी आवश्यकताएं पोस्ट करें",
+    "find_projects": "प्रोजेक्ट खोजें",
+    "find_services": "सेवाएं खोजें",
+    "learn_more": "और जानें",
+    "no_services": "इस समय कोई सेवा उपलब्ध नहीं है",
+    "no_requirements": "इस समय कोई आवश्यकता उपलब्ध नहीं है",
+    "check_back_service": "बाद में फिर से जांचें या अपनी स्वयं की सेवा पोस्ट करें",
+    "check_back_requirement": "बाद में फिर से जांचें या अपनी स्वयं की आवश्यकता पोस्ट करें",
+    "post_a_service": "एक सेवा पोस्ट करें",
+    "post_a_requirement": "एक आवश्यकता पोस्ट करें",
+    "results": "परिणाम"
+  },
   "map": {
     "yourLocation": "आपका स्थान"
+  },
+  "location": {
+    "useMyLocation": "मेरे वर्तमान स्थान का उपयोग करें",
+    "detectionFailed": "आपका स्थान नहीं मिल सका। कृपया स्थान पहुंच की अनुमति दें या फिर से प्रयास करें।",
+    "currentLocation": "वर्तमान स्थान",
+    "coordinatesDetected": "निर्देशांक सफलतापूर्वक पता लगाए गए",
+    "locationDetected": "स्थान का पता चला",
+    "permissionDenied": "स्थान अनुमति अस्वीकृत",
+    "timeout": "स्थान खोज का समय समाप्त हो गया",
+    "unavailable": "स्थान सेवा अनुपलब्ध",
+    "accuracyLow": "स्थान सटीकता कम है",
+    "searchingLocation": "आपके स्थान की खोज हो रही है...",
+    "loadingRequirements": "इस क्षेत्र में आवश्यकताएं लोड हो रही हैं...",
+    "loadingServices": "इस क्षेत्र में सेवाएं लोड हो रही हैं...",
+    "meters_away": "{{distance}}मी दूर",
+    "kilometers_away": "{{distance}}किमी दूर"
   },
   "postService": {
     "title": "एक नई सेवा पोस्ट करें",
