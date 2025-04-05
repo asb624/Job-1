@@ -31,27 +31,35 @@ export function ProtectedRoute({
     );
   }
 
-  // Check if user needs to go through language selection and onboarding flow
-  // If this is a newly registered user, send them to language selection first
-  const hasSelectedLanguage = localStorage.getItem("preferredLanguage") !== null;
+  // Check if this is a newly registered user (from the isNewRegistration flag)
+  // If this is a newly registered user (or someone in the onboarding flow), 
+  // ensure they complete the onboarding process
+  const isInOnboardingFlow = sessionStorage.getItem("isInOnboardingFlow") === "true";
   
+  // Only force onboarding for new registrations or users already in the flow
   if (!skipOnboardingCheck && path !== '/language-selection' && path !== '/onboarding') {
-    // First check if they need language selection
-    if (!hasSelectedLanguage) {
-      return (
-        <Route path={path}>
-          <Redirect to="/language-selection" />
-        </Route>
-      );
-    }
-    
-    // Then check if they need onboarding
-    if (user.onboardingCompleted === false) {
-      return (
-        <Route path={path}>
-          <Redirect to="/onboarding" />
-        </Route>
-      );
+    if (isInOnboardingFlow) {
+      // If they're in the onboarding flow but haven't completed it, direct them to the right step
+      const hasSelectedLanguage = localStorage.getItem("preferredLanguage") !== null;
+      
+      if (!hasSelectedLanguage) {
+        return (
+          <Route path={path}>
+            <Redirect to="/language-selection" />
+          </Route>
+        );
+      }
+      
+      if (user.onboardingCompleted === false) {
+        return (
+          <Route path={path}>
+            <Redirect to="/onboarding" />
+          </Route>
+        );
+      }
+      
+      // If they've completed everything, clear the flag
+      sessionStorage.removeItem("isInOnboardingFlow");
     }
   }
 

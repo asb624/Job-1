@@ -79,7 +79,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           throw new Error(errorText || "Registration failed");
         }
         
-        return await res.json() as SelectUser;
+        const user = await res.json() as SelectUser;
+        // Mark this as a new registration and set the onboarding flow flag
+        localStorage.setItem("isNewRegistration", "true");
+        sessionStorage.setItem("isInOnboardingFlow", "true");
+        return user;
       } catch (error) {
         console.error("Registration error:", error);
         throw error;

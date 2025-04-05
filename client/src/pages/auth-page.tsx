@@ -31,15 +31,20 @@ export default function AuthPage() {
     },
   });
 
-  // Watch for successful registration and redirect to language selection
+  // Watch for successful login/registration and redirect accordingly
   useEffect(() => {
     if (user) {
-      // Check if the user has selected a language preference
-      const hasLanguagePreference = localStorage.getItem('preferredLanguage') !== null;
+      // Check if this is a new registration
+      const isNewRegistration = localStorage.getItem('isNewRegistration') === 'true';
       
-      if (!hasLanguagePreference) {
+      if (isNewRegistration) {
+        // Clear the flag after checking
+        localStorage.removeItem('isNewRegistration');
+        
+        // For new registrations, always direct to language selection
         setLocation('/language-selection');
       } else {
+        // For regular logins, redirect to home
         setLocation('/');
       }
     }

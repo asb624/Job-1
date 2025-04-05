@@ -44,11 +44,16 @@ export default function LanguageSelectionPage() {
       // Store the language preference in localStorage
       localStorage.setItem("preferredLanguage", selectedLanguage);
       
+      // Make sure we're marked as being in the onboarding flow
+      // This ensures users complete the entire flow
+      sessionStorage.setItem("isInOnboardingFlow", "true");
+      
       // Navigate to the onboarding page
       navigate("/onboarding");
     } catch (error) {
       console.error("Error changing language:", error);
       // Navigate anyway as this is non-critical
+      sessionStorage.setItem("isInOnboardingFlow", "true");
       navigate("/onboarding");
     }
   };

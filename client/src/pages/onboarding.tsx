@@ -53,11 +53,15 @@ export default function OnboardingPage() {
         throw new Error('Failed to update onboarding status');
       }
       
+      // Clear the onboarding flow flag since we're done
+      sessionStorage.removeItem("isInOnboardingFlow");
+      
       // Redirect to the home page
       navigate("/");
     } catch (error) {
       console.error('Error completing onboarding:', error);
-      // Redirect anyway, as this is non-critical
+      // Clear the flag and redirect anyway, as this is non-critical
+      sessionStorage.removeItem("isInOnboardingFlow");
       navigate("/");
     }
   };
