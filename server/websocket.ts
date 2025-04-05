@@ -1,5 +1,6 @@
 import { WebSocket, WebSocketServer } from "ws";
-import { Server } from "http";
+import { Server as HttpServer } from "http";
+import { Server as SocketIOServer } from "socket.io";
 
 // Define message types for type safety
 export type WebSocketMessage = {
@@ -13,15 +14,142 @@ let globalBroadcast: (message: WebSocketMessage) => void;
 let globalSendToUser: (userId: number, message: WebSocketMessage) => void;
 let globalBroadcastToRelevantUsers: (message: WebSocketMessage) => void;
 
-export function setupWebSocket(server: Server) {
+// Socket.IO for WebRTC signaling
+let io: SocketIOServer;
+
+export function setupWebSocket(server: HttpServer) {
+  // Set up Socket.IO first for WebRTC signaling
+  console.log("Setting up Socket.IO for WebRTC signaling");
+  io = new SocketIOServer(server, {
+    cors: {
+      origin: "*",
+      methods: ["GET", "POST"]
+    },
+    path: '/socket.io/', // Explicit path to avoid confusion
+    connectTimeout: 30000, // Increase connection timeout
+    pingTimeout: 30000, // Prevent timeouts
+    pingInterval: 25000, // More frequent ping
+    transports: ['websocket', 'polling'] // Enable all transports
+  });
+
+  // Map to keep track of user socket connections for calls
+  const userSockets = new Map<number, string>();
+
+  io.on("connection", (socket) => {
+    console.log("Socket.IO client connected:", socket.id);
+
+    // Get the user ID from query parameter
+    const userId = socket.handshake.query.userId;
+    if (userId && !isNaN(Number(userId))) {
+      const userIdNum = Number(userId);
+      userSockets.set(userIdNum, socket.id);
+      console.log(`Socket.IO client registered with user ID: ${userIdNum}`);
+      
+      // Send confirmation to client
+      socket.emit('connection-established', {
+        socketId: socket.id,
+        userId: userIdNum,
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    // Handle WebRTC signaling
+    socket.on("call-user", (data) => {
+      console.log(`Call request from user ${data.from?.userId} to user ${data.to}`);
+      const { to, signal, from, callType } = data;
+      const toSocketId = userSockets.get(to);
+      
+      if (toSocketId) {
+        console.log(`Forwarding call request to socket ${toSocketId}`);
+        io.to(toSocketId).emit("call-incoming", {
+          from,
+          callType
+        });
+      } else {
+        console.log(`Target user ${to} not connected, call cannot be placed`);
+        // Optional: Notify caller that callee is not available
+        socket.emit('call-failed', { reason: 'user-unavailable' });
+      }
+    });
+
+    socket.on("call-answer", (data) => {
+      console.log(`Call answer from user ${data.from} to user ${data.to}`);
+      const { to, signal, from } = data;
+      const toSocketId = userSockets.get(to);
+      
+      if (toSocketId) {
+        console.log(`Forwarding call acceptance to socket ${toSocketId}`);
+        io.to(toSocketId).emit("call-accepted", {
+          signal,
+          from
+        });
+      }
+    });
+
+    socket.on("peer-signal", (data) => {
+      const { to, signal } = data;
+      const toSocketId = userSockets.get(to);
+      
+      if (toSocketId) {
+        io.to(toSocketId).emit("peer-signal", {
+          signal
+        });
+      }
+    });
+
+    socket.on("call-reject", (data) => {
+      console.log(`Call rejected by user, notifying caller ${data.to}`);
+      const { to } = data;
+      const toSocketId = userSockets.get(to);
+      
+      if (toSocketId) {
+        io.to(toSocketId).emit("call-rejected");
+      }
+    });
+
+    socket.on("call-end", (data) => {
+      console.log(`Call ended, notifying participant ${data.to}`);
+      const { to } = data;
+      const toSocketId = userSockets.get(to);
+      
+      if (toSocketId) {
+        io.to(toSocketId).emit("call-ended");
+      }
+    });
+
+    // Handle errors
+    socket.on("error", (error) => {
+      console.error("Socket.IO error:", error);
+    });
+
+    socket.on("disconnect", (reason) => {
+      // Remove socket from the map
+      userSockets.forEach((socketId, userId) => {
+        if (socketId === socket.id) {
+          userSockets.delete(userId);
+          console.log(`Socket.IO client with userId ${userId} disconnected: ${reason}`);
+        }
+      });
+      console.log(`Socket.IO client disconnected: ${reason}`);
+    });
+  });
+
+  // Now set up regular WebSocket for general messaging
+  console.log("Setting up WebSocket server for general messaging");
   const wss = new WebSocketServer({ 
     server,
     path: "/ws",
-    // Add proper error handling
+    // More explicit error handling
     verifyClient: (info, cb) => {
-      // Accept all connections for now
-      // In production, you might want to verify the user's session
-      cb(true);
+      try {
+        // For debugging connection issues, log the request details
+        console.log("WebSocket connection attempt:", info.req.url);
+        // Accept all connections for now
+        cb(true);
+      } catch (error) {
+        console.error("Error in WebSocket verifyClient:", error);
+        cb(false, 500, "Internal server error");
+      }
     }
   });
 
@@ -29,37 +157,50 @@ export function setupWebSocket(server: Server) {
   const clients = new Map<number, WebSocket>();
 
   wss.on("connection", (ws, request) => {
-    console.log("WebSocket client connected");
+    console.log("WebSocket client connected:", request.url);
     
     // Parse the URL to extract query parameters
-    const url = new URL(request.url || '', `http://${request.headers.host}`);
-    const userId = url.searchParams.get('userId');
-    
-    // Store the user ID in the client map if provided
-    if (userId && !isNaN(parseInt(userId))) {
-      const userIdNum = parseInt(userId);
-      clients.set(userIdNum, ws);
-      console.log(`Client registered with user ID: ${userIdNum}`);
+    try {
+      const url = new URL(request.url || '', `http://${request.headers.host}`);
+      const userId = url.searchParams.get('userId');
+      
+      // Store the user ID in the client map if provided
+      if (userId && !isNaN(parseInt(userId))) {
+        const userIdNum = parseInt(userId);
+        clients.set(userIdNum, ws);
+        console.log(`WebSocket client registered with user ID: ${userIdNum}`);
+      }
+
+      // Send immediate confirmation that connection is established
+      ws.send(JSON.stringify({ 
+        type: "connection", 
+        status: "connected",
+        timestamp: new Date().toISOString()
+      }));
+    } catch (error) {
+      console.error("Error parsing WebSocket URL:", error);
     }
 
     ws.on("error", (error) => {
       console.error("WebSocket error:", error);
     });
 
-    ws.on("close", () => {
+    ws.on("close", (code, reason) => {
+      console.log(`WebSocket client disconnected with code ${code} and reason: ${reason || 'No reason provided'}`);
+      
       // Remove client from the map
       clients.forEach((client, userId) => {
         if (client === ws) {
           clients.delete(userId);
-          console.log(`Client with userId ${userId} disconnected`);
+          console.log(`WebSocket client with userId ${userId} disconnected`);
         }
       });
-      console.log("WebSocket client disconnected");
     });
 
     ws.on("message", (data) => {
       try {
         const message = JSON.parse(data.toString()) as WebSocketMessage;
+        console.log(`Received WebSocket message type: ${message.type}, action: ${message.action}`);
 
         switch (message.type) {
           case 'selection':
@@ -121,16 +262,9 @@ export function setupWebSocket(server: Server) {
             console.warn('Unknown message type:', message.type);
         }
       } catch (error) {
-        console.error("Error processing message:", error);
+        console.error("Error processing WebSocket message:", error);
       }
     });
-
-    // Send initial connection success message
-    ws.send(JSON.stringify({ 
-      type: "connection", 
-      status: "connected",
-      timestamp: new Date().toISOString()
-    }));
   });
 
   // Add error handling for the server
@@ -140,11 +274,21 @@ export function setupWebSocket(server: Server) {
 
   // Helper function to broadcast message to all connected clients
   function broadcast(message: WebSocketMessage) {
-    clients.forEach(client => {
+    const stringMessage = JSON.stringify(message);
+    let sentCount = 0;
+    
+    clients.forEach((client, userId) => {
       if (client.readyState === WebSocket.OPEN) {
-        client.send(JSON.stringify(message));
+        client.send(stringMessage);
+        sentCount++;
+      } else if (client.readyState !== WebSocket.CONNECTING) {
+        // Clean up stale connections
+        console.log(`Removing stale WebSocket connection for user ${userId}`);
+        clients.delete(userId);
       }
     });
+    
+    console.log(`Broadcast message sent to ${sentCount} clients`);
   }
 
   // Helper function to send message to specific user
@@ -152,23 +296,40 @@ export function setupWebSocket(server: Server) {
     const client = clients.get(userId);
     if (client?.readyState === WebSocket.OPEN) {
       client.send(JSON.stringify(message));
+      console.log(`Message sent to user ${userId}`);
+      return true;
+    } else {
+      console.log(`User ${userId} not connected or socket not ready, message not sent`);
+      return false;
     }
   }
 
   // Helper function to broadcast to users involved in a selection or conversation
   function broadcastToRelevantUsers(message: WebSocketMessage) {
     const { providerId, userId, user1Id, user2Id } = message.payload;
+    let sentToSomeone = false;
     
     // Check for conversation participants first
-    if (user1Id) sendToUser(user1Id, message);
-    if (user2Id) sendToUser(user2Id, message);
+    if (user1Id) sentToSomeone = sendToUser(user1Id, message) || sentToSomeone;
+    if (user2Id) sentToSomeone = sendToUser(user2Id, message) || sentToSomeone;
     
     // If no conversation participants found, try provider/user
-    if (!user1Id && !user2Id) {
-      if (providerId) sendToUser(providerId, message);
-      if (userId) sendToUser(userId, message);
+    if (!sentToSomeone) {
+      if (providerId) sentToSomeone = sendToUser(providerId, message) || sentToSomeone;
+      if (userId) sentToSomeone = sendToUser(userId, message) || sentToSomeone;
+    }
+    
+    // If we couldn't send to any specific user, broadcast to everyone
+    if (!sentToSomeone) {
+      console.log('No specific recipients available, broadcasting to all users');
+      broadcast(message);
     }
   }
+
+  // Log active connections for diagnostics
+  setInterval(() => {
+    console.log(`Active WebSocket connections: ${clients.size}, Socket.IO connections: ${userSockets.size}`);
+  }, 60000); // Log every minute
 
   // Assign globals for direct export
   globalBroadcast = broadcast;
