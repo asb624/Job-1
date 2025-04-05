@@ -31,15 +31,22 @@ export function ProtectedRoute({
     );
   }
 
-  // Check if this is a newly registered user (from the isNewRegistration flag)
-  // If this is a newly registered user (or someone in the onboarding flow), 
-  // ensure they complete the onboarding process
+  // Determine if the user is in the onboarding flow
   const isInOnboardingFlow = sessionStorage.getItem("isInOnboardingFlow") === "true";
+  // Determine if this is a new registration (this flag is set during registration)
+  const isNewRegistration = localStorage.getItem("isNewRegistration") === "true";
   
-  // Only force onboarding for new registrations or users already in the flow
-  if (!skipOnboardingCheck && path !== '/language-selection' && path !== '/onboarding') {
-    if (isInOnboardingFlow) {
-      // If they're in the onboarding flow but haven't completed it, direct them to the right step
+  // Only enforce onboarding for these conditions:
+  // 1. User has explicitly opted into the flow (isInOnboardingFlow)
+  // 2. User is newly registered and hasn't completed onboarding
+  // 3. We're not already on an onboarding-related page
+  if (!skipOnboardingCheck && 
+      path !== '/language-selection' && 
+      path !== '/onboarding') {
+    
+    // For newly registered users or users in the onboarding flow
+    if (isInOnboardingFlow || (isNewRegistration && user.onboardingCompleted === false)) {
+      // First, check if they've selected a language
       const hasSelectedLanguage = localStorage.getItem("preferredLanguage") !== null;
       
       if (!hasSelectedLanguage) {
@@ -50,6 +57,7 @@ export function ProtectedRoute({
         );
       }
       
+      // Then, check if they've completed onboarding
       if (user.onboardingCompleted === false) {
         return (
           <Route path={path}>
@@ -58,8 +66,11 @@ export function ProtectedRoute({
         );
       }
       
-      // If they've completed everything, clear the flag
+      // If they've completed everything:
+      // 1. Clear the onboarding flow flag
       sessionStorage.removeItem("isInOnboardingFlow");
+      // 2. Clear the new registration flag
+      localStorage.removeItem("isNewRegistration");
     }
   }
 

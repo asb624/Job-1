@@ -46,6 +46,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           throw new Error(errorText || "Login failed");
         }
         
+        // For login, make sure to clear these flags to avoid onboarding
+        localStorage.removeItem("isNewRegistration");
+        sessionStorage.removeItem("isInOnboardingFlow");
+        
         return await res.json() as SelectUser;
       } catch (error) {
         console.error("Login error:", error);
@@ -83,6 +87,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Mark this as a new registration and set the onboarding flow flag
         localStorage.setItem("isNewRegistration", "true");
         sessionStorage.setItem("isInOnboardingFlow", "true");
+        
+        // Clear any existing language preference for new registrations
+        // This ensures they go through the language selection process
+        localStorage.removeItem("preferredLanguage");
+        
         return user;
       } catch (error) {
         console.error("Registration error:", error);
@@ -91,6 +100,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     onSuccess: (user: SelectUser) => {
       queryClient.setQueryData(["/api/user"], user);
+      
+      // Make sure we clear any registration flags for login
+      // This ensures returning users don't go through onboarding
+      localStorage.removeItem("isNewRegistration");
+      sessionStorage.removeItem("isInOnboardingFlow");
       
       // We'll handle redirection in the auth page component instead
       // to properly maintain session context

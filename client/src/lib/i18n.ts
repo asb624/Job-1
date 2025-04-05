@@ -97,4 +97,36 @@ i18n
     },
   });
 
+/**
+ * Helper function to forcefully switch languages
+ * This ensures all parts of the app get the memo
+ */
+export function forceLanguageChange(languageCode: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    try {
+      // First store preference in localStorage
+      localStorage.setItem("preferredLanguage", languageCode);
+      
+      // Update HTML document language attribute
+      document.documentElement.lang = languageCode;
+      
+      // Force reload resources for this language
+      i18n.reloadResources(languageCode)
+        .then(() => {
+          // Change language after resources are reloaded
+          i18n.changeLanguage(languageCode)
+            .then(() => {
+              console.log("Language forcefully changed to:", i18n.language);
+              resolve();
+            })
+            .catch(reject);
+        })
+        .catch(reject);
+    } catch (error) {
+      console.error("Failed to force language change:", error);
+      reject(error);
+    }
+  });
+}
+
 export default i18n;

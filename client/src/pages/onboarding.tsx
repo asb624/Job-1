@@ -21,6 +21,7 @@ import {
   Megaphone,
   CheckCircle
 } from "lucide-react";
+import { forceLanguageChange } from "../lib/i18n";
 
 export default function OnboardingPage() {
   const { t, i18n } = useTranslation();
@@ -31,11 +32,43 @@ export default function OnboardingPage() {
   // Ensure user has selected a language before onboarding
   useEffect(() => {
     const preferredLanguage = localStorage.getItem("preferredLanguage");
+    
+    // Debug language selection
+    console.log("Current i18n language:", i18n.language);
+    console.log("Preferred language from localStorage:", preferredLanguage);
+    console.log("Session selected language:", sessionStorage.getItem("selectedLanguage"));
+    
     if (!preferredLanguage) {
+      // If no language is selected, redirect to language selection
       navigate("/language-selection");
-    } else if (i18n.language !== preferredLanguage) {
-      i18n.changeLanguage(preferredLanguage);
+      return;
     }
+    
+    // Apply language immediately from localStorage using our helper function
+    const applyLanguage = async () => {
+      try {
+        console.log("Forcefully applying language:", preferredLanguage);
+        
+        // Use our utility function that ensures proper language change
+        await forceLanguageChange(preferredLanguage);
+        
+        console.log("Language applied successfully:", i18n.language);
+        console.log("HTML lang attribute:", document.documentElement.lang);
+      } catch (error) {
+        console.error("Error applying language:", error);
+      }
+    };
+    
+    // Apply language immediately on component mount
+    applyLanguage();
+    
+    // Force re-render with the correct language after a short delay
+    const timer = setTimeout(() => {
+      // This will trigger a re-render with updated translations
+      setCurrentStep(currentStep);
+    }, 200);
+    
+    return () => clearTimeout(timer);
   }, [navigate, i18n]);
   
   const handleComplete = async () => {

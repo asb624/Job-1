@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslation } from "react-i18next";
 import { ArrowRight } from "lucide-react";
+import { forceLanguageChange } from "../lib/i18n";
 
 export default function LanguageSelectionPage() {
   const [_, navigate] = useLocation();
@@ -38,22 +39,28 @@ export default function LanguageSelectionPage() {
 
   const handleContinue = async () => {
     try {
-      // Change the application language
-      await i18n.changeLanguage(selectedLanguage);
+      console.log("Changing language to:", selectedLanguage);
       
-      // Store the language preference in localStorage
-      localStorage.setItem("preferredLanguage", selectedLanguage);
-      
-      // Make sure we're marked as being in the onboarding flow
-      // This ensures users complete the entire flow
+      // Mark as being in the onboarding flow
       sessionStorage.setItem("isInOnboardingFlow", "true");
+      sessionStorage.setItem("selectedLanguage", selectedLanguage);
       
-      // Navigate to the onboarding page
-      navigate("/onboarding");
+      // Use our utility function to forcefully change the language
+      await forceLanguageChange(selectedLanguage);
+      
+      console.log("Language changed to:", i18n.language);
+      console.log("HTML lang attribute:", document.documentElement.lang);
+      
+      // Small delay to ensure language change takes effect
+      setTimeout(() => {
+        // Navigate to the onboarding page with our new language
+        navigate("/onboarding");
+      }, 300);
     } catch (error) {
       console.error("Error changing language:", error);
       // Navigate anyway as this is non-critical
       sessionStorage.setItem("isInOnboardingFlow", "true");
+      localStorage.setItem("preferredLanguage", selectedLanguage);
       navigate("/onboarding");
     }
   };

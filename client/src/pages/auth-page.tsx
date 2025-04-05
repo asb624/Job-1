@@ -38,14 +38,20 @@ export default function AuthPage() {
       const isNewRegistration = localStorage.getItem('isNewRegistration') === 'true';
       
       if (isNewRegistration) {
-        // Clear the flag after checking
-        localStorage.removeItem('isNewRegistration');
-        
-        // For new registrations, always direct to language selection
+        // For new registrations, direct to language selection
+        // Don't clear the flag here - we need it to persist through the onboarding flow
+        // It will be cleared after onboarding completes
         setLocation('/language-selection');
       } else {
-        // For regular logins, redirect to home
-        setLocation('/');
+        // For regular logins, check if they ever completed onboarding
+        if (user.onboardingCompleted) {
+          // If onboarding was previously completed, go directly to dashboard
+          setLocation('/dashboard');
+        } else {
+          // If returning user that never completed onboarding, 
+          // redirect to homepage where ProtectedRoute will handle further redirects if needed
+          setLocation('/');
+        }
       }
     }
   }, [user, setLocation]);
