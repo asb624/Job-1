@@ -34,10 +34,18 @@ export default function AuthPage() {
   // Watch for successful login/registration and redirect accordingly
   useEffect(() => {
     if (user) {
+      console.log("User detected in auth page, handling navigation");
+      console.log("User data:", user);
+      console.log("isNewRegistration:", localStorage.getItem('isNewRegistration'));
+      console.log("isInOnboardingFlow:", sessionStorage.getItem('isInOnboardingFlow'));
+      console.log("preferredLanguage:", localStorage.getItem('preferredLanguage'));
+      console.log("onboardingCompleted:", user.onboardingCompleted);
+      
       // Check if this is a new registration
       const isNewRegistration = localStorage.getItem('isNewRegistration') === 'true';
       
       if (isNewRegistration) {
+        console.log("This is a new registration, redirecting to language selection");
         // For new registrations, direct to language selection
         // Don't clear the flag here - we need it to persist through the onboarding flow
         // It will be cleared after onboarding completes
@@ -45,12 +53,24 @@ export default function AuthPage() {
       } else {
         // For regular logins, check if they ever completed onboarding
         if (user.onboardingCompleted) {
+          console.log("This is a returning user with completed onboarding, redirecting to dashboard");
           // If onboarding was previously completed, go directly to dashboard
           setLocation('/dashboard');
         } else {
-          // If returning user that never completed onboarding, 
-          // redirect to homepage where ProtectedRoute will handle further redirects if needed
-          setLocation('/');
+          // If returning user that never completed onboarding
+          const preferredLanguage = localStorage.getItem('preferredLanguage');
+          
+          if (preferredLanguage) {
+            console.log("This is a returning user with incomplete onboarding but has language preference, redirecting to onboarding");
+            // If they have a language preference, continue with onboarding
+            sessionStorage.setItem('isInOnboardingFlow', 'true');
+            setLocation('/onboarding');
+          } else {
+            console.log("This is a returning user with incomplete onboarding and no language preference, redirecting to language selection");
+            // If they don't have a language preference, start with language selection
+            sessionStorage.setItem('isInOnboardingFlow', 'true');
+            setLocation('/language-selection');
+          }
         }
       }
     }

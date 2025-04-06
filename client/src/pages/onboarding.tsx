@@ -32,11 +32,22 @@ export default function OnboardingPage() {
   // Ensure user has selected a language before onboarding
   useEffect(() => {
     const preferredLanguage = localStorage.getItem("preferredLanguage");
+    const isInOnboardingFlow = sessionStorage.getItem("isInOnboardingFlow") === "true";
     
-    // Debug language selection
+    // Debug language selection and flow state
+    console.log("Onboarding page loaded");
     console.log("Current i18n language:", i18n.language);
     console.log("Preferred language from localStorage:", preferredLanguage);
+    console.log("Is in onboarding flow:", isInOnboardingFlow);
     
+    // Verify we should be in the onboarding flow
+    if (!isInOnboardingFlow) {
+      console.log("User is not in the onboarding flow, redirecting to homepage");
+      navigate("/");
+      return;
+    }
+    
+    // Verify we have a language preference
     if (!preferredLanguage) {
       // If no language is selected, redirect to language selection
       console.log("No preferred language found, redirecting to language selection");
@@ -86,6 +97,8 @@ export default function OnboardingPage() {
   
   const handleComplete = async () => {
     try {
+      console.log("Onboarding completion - marking onboarding as completed in database");
+      
       // Mark onboarding as completed
       const response = await fetch('/api/user/onboarding', {
         method: 'POST',
@@ -93,21 +106,35 @@ export default function OnboardingPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ completed: true }),
+        credentials: 'include'
       });
       
       if (!response.ok) {
+        console.error("Onboarding completion - API request failed:", response.status);
         throw new Error('Failed to update onboarding status');
       }
       
-      // Clear the onboarding flow flag since we're done
+      console.log("Onboarding completion - API request successful");
+      
+      // Clear ALL flow flags since we're now completely done with onboarding
       sessionStorage.removeItem("isInOnboardingFlow");
+      localStorage.removeItem("isNewRegistration");
+      
+      console.log("Onboarding completion - flags cleared");
+      console.log("Onboarding completion - isInOnboardingFlow:", sessionStorage.getItem("isInOnboardingFlow"));
+      console.log("Onboarding completion - isNewRegistration:", localStorage.getItem("isNewRegistration"));
+      console.log("Onboarding completion - preferredLanguage:", localStorage.getItem("preferredLanguage"));
       
       // Redirect to the home page
+      console.log("Onboarding completion - redirecting to home page");
       navigate("/");
     } catch (error) {
-      console.error('Error completing onboarding:', error);
-      // Clear the flag and redirect anyway, as this is non-critical
+      console.error('Onboarding completion - error:', error);
+      // Clear the flags and redirect anyway, as this is non-critical
       sessionStorage.removeItem("isInOnboardingFlow");
+      localStorage.removeItem("isNewRegistration");
+      console.log("Onboarding completion - flags cleared after error");
+      console.log("Onboarding completion - redirecting to home page after error");
       navigate("/");
     }
   };

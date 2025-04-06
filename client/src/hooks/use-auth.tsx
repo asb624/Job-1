@@ -34,6 +34,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginData) => {
       try {
+        console.log("Logging in user:", credentials.username);
+        
         const res = await fetch("/api/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -43,10 +45,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         if (!res.ok) {
           const errorText = await res.text();
+          console.error("Login response not OK:", res.status, errorText);
           throw new Error(errorText || "Login failed");
         }
         
-        // For login, make sure to clear these flags to avoid onboarding
+        console.log("Login successful, parsing response...");
+        
+        // For login, make sure to clear these flags to avoid onboarding for returning users
+        // A returning user should never go through the language selection or onboarding flow
         localStorage.removeItem("isNewRegistration");
         sessionStorage.removeItem("isInOnboardingFlow");
         
@@ -54,16 +60,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // preferredLanguage will be set during language selection for new users
         // but for returning users we want to keep their previously selected language
         
-        return await res.json() as SelectUser;
+        const user = await res.json() as SelectUser;
+        console.log("User logged in with ID:", user.id, "onboardingCompleted:", user.onboardingCompleted);
+        
+        return user;
       } catch (error) {
         console.error("Login error:", error);
         throw error;
       }
     },
     onSuccess: (user: SelectUser) => {
+      console.log("Login mutation successful, updating query cache");
       queryClient.setQueryData(["/api/user"], user);
+      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      console.log("Login flow complete, auth page will handle redirect");
     },
     onError: (error: Error) => {
+      console.error("Login mutation error:", error);
       toast({
         title: "Login failed",
         description: error.message,
@@ -75,6 +88,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const registerMutation = useMutation({
     mutationFn: async (credentials: InsertUser) => {
       try {
+        console.log("Registering user:", credentials.username);
+        
         const res = await fetch("/api/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -84,11 +99,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         if (!res.ok) {
           const errorText = await res.text();
+          console.error("Registration response not OK:", res.status, errorText);
           throw new Error(errorText || "Registration failed");
         }
         
+        console.log("Registration successful, parsing response...");
         const user = await res.json() as SelectUser;
+        console.log("User created with ID:", user.id);
+        
         // Mark this as a new registration and set the onboarding flow flag
+        // These flags will be used to route the user through language selection and onboarding
         localStorage.setItem("isNewRegistration", "true");
         sessionStorage.setItem("isInOnboardingFlow", "true");
         
@@ -96,6 +116,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // This ensures they go through the language selection process
         localStorage.removeItem("preferredLanguage");
         
+        console.log("Registration flags set, returning user");
         return user;
       } catch (error) {
         console.error("Registration error:", error);
@@ -103,7 +124,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     },
     onSuccess: (user: SelectUser) => {
+      console.log("Registration mutation successful, updating query cache");
       queryClient.setQueryData(["/api/user"], user);
+      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
       
       // NOTE: We don't clear flags for registration success
       // The flags need to persist so the user can be directed to language selection
@@ -114,8 +137,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       // We'll handle redirection in the auth page component instead
       // to properly maintain session context
+      console.log("Registration flow complete, auth page will handle redirect");
     },
     onError: (error: Error) => {
+      console.error("Registration mutation error:", error);
       toast({
         title: "Registration failed",
         description: error.message,

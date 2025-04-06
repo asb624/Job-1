@@ -30,10 +30,15 @@ async function comparePasswords(supplied: string, stored: string) {
 
 export function setupAuth(app: Express) {
   const sessionSettings: session.SessionOptions = {
-    secret: process.env.SESSION_SECRET!,
+    secret: process.env.SESSION_SECRET || "job_bazaar_default_secret",
     resave: false,
-    saveUninitialized: false,
+    saveUninitialized: true, // Changed to true to persist session for all visitors
     store: storage.sessionStore,
+    cookie: {
+      secure: false, // Allow non-HTTPS in development
+      httpOnly: true,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
+    }
   };
 
   app.set("trust proxy", 1);
@@ -108,23 +113,39 @@ export function setupAuth(app: Express) {
   });
 
   app.post("/api/user/onboarding", async (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
+    if (!req.isAuthenticated()) {
+      console.log("[express] Unauthorized attempt to update onboarding status");
+      return res.status(401).json({ error: "Unauthorized" });
+    }
     
     try {
+      console.log("[express] Updating onboarding status for user:", req.user.id);
+      
       const { completed } = req.body;
       if (typeof completed !== 'boolean') {
+        console.log("[express] Invalid onboarding status:", completed);
         return res.status(400).json({ error: "The 'completed' field must be a boolean" });
       }
       
       const updatedUser = await storage.updateOnboardingStatus(req.user.id, completed);
+      console.log("[express] Onboarding status updated:", updatedUser.onboardingCompleted);
       
       // Update the session
       req.login(updatedUser, (err) => {
-        if (err) throw err;
+        if (err) {
+          console.log("[express] Error updating session:", err);
+          throw err;
+        }
+        console.log("[express] Session updated successfully");
+        
+        // Set a secure flag in the response
+        res.set('X-Onboarding-Updated', 'true');
+        
+        // Return the updated user
         res.json(updatedUser);
       });
     } catch (error) {
-      console.error("Error updating onboarding status:", error);
+      console.error("[express] Error updating onboarding status:", error);
       res.status(500).json({ error: "Failed to update onboarding status" });
     }
   });

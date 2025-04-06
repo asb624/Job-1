@@ -39,7 +39,20 @@ export default function LanguageSelectionPage() {
 
   const handleContinue = async () => {
     try {
-      console.log("Changing language to:", selectedLanguage);
+      console.log("Language selection - changing language to:", selectedLanguage);
+      
+      // Verify this is a new registration or incomplete onboarding flow
+      const isNewRegistration = localStorage.getItem("isNewRegistration") === "true";
+      const isInOnboardingFlow = sessionStorage.getItem("isInOnboardingFlow") === "true";
+      
+      console.log("Language selection - isNewRegistration:", isNewRegistration);
+      console.log("Language selection - isInOnboardingFlow:", isInOnboardingFlow);
+      
+      if (!isNewRegistration && !isInOnboardingFlow) {
+        console.log("Language selection - user is not in registration or onboarding flow, redirecting to home");
+        navigate("/");
+        return;
+      }
       
       // Mark as being in the onboarding flow
       sessionStorage.setItem("isInOnboardingFlow", "true");
@@ -51,20 +64,22 @@ export default function LanguageSelectionPage() {
       // Use our utility function to forcefully change the language
       await forceLanguageChange(selectedLanguage);
       
-      console.log("Language changed to:", i18n.language);
-      console.log("HTML lang attribute:", document.documentElement.lang);
-      console.log("Stored in localStorage:", localStorage.getItem("preferredLanguage"));
+      console.log("Language selection - language changed to:", i18n.language);
+      console.log("Language selection - HTML lang attribute:", document.documentElement.lang);
+      console.log("Language selection - stored in localStorage:", localStorage.getItem("preferredLanguage"));
       
       // Small delay to ensure language change takes effect
       setTimeout(() => {
         // Navigate to the onboarding page with our new language
+        console.log("Language selection - navigating to onboarding page");
         navigate("/onboarding");
       }, 300);
     } catch (error) {
-      console.error("Error changing language:", error);
+      console.error("Language selection - error changing language:", error);
       // Navigate anyway as this is non-critical
       sessionStorage.setItem("isInOnboardingFlow", "true");
       localStorage.setItem("preferredLanguage", selectedLanguage);
+      console.log("Language selection - fallback navigation to onboarding page");
       navigate("/onboarding");
     }
   };
