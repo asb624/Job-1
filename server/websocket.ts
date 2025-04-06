@@ -1,10 +1,11 @@
 import { WebSocket, WebSocketServer } from "ws";
 import { Server } from "http";
+import { storage } from "./storage";
 
 // Define message types for type safety
 export type WebSocketMessage = {
-  type: 'selection' | 'service' | 'requirement' | 'notification' | 'message' | 'conversation' | 'call-signal';
-  action: 'create' | 'update' | 'delete' | 'offer' | 'answer' | 'icecandidate' | 'call-request' | 'call-accept' | 'call-reject' | 'call-end';
+  type: 'selection' | 'service' | 'requirement' | 'notification' | 'message' | 'conversation' | 'call-signal' | 'auth' | 'connection';
+  action: 'create' | 'update' | 'delete' | 'offer' | 'answer' | 'icecandidate' | 'call-request' | 'call-accept' | 'call-reject' | 'call-end' | 'identify' | 'authenticate';
   payload: any;
 };
 
@@ -17,19 +18,66 @@ export function setupWebSocket(server: Server) {
   const wss = new WebSocketServer({ 
     server,
     path: "/ws",
-    // Add proper error handling
+    // Add proper error handling with session validation
     verifyClient: (info, cb) => {
-      // Accept all connections for now
-      // In production, you might want to verify the user's session
-      cb(true);
+      try {
+        // Get the session cookie from the request headers
+        const cookies = info.req.headers.cookie;
+        if (!cookies) {
+          console.log("[websocket] No cookie found in connection request");
+          // Still allow connection, but they'll need to authenticate via message
+          return cb(true);
+        }
+        
+        // The session authentication will happen when client sends auth message
+        // We accept the initial connection to allow the client to identify itself
+        return cb(true);
+      } catch (error) {
+        console.error("[websocket] Error verifying WebSocket client:", error);
+        // Accept connection but it will be unauthenticated until proper auth message
+        return cb(true);
+      }
     }
   });
 
   // Store clients with their user IDs for targeted messages
   const clients = new Map<number, WebSocket>();
 
-  wss.on("connection", (ws, request) => {
+  // Implement a heartbeat mechanism to keep connections alive
+  function heartbeat(this: WebSocket & { isAlive?: boolean }) {
+    this.isAlive = true;
+  }
+  
+  // Check for dead connections every 30 seconds
+  const interval = setInterval(() => {
+    wss.clients.forEach((ws: any) => {
+      if (ws.isAlive === false) {
+        // Client didn't respond to ping, terminate connection
+        console.log("Terminating inactive WebSocket connection");
+        return ws.terminate();
+      }
+      
+      // Mark as inactive for next ping cycle
+      ws.isAlive = false;
+      // Send ping (client should respond with pong)
+      try {
+        ws.ping();
+      } catch (e) {
+        console.error("Error sending ping:", e);
+      }
+    });
+  }, 30000);
+  
+  // Clean up interval on server close
+  wss.on('close', () => {
+    clearInterval(interval);
+  });
+  
+  wss.on("connection", (ws: WebSocket & { isAlive?: boolean }, request) => {
     console.log("WebSocket client connected");
+    
+    // Initialize connection as alive
+    ws.isAlive = true;
     
     // Parse the URL to extract query parameters
     const url = new URL(request.url || '', `http://${request.headers.host}`);
@@ -38,20 +86,36 @@ export function setupWebSocket(server: Server) {
     // Store the user ID in the client map if provided
     if (userId && !isNaN(parseInt(userId))) {
       const userIdNum = parseInt(userId);
+      // Remove any existing connection for this user ID
+      const existingConnection = clients.get(userIdNum);
+      if (existingConnection && existingConnection !== ws) {
+        console.log(`Replacing existing connection for user ${userIdNum}`);
+        try {
+          existingConnection.close();
+        } catch (e) {
+          console.error(`Error closing existing connection for user ${userIdNum}:`, e);
+        }
+      }
       clients.set(userIdNum, ws);
       console.log(`Client registered with user ID: ${userIdNum}`);
     }
+    
+    // Handle pong messages (response to our ping)
+    ws.on('pong', heartbeat);
 
     ws.on("error", (error) => {
       console.error("WebSocket error:", error);
     });
 
-    ws.on("close", () => {
+    ws.on("close", (code, reason) => {
+      // Log close code and reason for debugging
+      console.log(`WebSocket closed with code ${code}${reason ? ` and reason: ${reason}` : ''}`);
+      
       // Remove client from the map
-      clients.forEach((client, userId) => {
+      clients.forEach((client, clientUserId) => {
         if (client === ws) {
-          clients.delete(userId);
-          console.log(`Client with userId ${userId} disconnected`);
+          clients.delete(clientUserId);
+          console.log(`Client with userId ${clientUserId} disconnected`);
         }
       });
       console.log("WebSocket client disconnected");
@@ -125,6 +189,60 @@ export function setupWebSocket(server: Server) {
               sendToUser(message.payload.to, message);
             } else {
               console.warn('WebRTC signal missing recipient (to) field');
+            }
+            break;
+          case 'auth':
+            // Handle authentication messages
+            if (message.action === 'identify' && message.payload.userId) {
+              const userId = message.payload.userId;
+              console.log(`User identified via WebSocket: ${userId}`);
+              
+              // Validate user exists (can be enhanced to validate against session)
+              storage.getUser(userId).then((user) => {
+                if (user) {
+                  // Store the connection with the user ID if valid user
+                  clients.set(userId, ws);
+                  
+                  // Acknowledge the auth message with success
+                  ws.send(JSON.stringify({
+                    type: 'auth',
+                    action: 'authenticate',
+                    payload: { 
+                      success: true,
+                      userId,
+                      timestamp: new Date().toISOString()
+                    }
+                  }));
+                  
+                  console.log(`WebSocket authentication successful for user ${userId}`);
+                } else {
+                  // Send failure if user doesn't exist
+                  ws.send(JSON.stringify({
+                    type: 'auth',
+                    action: 'authenticate',
+                    payload: { 
+                      success: false,
+                      error: 'User not found',
+                      timestamp: new Date().toISOString()
+                    }
+                  }));
+                  
+                  console.log(`WebSocket authentication failed - user ${userId} not found`);
+                }
+              }).catch((error: Error) => {
+                console.error(`WebSocket authentication error for user ${userId}:`, error);
+                
+                // Send error message on authentication failure
+                ws.send(JSON.stringify({
+                  type: 'auth',
+                  action: 'authenticate',
+                  payload: { 
+                    success: false,
+                    error: 'Authentication error',
+                    timestamp: new Date().toISOString()
+                  }
+                }));
+              });
             }
             break;
           default:

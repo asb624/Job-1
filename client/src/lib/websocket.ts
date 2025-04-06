@@ -1,8 +1,10 @@
 // WebSocket connection utility
 let socket: WebSocket | null = null;
 let reconnectAttempts = 0;
-const maxReconnectAttempts = 5;
-const reconnectDelay = 1000;
+const maxReconnectAttempts = 10;
+const reconnectDelay = 2000;
+let reconnectTimeout: ReturnType<typeof setTimeout> | null = null;
+let intentionalClose = false;
 
 // Queue for messages when socket is not connected
 const messageQueue: any[] = [];
@@ -14,6 +16,7 @@ function setupSocketEventHandlers() {
   socket.onopen = () => {
     console.log('WebSocket connection established');
     reconnectAttempts = 0;
+    intentionalClose = false;
     
     // Send any queued messages
     while (messageQueue.length > 0) {
@@ -36,19 +39,33 @@ function setupSocketEventHandlers() {
     }
   };
   
-  socket.onclose = () => {
-    console.log('WebSocket closed');
+  socket.onclose = (event) => {
+    console.log(`WebSocket closed - Code: ${event.code}, Reason: ${event.reason}`);
+    
+    // Don't reconnect if the closure was intentional
+    if (intentionalClose) {
+      console.log('WebSocket closed intentionally, not reconnecting');
+      return;
+    }
+    
+    // Clear any existing reconnect timeout
+    if (reconnectTimeout) {
+      clearTimeout(reconnectTimeout);
+      reconnectTimeout = null;
+    }
     
     // Attempt to reconnect if not at maximum attempts
     if (reconnectAttempts < maxReconnectAttempts) {
       reconnectAttempts++;
-      console.log('WebSocket reconnecting from subscription...');
+      const delay = reconnectDelay * Math.min(reconnectAttempts, 5); // Cap the delay growth
+      console.log(`WebSocket reconnecting in ${delay}ms (attempt ${reconnectAttempts}/${maxReconnectAttempts})...`);
       
-      setTimeout(() => {
+      reconnectTimeout = setTimeout(() => {
+        console.log(`Executing reconnect attempt ${reconnectAttempts}`);
         initializeWebSocket();
-      }, reconnectDelay * reconnectAttempts);
+      }, delay);
     } else {
-      console.error('Max reconnection attempts reached');
+      console.error('Max reconnection attempts reached, giving up');
     }
   };
   
@@ -59,14 +76,26 @@ function setupSocketEventHandlers() {
 
 // Connect to WebSocket with userId
 export function connectWebSocket(userId: number): WebSocket {
-  // Close existing connection if there is one
+  // Clear any existing reconnect timeout
+  if (reconnectTimeout) {
+    clearTimeout(reconnectTimeout);
+    reconnectTimeout = null;
+  }
+  
+  // Mark as intentional close if we're closing an existing connection
   if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) {
+    intentionalClose = true;
     socket.close();
   }
+  
+  // Reset reconnect attempts since this is a user-initiated connection
+  reconnectAttempts = 0;
   
   // Determine WebSocket URL based on window location
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
   const wsUrl = `${protocol}//${window.location.host}/ws?userId=${userId}`;
+  
+  console.log(`Connecting to WebSocket with userId: ${userId}`);
   
   // Create new WebSocket connection
   socket = new WebSocket(wsUrl);
@@ -79,8 +108,15 @@ export function connectWebSocket(userId: number): WebSocket {
 
 // Initialize WebSocket connection without userId
 export function initializeWebSocket() {
-  // Close existing connection if there is one
+  // Clear any existing reconnect timeout
+  if (reconnectTimeout) {
+    clearTimeout(reconnectTimeout);
+    reconnectTimeout = null;
+  }
+  
+  // Mark as intentional close if we're closing an existing connection
   if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) {
+    intentionalClose = true;
     socket.close();
   }
   
@@ -88,8 +124,13 @@ export function initializeWebSocket() {
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
   const wsUrl = `${protocol}//${window.location.host}/ws`;
   
+  console.log('Initializing WebSocket connection');
+  
   // Create new WebSocket connection
   socket = new WebSocket(wsUrl);
+  
+  // Set intentionalClose to false since we want to reconnect if this closes unexpectedly
+  intentionalClose = false;
   
   // Set up event handlers
   setupSocketEventHandlers();
@@ -140,34 +181,47 @@ export function subscribeToMessages(
   callback: (data: any) => void,
   userId: number
 ): () => void {
-  // Send authentication message when connected
-  if (socket && socket.readyState === WebSocket.OPEN) {
+  // Function to send authentication message
+  const sendAuthMessage = () => {
+    console.log(`Sending WebSocket auth message for user ${userId}`);
     sendToWebsocket({
       type: 'auth',
       action: 'identify',
       payload: { userId }
     });
+  };
+  
+  // Send authentication message immediately if already connected
+  if (socket && socket.readyState === WebSocket.OPEN) {
+    sendAuthMessage();
   }
   
   // Set up reconnect handler to re-authenticate
   const reconnectHandler = () => {
     if (socket && socket.readyState === WebSocket.OPEN) {
-      sendToWebsocket({
-        type: 'auth',
-        action: 'identify',
-        payload: { userId }
-      });
+      // Wait a small amount of time to ensure the connection is fully established
+      setTimeout(sendAuthMessage, 100);
     }
   };
   
   socket?.addEventListener('open', reconnectHandler);
   
-  // Listen for message events
-  const unsubscribe = listenForWebSocketMessage('message', callback);
+  // Listen for all message types, not just 'message' type
+  const unsubscribe = (event: Event) => {
+    const customEvent = event as CustomEvent;
+    const data = customEvent.detail;
+    
+    // Pass all message types to the callback
+    if (data) {
+      callback(data);
+    }
+  };
+  
+  window.addEventListener('websocket-message', unsubscribe);
   
   // Return function to clean up both listeners
   return () => {
-    unsubscribe();
+    window.removeEventListener('websocket-message', unsubscribe);
     socket?.removeEventListener('open', reconnectHandler);
   };
 }

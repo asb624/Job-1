@@ -31,13 +31,17 @@ async function comparePasswords(supplied: string, stored: string) {
 export function setupAuth(app: Express) {
   const sessionSettings: session.SessionOptions = {
     secret: process.env.SESSION_SECRET || "job_bazaar_default_secret",
-    resave: false,
-    saveUninitialized: true, // Changed to true to persist session for all visitors
+    resave: false, // Only save session when data changes, prevents race conditions
+    saveUninitialized: false, // Don't save empty sessions, better for login systems
+    rolling: true, // Reset expiration with each request
     store: storage.sessionStore,
+    name: 'job_bazaar_session', // Custom name to avoid using default connect.sid
     cookie: {
-      secure: false, // Allow non-HTTPS in development
-      httpOnly: true,
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
+      secure: process.env.NODE_ENV === 'production', // Only HTTPS in production
+      httpOnly: true, // Prevent client JS from reading
+      sameSite: 'lax', // Provides CSRF protection while allowing some cross-site requests
+      maxAge: 14 * 24 * 60 * 60 * 1000, // 14 days in milliseconds for better persistence
+      path: '/' // Ensure cookie is available throughout the site
     }
   };
 
@@ -59,8 +63,17 @@ export function setupAuth(app: Express) {
 
   passport.serializeUser((user, done) => done(null, user.id));
   passport.deserializeUser(async (id: number, done) => {
-    const user = await storage.getUser(id);
-    done(null, user);
+    try {
+      const user = await storage.getUser(id);
+      if (!user) {
+        console.log(`[express] User not found during deserialization: ${id}`);
+        return done(null, false);
+      }
+      done(null, user);
+    } catch (error) {
+      console.error(`[express] Error deserializing user ${id}:`, error);
+      done(error, null);
+    }
   });
 
   app.post("/api/register", async (req, res, next) => {
@@ -96,8 +109,39 @@ export function setupAuth(app: Express) {
     }
   });
 
-  app.post("/api/login", passport.authenticate("local"), (req, res) => {
-    res.status(200).json(req.user);
+  app.post("/api/login", passport.authenticate("local"), async (req: any, res) => {
+    try {
+      // Passport guarantees that req.user exists after successful authentication
+      // But we'll double check to be safe
+      if (!req.user) {
+        console.error("[express] User authenticated but req.user is undefined");
+        return res.status(500).json({ error: "Authentication error" });
+      }
+      
+      // Update the user's last seen timestamp
+      const userId = req.user.id;
+      console.log("[express] Updating last seen for user:", userId);
+      const updatedUser = await storage.updateUserLastSeen(userId);
+      
+      // Update the session with the latest user data
+      req.login(updatedUser, (err: any) => {
+        if (err) {
+          console.error("[express] Error updating session after login:", err);
+          return res.status(500).json({ error: "Session update failed" });
+        }
+        
+        console.log("[express] User logged in and session updated:", updatedUser.id);
+        return res.status(200).json(updatedUser);
+      });
+    } catch (error) {
+      console.error("[express] Error updating user lastSeen:", error);
+      // Still return the user object even if the lastSeen update fails
+      if (req.user) {
+        return res.status(200).json(req.user);
+      } else {
+        return res.status(500).json({ error: "Session error" });
+      }
+    }
   });
 
   app.post("/api/logout", (req, res, next) => {
@@ -107,13 +151,22 @@ export function setupAuth(app: Express) {
     });
   });
 
-  app.get("/api/user", (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
+  app.get("/api/user", (req: any, res) => {
+    if (!req.isAuthenticated()) {
+      console.log("[express] Unauthenticated attempt to access /api/user");
+      return res.sendStatus(401);
+    }
+    
+    if (!req.user) {
+      console.error("[express] User authenticated but req.user is undefined");
+      return res.status(500).json({ error: "Session error" });
+    }
+    
     res.json(req.user);
   });
 
-  app.post("/api/user/onboarding", async (req, res) => {
-    if (!req.isAuthenticated()) {
+  app.post("/api/user/onboarding", async (req: any, res) => {
+    if (!req.isAuthenticated() || !req.user) {
       console.log("[express] Unauthorized attempt to update onboarding status");
       return res.status(401).json({ error: "Unauthorized" });
     }
@@ -130,13 +183,14 @@ export function setupAuth(app: Express) {
       const updatedUser = await storage.updateOnboardingStatus(req.user.id, completed);
       console.log("[express] Onboarding status updated:", updatedUser.onboardingCompleted);
       
-      // Update the session
-      req.login(updatedUser, (err) => {
+      // Update the session with the new user data
+      req.login(updatedUser, (err: any) => {
         if (err) {
           console.log("[express] Error updating session:", err);
-          throw err;
+          return res.status(500).json({ error: "Session update failed" });
         }
-        console.log("[express] Session updated successfully");
+        
+        console.log("[express] Session updated successfully with new onboarding status");
         
         // Set a secure flag in the response
         res.set('X-Onboarding-Updated', 'true');

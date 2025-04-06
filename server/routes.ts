@@ -92,7 +92,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         clearTimeout(timeoutId);
         
         if (myMemoryResponse.ok) {
-          const myMemoryData = await myMemoryResponse.json();
+          const myMemoryData = await myMemoryResponse.json() as { responseData?: { translatedText?: string } };
           if (myMemoryData?.responseData?.translatedText) {
             const translatedText = myMemoryData.responseData.translatedText;
             
@@ -408,17 +408,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (filters.sortBy === 'budget') {
             return filters.sortOrder === 'desc' ? b.budget - a.budget : a.budget - b.budget;
           } else if (filters.sortBy === 'date') {
-            return filters.sortOrder === 'desc' 
-              ? new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-              : new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+            // Handle null dates by treating them as older (smaller timestamp)
+            const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+            const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+            return filters.sortOrder === 'desc' ? bTime - aTime : aTime - bTime;
           }
           return 0;
         });
       } else {
         // Default sort by newest first
-        filteredRequirements = filteredRequirements.sort((a, b) => 
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
+        filteredRequirements = filteredRequirements.sort((a, b) => {
+          // Handle null dates by treating them as older (smaller timestamp)
+          const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return bTime - aTime;
+        });
       }
       
       res.json(filteredRequirements);
@@ -521,17 +525,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Conversations & Messages
-  app.post("/api/conversations", async (req, res) => {
-    if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+  app.post("/api/conversations", async (req: any, res) => {
+    if (!req.isAuthenticated()) {
+      console.log('[express] Unauthorized attempt to create conversation');
+      return res.status(401).json({ error: "Unauthorized" });
+    }
 
     const { recipientId } = req.body;
-    if (!recipientId) return res.status(400).json({ message: "Recipient ID is required" });
+    if (!recipientId) {
+      console.log('[express] Missing recipientId in conversation creation request');
+      return res.status(400).json({ message: "Recipient ID is required" });
+    }
 
     try {
+      console.log(`[express] Creating conversation between user ${req.user.id} and recipient ${recipientId}`);
       const conversation = await storage.getOrCreateConversation(req.user.id, parseInt(recipientId));
+      console.log(`[express] Conversation created with ID: ${conversation.id}`);
       res.status(201).json(conversation);
     } catch (error) {
-      console.error('Error creating conversation:', error);
+      console.error('[express] Error creating conversation:', error);
       res.status(500).json({ message: "Failed to create conversation" });
     }
   });
@@ -837,7 +849,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     try {
       const review = await storage.createReview({
-        ...parsed.data,
+        serviceId: parsed.data.serviceId,
+        rating: parsed.data.rating,
+        comment: parsed.data.comment || null,
         userId: req.user.id,
       });
       

@@ -40,6 +40,19 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     const cleanup = subscribeToMessages((message) => {
       console.log("WebSocket notification received:", message);
       
+      // Handle auth messages separately
+      if (message.type === 'auth' && message.action === 'authenticate') {
+        console.log("WebSocket authentication successful:", message.payload);
+        return;
+      }
+      
+      // Skip connection status messages
+      if (message.type === 'connection') {
+        console.log("WebSocket connection status:", message);
+        return;
+      }
+      
+      // Handle various notification types
       switch (message.type) {
         case 'bid':
           toast({
@@ -62,7 +75,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         case 'notification':
           toast({
             title: "New Notification",
-            description: message.payload.message,
+            description: message.payload?.message || "You have a new notification",
           });
           break;
         case 'message':
