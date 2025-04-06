@@ -36,37 +36,50 @@ export default function OnboardingPage() {
     // Debug language selection
     console.log("Current i18n language:", i18n.language);
     console.log("Preferred language from localStorage:", preferredLanguage);
-    console.log("Session selected language:", sessionStorage.getItem("selectedLanguage"));
     
     if (!preferredLanguage) {
       // If no language is selected, redirect to language selection
+      console.log("No preferred language found, redirecting to language selection");
       navigate("/language-selection");
       return;
     }
     
-    // Apply language immediately from localStorage using our helper function
-    const applyLanguage = async () => {
-      try {
-        console.log("Forcefully applying language:", preferredLanguage);
-        
-        // Use our utility function that ensures proper language change
-        await forceLanguageChange(preferredLanguage);
-        
-        console.log("Language applied successfully:", i18n.language);
-        console.log("HTML lang attribute:", document.documentElement.lang);
-      } catch (error) {
-        console.error("Error applying language:", error);
-      }
-    };
-    
-    // Apply language immediately on component mount
-    applyLanguage();
+    // Check if the current language matches the preferred language
+    if (i18n.language !== preferredLanguage) {
+      console.log("Language mismatch, forcing language change");
+      console.log("Current:", i18n.language, "Preferred:", preferredLanguage);
+      
+      // Apply language immediately from localStorage using our helper function
+      const applyLanguage = async () => {
+        try {
+          console.log("Forcefully applying language:", preferredLanguage);
+          
+          // Force the language change with our utility
+          await forceLanguageChange(preferredLanguage);
+          
+          // Verify the language change
+          console.log("Language applied successfully:", i18n.language);
+          console.log("HTML lang attribute:", document.documentElement.lang);
+          
+          // Force a re-render with the correct language
+          setCurrentStep(prev => prev); // This triggers re-render
+        } catch (error) {
+          console.error("Error applying language:", error);
+        }
+      };
+      
+      // Apply language immediately on component mount
+      applyLanguage();
+    } else {
+      console.log("Language already matches preferred language:", preferredLanguage);
+    }
     
     // Force re-render with the correct language after a short delay
+    // This helps ensure that even slow-loading translation resources are captured
     const timer = setTimeout(() => {
       // This will trigger a re-render with updated translations
-      setCurrentStep(currentStep);
-    }, 200);
+      setCurrentStep(prev => prev);
+    }, 300);
     
     return () => clearTimeout(timer);
   }, [navigate, i18n]);

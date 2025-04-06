@@ -43,13 +43,17 @@ export default function LanguageSelectionPage() {
       
       // Mark as being in the onboarding flow
       sessionStorage.setItem("isInOnboardingFlow", "true");
-      sessionStorage.setItem("selectedLanguage", selectedLanguage);
+      
+      // IMPORTANT: Store the selected language in localStorage for persistence
+      // This is the canonical source of truth for language preference
+      localStorage.setItem("preferredLanguage", selectedLanguage);
       
       // Use our utility function to forcefully change the language
       await forceLanguageChange(selectedLanguage);
       
       console.log("Language changed to:", i18n.language);
       console.log("HTML lang attribute:", document.documentElement.lang);
+      console.log("Stored in localStorage:", localStorage.getItem("preferredLanguage"));
       
       // Small delay to ensure language change takes effect
       setTimeout(() => {

@@ -92,9 +92,15 @@ i18n
       escapeValue: false, // react already safes from xss
     },
     detection: {
+      // Explicitly prioritize localStorage over navigator
       order: ['localStorage', 'navigator'],
+      // Cache the detected language preference
       caches: ['localStorage'],
+      // Look for preferredLanguage in localStorage
+      lookupLocalStorage: 'preferredLanguage',
     },
+    // Ensure language loads synchronously to prevent flashing content
+    initImmediate: false,
   });
 
 /**
@@ -104,11 +110,21 @@ i18n
 export function forceLanguageChange(languageCode: string): Promise<void> {
   return new Promise((resolve, reject) => {
     try {
+      console.log(`Force language change started: ${languageCode}`);
+      
       // First store preference in localStorage
       localStorage.setItem("preferredLanguage", languageCode);
       
       // Update HTML document language attribute
       document.documentElement.lang = languageCode;
+      
+      // Make sure the change sticks
+      const ensureLanguageChange = () => {
+        if (i18n.language !== languageCode) {
+          console.log(`Language not yet changed, forcing again (current: ${i18n.language}, desired: ${languageCode})`);
+          i18n.changeLanguage(languageCode);
+        }
+      };
       
       // Force reload resources for this language
       i18n.reloadResources(languageCode)
@@ -117,11 +133,28 @@ export function forceLanguageChange(languageCode: string): Promise<void> {
           i18n.changeLanguage(languageCode)
             .then(() => {
               console.log("Language forcefully changed to:", i18n.language);
+              
+              // Extra verification to make sure the change sticks
+              setTimeout(ensureLanguageChange, 100);
+              setTimeout(ensureLanguageChange, 300);
+              
+              // Force HTML lang attribute again
+              document.documentElement.lang = languageCode;
+              
               resolve();
             })
             .catch(reject);
         })
-        .catch(reject);
+        .catch((err) => {
+          console.error("Error reloading resources:", err);
+          // Try to change language even if resource reload fails
+          i18n.changeLanguage(languageCode)
+            .then(() => {
+              console.log("Language changed (fallback) to:", i18n.language);
+              resolve();
+            })
+            .catch(reject);
+        });
     } catch (error) {
       console.error("Failed to force language change:", error);
       reject(error);
