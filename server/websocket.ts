@@ -3,8 +3,8 @@ import { Server } from "http";
 
 // Define message types for type safety
 export type WebSocketMessage = {
-  type: 'selection' | 'service' | 'requirement' | 'notification' | 'message' | 'conversation';
-  action: 'create' | 'update' | 'delete';
+  type: 'selection' | 'service' | 'requirement' | 'notification' | 'message' | 'conversation' | 'call-signal';
+  action: 'create' | 'update' | 'delete' | 'offer' | 'answer' | 'icecandidate' | 'call-request' | 'call-accept' | 'call-reject' | 'call-end';
   payload: any;
 };
 
@@ -115,6 +115,16 @@ export function setupWebSocket(server: Server) {
               sendToUser(message.payload.userId, message);
             } else {
               broadcast(message);
+            }
+            break;
+          case 'call-signal':
+            // Handle WebRTC signaling
+            if (message.payload.to) {
+              // Direct the signal to the specific recipient
+              console.log(`WebRTC Signaling: ${message.action} from ${message.payload.from} to ${message.payload.to}`);
+              sendToUser(message.payload.to, message);
+            } else {
+              console.warn('WebRTC signal missing recipient (to) field');
             }
             break;
           default:

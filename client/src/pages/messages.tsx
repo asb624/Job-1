@@ -39,6 +39,7 @@ import { Label } from "@/components/ui/label";
 
 import { MessageCircle, Send, Menu, UserPlus, Languages, Mic } from "lucide-react";
 import { VoiceRecorder } from "@/components/voice-recorder";
+import { CallButtons } from "@/components/call-buttons";
 
 export default function MessagesPage() {
   const { user } = useAuth();
@@ -269,7 +270,7 @@ export default function MessagesPage() {
   useEffect(() => {
     if (!user) return;
 
-    const unsubscribe = subscribeToMessages((message) => {
+    const unsubscribe = subscribeToMessages((message: { type: string; action: string; payload: any }) => {
       console.log('🔵 WS RECEIVED: WebSocket message:', message);
       
       if (message.type === 'message' && message.action === 'create') {
@@ -514,12 +515,12 @@ export default function MessagesPage() {
       onboardingCompleted: false
     } as User;
     
-    // Fetch this specific user if not already loading
+    // Fetch this specific user if not already in cache
     const userQueryKey = [`/api/users/${otherUserId}`];
-    const queryState = queryClient.getQueryState(userQueryKey);
-    const isUserLoading = queryState?.status === 'loading' || queryState?.status === 'pending';
+    const existingData = queryClient.getQueryData(userQueryKey);
+    const isAlreadyFetched = !!existingData;
     
-    if (!isUserLoading) {
+    if (!isAlreadyFetched) {
       queryClient.fetchQuery({
         queryKey: userQueryKey,
         queryFn: async () => {
@@ -593,15 +594,25 @@ export default function MessagesPage() {
                     </Avatar>
                     <CardTitle className="text-lg">{getOtherUser(selectedConversation)?.username}</CardTitle>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Languages className="h-5 w-5 text-muted-foreground" />
-                    <div className="flex items-center space-x-2">
-                      <Label htmlFor="auto-translate" className="text-sm">Auto-translate</Label>
-                      <Switch
-                        id="auto-translate"
-                        checked={autoTranslate}
-                        onCheckedChange={setAutoTranslate}
-                      />
+                  <div className="flex items-center gap-4">
+                    {/* Call buttons */}
+                    <CallButtons 
+                      user={user}
+                      otherUser={getOtherUser(selectedConversation)}
+                      conversationId={selectedConversation.id}
+                    />
+                    
+                    {/* Translation controls */}
+                    <div className="flex items-center gap-2">
+                      <Languages className="h-5 w-5 text-muted-foreground" />
+                      <div className="flex items-center space-x-2">
+                        <Label htmlFor="auto-translate" className="text-sm">Auto-translate</Label>
+                        <Switch
+                          id="auto-translate"
+                          checked={autoTranslate}
+                          onCheckedChange={setAutoTranslate}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
