@@ -14,9 +14,10 @@ const ENGLISH_FILE = path.join(LOCALES_DIR, 'en.json');
 // Read the English locale file as the reference
 const englishLocale = JSON.parse(fs.readFileSync(ENGLISH_FILE, 'utf8'));
 
-// Extract marketplace and location sections from the English file
+// Extract marketplace, location, and onboarding sections from the English file
 const marketplace = englishLocale.marketplace;
 const location = englishLocale.location;
+const onboarding = englishLocale.onboarding;
 
 // Get all locale files
 const localeFiles = fs.readdirSync(LOCALES_DIR)
@@ -47,6 +48,13 @@ for (const file of localeFiles) {
     if (!localeContent.location) {
       console.log(`- Adding "location" section to ${file}`);
       localeContent.location = location;
+      updated = true;
+    }
+    
+    // Check if onboarding section is missing
+    if (!localeContent.onboarding) {
+      console.log(`- Adding "onboarding" section to ${file}`);
+      localeContent.onboarding = onboarding;
       updated = true;
     }
     
