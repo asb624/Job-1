@@ -31,13 +31,13 @@ async function comparePasswords(supplied: string, stored: string) {
 export function setupAuth(app: Express) {
   const sessionSettings: session.SessionOptions = {
     secret: process.env.SESSION_SECRET || "job_bazaar_default_secret",
-    resave: false, // Only save session when data changes, prevents race conditions
-    saveUninitialized: false, // Don't save empty sessions, better for login systems
+    resave: true, // Needed to ensure sessions are saved for longer sessions
+    saveUninitialized: true, // This allows guest sessions
     rolling: true, // Reset expiration with each request
     store: storage.sessionStore,
     name: 'job_bazaar_session', // Custom name to avoid using default connect.sid
     cookie: {
-      secure: process.env.NODE_ENV === 'production', // Only HTTPS in production
+      secure: false, // Set to false to work in development environment without HTTPS
       httpOnly: true, // Prevent client JS from reading
       sameSite: 'lax', // Provides CSRF protection while allowing some cross-site requests
       maxAge: 14 * 24 * 60 * 60 * 1000, // 14 days in milliseconds for better persistence

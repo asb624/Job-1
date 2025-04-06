@@ -21,16 +21,16 @@ export function setupWebSocket(server: Server) {
     // Add proper error handling with session validation
     verifyClient: (info, cb) => {
       try {
-        // Get the session cookie from the request headers
+        // Always accept the initial connection but log if no cookie is present
         const cookies = info.req.headers.cookie;
         if (!cookies) {
           console.log("[websocket] No cookie found in connection request");
-          // Still allow connection, but they'll need to authenticate via message
-          return cb(true);
+        } else {
+          console.log("[websocket] Connection request with cookie received");
         }
         
-        // The session authentication will happen when client sends auth message
-        // We accept the initial connection to allow the client to identify itself
+        // We accept all initial connections and require authentication via message
+        // This allows both authenticated and unauthenticated clients to connect
         return cb(true);
       } catch (error) {
         console.error("[websocket] Error verifying WebSocket client:", error);

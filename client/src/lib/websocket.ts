@@ -5,6 +5,7 @@ const maxReconnectAttempts = 10;
 const reconnectDelay = 2000;
 let reconnectTimeout: ReturnType<typeof setTimeout> | null = null;
 let intentionalClose = false;
+let lastUserId: number | null = null;
 
 // Queue for messages when socket is not connected
 const messageQueue: any[] = [];
@@ -62,7 +63,12 @@ function setupSocketEventHandlers() {
       
       reconnectTimeout = setTimeout(() => {
         console.log(`Executing reconnect attempt ${reconnectAttempts}`);
-        initializeWebSocket();
+        if (lastUserId !== null) {
+          console.log(`Reconnecting with userId ${lastUserId}`);
+          connectWebSocket(lastUserId);
+        } else {
+          initializeWebSocket();
+        }
       }, delay);
     } else {
       console.error('Max reconnection attempts reached, giving up');
@@ -144,7 +150,12 @@ export function sendToWebsocket(message: any) {
     
     // Initialize WebSocket if not connected
     if (!socket || socket.readyState === WebSocket.CLOSED) {
-      initializeWebSocket();
+      // If we have a lastUserId, use that to connect
+      if (lastUserId !== null) {
+        connectWebSocket(lastUserId);
+      } else {
+        initializeWebSocket();
+      }
     }
     
     return;
@@ -181,6 +192,9 @@ export function subscribeToMessages(
   callback: (data: any) => void,
   userId: number
 ): () => void {
+  // Store the userId for reconnections
+  lastUserId = userId;
+  
   // Function to send authentication message
   const sendAuthMessage = () => {
     console.log(`Sending WebSocket auth message for user ${userId}`);
@@ -234,7 +248,12 @@ if (typeof window !== 'undefined') {
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && 
         (!socket || socket.readyState === WebSocket.CLOSED)) {
-      initializeWebSocket();
+      // If we have a lastUserId, we should use connectWebSocket instead
+      if (lastUserId !== null) {
+        connectWebSocket(lastUserId);
+      } else {
+        initializeWebSocket();
+      }
     }
   });
 }
