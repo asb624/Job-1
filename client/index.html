@@ -6,9 +6,37 @@
     <title>Job Bazaar</title>
     <!-- WebRTC Polyfills - These must be loaded before any other scripts -->
     <script>
-      window.global = window;
-      window.process = window.process || { env: {} };
-      window.Buffer = window.Buffer || { isBuffer: function(obj) { return false; } };
+      (function() {
+        // Global object polyfill
+        if (typeof global === 'undefined') {
+          window.global = window;
+        }
+        
+        // Process polyfill for Node.js compatibility
+        if (typeof process === 'undefined') {
+          window.process = { env: {} };
+        } else if (!window.process.env) {
+          window.process.env = {};
+        }
+        
+        // Buffer polyfill for Node.js compatibility
+        if (typeof Buffer === 'undefined') {
+          window.Buffer = { isBuffer: function() { return false; } };
+        }
+        
+        // EventEmitter polyfill for simple-peer
+        if (typeof window.events === 'undefined') {
+          window.events = { EventEmitter: function() { this.on = function(){}; this.emit = function(){}; } };
+        }
+        
+        // Util polyfill for simple-peer
+        if (typeof window.util === 'undefined') {
+          window.util = { 
+            debuglog: function() { return function(){}; },
+            inspect: function() { return ''; }
+          };
+        }
+      })();
     </script>
   </head>
   <body>
