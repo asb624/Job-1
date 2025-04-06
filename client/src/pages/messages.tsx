@@ -9,7 +9,6 @@ import { subscribeToMessages } from "@/lib/websocket";
 import { useLocation } from "wouter";
 import { TranslatedMessage, TranslatedMessageList } from "@/components/translated-message";
 import { TranslateAllMessagesButton } from "@/components/message-translation-button";
-import { CallButtons } from "@/components/call/call-buttons";
 
 import {
   Card,
@@ -37,9 +36,8 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 
-import { MessageCircle, Send, Menu, UserPlus, Languages, Mic, Phone, Video } from "lucide-react";
+import { MessageCircle, Send, Menu, UserPlus, Languages, Mic } from "lucide-react";
 import { VoiceRecorder } from "@/components/voice-recorder";
 
 export default function MessagesPage() {
@@ -519,7 +517,7 @@ export default function MessagesPage() {
     // Fetch this specific user if not already loading
     const userQueryKey = [`/api/users/${otherUserId}`];
     const queryState = queryClient.getQueryState(userQueryKey);
-    const isUserLoading = queryState?.fetchStatus === 'fetching';
+    const isUserLoading = queryState?.status === 'loading' || queryState?.status === 'pending';
     
     if (!isUserLoading) {
       queryClient.fetchQuery({
@@ -595,17 +593,7 @@ export default function MessagesPage() {
                     </Avatar>
                     <CardTitle className="text-lg">{getOtherUser(selectedConversation)?.username}</CardTitle>
                   </div>
-                  <div className="flex items-center gap-3">
-                    {/* Call Buttons */}
-                    {getOtherUser(selectedConversation) && (
-                      <CallButtons 
-                        recipientId={getOtherUser(selectedConversation)?.id || 0} 
-                        recipientUsername={getOtherUser(selectedConversation)?.username || ""}
-                        variant="icon-only"
-                        size="sm"
-                      />
-                    )}
-                    <Separator orientation="vertical" className="h-6" />
+                  <div className="flex items-center gap-2">
                     <Languages className="h-5 w-5 text-muted-foreground" />
                     <div className="flex items-center space-x-2">
                       <Label htmlFor="auto-translate" className="text-sm">Auto-translate</Label>
