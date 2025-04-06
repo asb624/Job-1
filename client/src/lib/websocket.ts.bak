@@ -19,58 +19,6 @@ const heartbeatTimeout = 45000; // 45 seconds
 // Queue for messages when socket is not connected
 const messageQueue: any[] = [];
 
-// Heartbeat functions for keeping the connection alive
-function startHeartbeat() {
-  // Clear any existing heartbeat
-  stopHeartbeat();
-  
-  // Set up new heartbeat interval
-  heartbeatInterval = setInterval(() => {
-    // Only send heartbeat if socket is open
-    if (socket && socket.readyState === WebSocket.OPEN) {
-      // Send a ping message
-      sendToWebsocket({
-        type: 'connection',
-        status: 'ping',
-        timestamp: new Date().toISOString()
-      });
-      
-      // Check if we've received a pong recently
-      const now = Date.now();
-      const timeSinceLastPong = now - lastPongReceived;
-      
-      if (timeSinceLastPong > heartbeatTimeout) {
-        console.warn(`No server response for ${timeSinceLastPong}ms, reconnecting...`);
-        
-        // Close the connection (will trigger reconnect)
-        if (socket) {
-          intentionalClose = false;
-          try {
-            socket.close();
-          } catch (error) {
-            console.error('Error closing stale connection:', error);
-          }
-          
-          // Force reconnection
-          if (lastUserId !== null && !isReconnecting) {
-            const userId = lastUserId; // local copy for closure
-            setTimeout(() => connectWebSocket(userId), 1000);
-          } else if (!isReconnecting) {
-            setTimeout(initializeWebSocket, 1000);
-          }
-        }
-      }
-    }
-  }, heartbeatIntervalTime);
-}
-
-function stopHeartbeat() {
-  if (heartbeatInterval) {
-    clearInterval(heartbeatInterval);
-    heartbeatInterval = null;
-  }
-}
-
 // Setup socket event handlers
 function setupSocketEventHandlers() {
   if (!socket) return;
@@ -161,8 +109,7 @@ function setupSocketEventHandlers() {
         
         if (lastUserId !== null) {
           console.log(`Reconnecting with userId ${lastUserId}`);
-          const userId = lastUserId; // Local copy to avoid null issues
-          connectWebSocket(userId);
+          connectWebSocket(lastUserId);
         } else {
           initializeWebSocket();
         }
@@ -202,8 +149,7 @@ function setupSocketEventHandlers() {
         // If we have a lastUserId, use it to reconnect
         if (lastUserId !== null && !isReconnecting) {
           console.log('Attempting reconnection after error');
-          const userId = lastUserId; // Local copy to avoid null issues
-          connectWebSocket(userId);
+          connectWebSocket(lastUserId);
         }
       }
     }, 1000);
@@ -303,14 +249,11 @@ export function initializeWebSocket() {
     const onOpen = () => {
       if (socket && socket.readyState === WebSocket.OPEN) {
         console.log(`WebSocket connected, sending authentication for saved user ${lastUserId}`);
-        const userId = lastUserId; // Local copy to avoid null issues
-        if (userId !== null) {
-          sendToWebsocket({
-            type: 'auth',
-            action: 'identify',
-            payload: { userId }
-          });
-        }
+        sendToWebsocket({
+          type: 'auth',
+          action: 'identify',
+          payload: { userId: lastUserId }
+        });
         
         // Remove this one-time handler after execution
         socket.removeEventListener('open', onOpen);
@@ -331,8 +274,7 @@ export function sendToWebsocket(message: any) {
     if (!socket || socket.readyState === WebSocket.CLOSED) {
       // If we have a lastUserId, use that to connect
       if (lastUserId !== null) {
-        const userId = lastUserId; // Local copy to avoid null issues
-        connectWebSocket(userId);
+        connectWebSocket(lastUserId);
       } else {
         initializeWebSocket();
       }
@@ -420,6 +362,57 @@ export function subscribeToMessages(
   };
 }
 
+// Heartbeat functions for keeping the connection alive
+function startHeartbeat() {
+  // Clear any existing heartbeat
+  stopHeartbeat();
+  
+  // Set up new heartbeat interval
+  heartbeatInterval = setInterval(() => {
+    // Only send heartbeat if socket is open
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      // Send a ping message
+      sendToWebsocket({
+        type: 'connection',
+        status: 'ping',
+        timestamp: new Date().toISOString()
+      });
+      
+      // Check if we've received a pong recently
+      const now = Date.now();
+      const timeSinceLastPong = now - lastPongReceived;
+      
+      if (timeSinceLastPong > heartbeatTimeout) {
+        console.warn(`No server response for ${timeSinceLastPong}ms, reconnecting...`);
+        
+        // Close the connection (will trigger reconnect)
+        if (socket) {
+          intentionalClose = false;
+          try {
+            socket.close();
+          } catch (error) {
+            console.error('Error closing stale connection:', error);
+          }
+          
+          // Force reconnection
+          if (lastUserId !== null && !isReconnecting) {
+            setTimeout(() => connectWebSocket(lastUserId), 1000);
+          } else if (!isReconnecting) {
+            setTimeout(initializeWebSocket, 1000);
+          }
+        }
+      }
+    }
+  }, heartbeatIntervalTime);
+}
+
+function stopHeartbeat() {
+  if (heartbeatInterval) {
+    clearInterval(heartbeatInterval);
+    heartbeatInterval = null;
+  }
+}
+
 // Initialize WebSocket on page load
 if (typeof window !== 'undefined') {
   initializeWebSocket();
@@ -430,8 +423,7 @@ if (typeof window !== 'undefined') {
         (!socket || socket.readyState === WebSocket.CLOSED)) {
       // If we have a lastUserId, we should use connectWebSocket instead
       if (lastUserId !== null) {
-        const userId = lastUserId; // Local copy to avoid null issues
-        connectWebSocket(userId);
+        connectWebSocket(lastUserId);
       } else {
         initializeWebSocket();
       }

@@ -52,9 +52,9 @@ function App() {
           <QueryClientProvider client={queryClient}>
             <AuthProvider>
               <NotificationProvider>
-                <div className="min-h-screen theme-transition flex">
+                <div className="min-h-screen theme-transition flex w-full max-w-[100vw] overflow-hidden">
                   <ContextualSidebar />
-                  <div className="flex-1 flex flex-col">
+                  <div className="flex-1 flex flex-col overflow-x-hidden">
                     <NavBar />
                     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
                       <Router />

@@ -5,8 +5,10 @@ import { storage } from "./storage";
 // Define message types for type safety
 export type WebSocketMessage = {
   type: 'selection' | 'service' | 'requirement' | 'notification' | 'message' | 'conversation' | 'call-signal' | 'auth' | 'connection';
-  action: 'create' | 'update' | 'delete' | 'offer' | 'answer' | 'icecandidate' | 'call-request' | 'call-accept' | 'call-reject' | 'call-end' | 'identify' | 'authenticate';
-  payload: any;
+  action?: 'create' | 'update' | 'delete' | 'offer' | 'answer' | 'icecandidate' | 'call-request' | 'call-accept' | 'call-reject' | 'call-end' | 'identify' | 'authenticate';
+  status?: 'connected' | 'ping' | 'pong';
+  payload?: any;
+  timestamp?: string;
 };
 
 // Global references for exported functions
@@ -21,16 +23,26 @@ export function setupWebSocket(server: Server) {
     // Add proper error handling with session validation
     verifyClient: (info, cb) => {
       try {
-        // Always accept the initial connection but log if no cookie is present
+        // Always accept the initial connection but log cookie status
         const cookies = info.req.headers.cookie;
+        
         if (!cookies) {
           console.log("[websocket] No cookie found in connection request");
-        } else {
-          console.log("[websocket] Connection request with cookie received");
+          // Accept connection even without cookie - will require auth via message
+          return cb(true);
         }
         
-        // We accept all initial connections and require authentication via message
-        // This allows both authenticated and unauthenticated clients to connect
+        console.log("[websocket] Connection request with cookie received");
+        
+        // Extract userId from URL if present (used as fallback)
+        const url = new URL(info.req.url || '', `http://${info.req.headers.host}`);
+        const userId = url.searchParams.get('userId');
+        if (userId) {
+          console.log(`[websocket] UserId from URL: ${userId}`);
+        }
+        
+        // We accept all initial connections and require authentication
+        // either via session cookie or via auth message
         return cb(true);
       } catch (error) {
         console.error("[websocket] Error verifying WebSocket client:", error);
@@ -83,21 +95,55 @@ export function setupWebSocket(server: Server) {
     const url = new URL(request.url || '', `http://${request.headers.host}`);
     const userId = url.searchParams.get('userId');
     
+    // Parse cookies for session information
+    const cookies = request.headers.cookie;
+    if (cookies) {
+      console.log("[websocket] Processing cookies for WebSocket authentication");
+      
+      // In a production environment, you would parse the session cookie
+      // and validate it against the session store to get the user ID
+      // For now, we'll use the userId query parameter
+    }
+    
     // Store the user ID in the client map if provided
     if (userId && !isNaN(parseInt(userId))) {
       const userIdNum = parseInt(userId);
-      // Remove any existing connection for this user ID
-      const existingConnection = clients.get(userIdNum);
-      if (existingConnection && existingConnection !== ws) {
-        console.log(`Replacing existing connection for user ${userIdNum}`);
-        try {
-          existingConnection.close();
-        } catch (e) {
-          console.error(`Error closing existing connection for user ${userIdNum}:`, e);
+      
+      // Validate user exists before adding to client map (async)
+      storage.getUser(userIdNum).then(user => {
+        if (user) {
+          // Remove any existing connection for this user ID
+          const existingConnection = clients.get(userIdNum);
+          if (existingConnection && existingConnection !== ws) {
+            console.log(`Replacing existing connection for user ${userIdNum}`);
+            try {
+              existingConnection.close();
+            } catch (e) {
+              console.error(`Error closing existing connection for user ${userIdNum}:`, e);
+            }
+          }
+          
+          clients.set(userIdNum, ws);
+          console.log(`Client registered with user ID: ${userIdNum}`);
+          
+          // Send auth confirmation
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({
+              type: 'auth',
+              action: 'authenticate',
+              payload: { 
+                success: true,
+                userId: userIdNum,
+                timestamp: new Date().toISOString()
+              }
+            }));
+          }
+        } else {
+          console.log(`User ID from URL parameter not found: ${userIdNum}`);
         }
-      }
-      clients.set(userIdNum, ws);
-      console.log(`Client registered with user ID: ${userIdNum}`);
+      }).catch(error => {
+        console.error(`Error validating user ${userId}:`, error);
+      });
     }
     
     // Handle pong messages (response to our ping)
@@ -126,6 +172,19 @@ export function setupWebSocket(server: Server) {
         const message = JSON.parse(data.toString()) as WebSocketMessage;
 
         switch (message.type) {
+          case 'connection':
+            // Handle ping/pong for custom heartbeat
+            if (message.status === 'ping') {
+              // Respond with a pong message
+              if (ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ 
+                  type: "connection", 
+                  status: "pong",
+                  timestamp: new Date().toISOString()
+                }));
+              }
+            }
+            break;
           case 'selection':
             // Handle selection notifications
             broadcastToRelevantUsers(message);

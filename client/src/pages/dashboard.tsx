@@ -27,22 +27,27 @@ export default function Dashboard() {
 
   // Setup realtime updates
   useEffect(() => {
-    subscribeToMessages((message) => {
-      if (message.type === "selection" || message.type === "status") {
-        queryClient.invalidateQueries({ queryKey: ["/api/requirements"] });
-      }
-    });
-  }, []);
+    if (user && user.id) {
+      const unsubscribe = subscribeToMessages(
+        function handleWebsocketMessage(message) {
+          if (message.type === "selection" || message.type === "status") {
+            queryClient.invalidateQueries({ queryKey: ["/api/requirements"] });
+          }
+        },
+        user.id
+      );
+      
+      return unsubscribe;
+    }
+  }, [user]);
 
-  // Fetch data based on user type
+  // Fetch both services and requirements for all users
   const { data: services, isSuccess: servicesLoaded } = useQuery<Service[]>({
     queryKey: ["/api/services"],
-    enabled: user?.isServiceProvider,
   });
 
   const { data: requirements, isSuccess: requirementsLoaded } = useQuery<Requirement[]>({
     queryKey: ["/api/requirements"],
-    enabled: !user?.isServiceProvider,
   });
   
   // Batch translate all service and requirement content
@@ -172,37 +177,64 @@ export default function Dashboard() {
       <Card>
         <CardHeader>
           <CardTitle>
-            {user?.isServiceProvider ? "Service Provider Dashboard" : "Client Dashboard"}
+            Your Dashboard
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {user?.isServiceProvider ? (
-            <div className="space-y-6">
-              <h3 className="text-xl font-semibold">Your Services</h3>
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {services?.map((service) => (
-                  <ServiceCard key={service.id} service={service} />
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-6">
-              <h3 className="text-xl font-semibold">Your Requirements</h3>
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {requirements?.map((requirement) => (
-                  <div key={requirement.id}>
-                    <RequirementCard
-                      key={requirement.id}
-                      requirement={requirement}
-                    />
-                    {user?.isServiceProvider && requirement.status === "open" && (
-                      <SelectionDialog requirement={requirement} />
-                    )}
+          <Tabs defaultValue="services" className="space-y-6">
+            <TabsList>
+              <TabsTrigger value="services">My Services</TabsTrigger>
+              <TabsTrigger value="requirements">My Requirements</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="services" className="space-y-4">
+              <div className="space-y-4">
+                <h3 className="text-xl font-semibold">Your Services</h3>
+                {!services || services.length === 0 ? (
+                  <div className="bg-muted p-8 text-center rounded-lg">
+                    <p className="text-muted-foreground">You haven't posted any services yet.</p>
+                    <Button className="mt-4" asChild>
+                      <a href="/post-service">Post a Service</a>
+                    </Button>
                   </div>
-                ))}
+                ) : (
+                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    {services.map((service) => (
+                      <ServiceCard key={service.id} service={service} />
+                    ))}
+                  </div>
+                )}
               </div>
-            </div>
-          )}
+            </TabsContent>
+            
+            <TabsContent value="requirements" className="space-y-4">
+              <div className="space-y-4">
+                <h3 className="text-xl font-semibold">Your Requirements</h3>
+                {!requirements || requirements.length === 0 ? (
+                  <div className="bg-muted p-8 text-center rounded-lg">
+                    <p className="text-muted-foreground">You haven't posted any requirements yet.</p>
+                    <Button className="mt-4" asChild>
+                      <a href="/post-requirement">Post a Requirement</a>
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    {requirements.map((requirement) => (
+                      <div key={requirement.id}>
+                        <RequirementCard
+                          key={requirement.id}
+                          requirement={requirement}
+                        />
+                        {user?.isServiceProvider && requirement.status === "open" && (
+                          <SelectionDialog requirement={requirement} />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
     </div>

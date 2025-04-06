@@ -95,7 +95,7 @@ export function ContextualSidebar({ className }: SidebarNavProps) {
         <SidebarProvider
           open={!collapsed}
           onOpenChange={(open) => setCollapsed(!open)}
-          className={cn("h-screen", className)}
+          className={cn("h-screen overflow-hidden max-w-[280px]", className)}
         >
           <Sidebar className="border-r shadow-sm">
             <SidebarHeader className="py-2">
@@ -210,7 +210,7 @@ export function ContextualSidebar({ className }: SidebarNavProps) {
       <SidebarProvider
         open={!collapsed}
         onOpenChange={(open) => setCollapsed(!open)}
-        className={cn("h-screen", className)}
+        className={cn("h-screen overflow-hidden max-w-[280px]", className)}
       >
         <Sidebar className="border-r shadow-sm">
           <SidebarHeader className="py-2">

@@ -80,7 +80,7 @@ export function NotificationsDropdown({ isMobile = false }: NotificationsDropdow
 
   // Subscribe to realtime notification updates
   useEffect(() => {
-    if (!user) return;
+    if (!user || !user.id) return;
 
     const unsubscribe = subscribeToMessages((message) => {
       if (message.type === 'notification' && message.action === 'create') {
@@ -91,7 +91,7 @@ export function NotificationsDropdown({ isMobile = false }: NotificationsDropdow
           description: message.payload.content,
         });
       }
-    });
+    }, user.id);
 
     return () => {
       if (unsubscribe) unsubscribe();

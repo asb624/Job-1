@@ -11,6 +11,15 @@
     --emerald-light: 160 70% 94%;
     --emerald-dark: 160 84% 32%;
   }
+  
+  /* Fix for white spaces on the sides */
+  html, body {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+  }
 
   .light {
     --background-color: 160 60% 99%;
