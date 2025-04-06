@@ -39,6 +39,7 @@ export function CallDialog({
   const { t } = useTranslation();
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
+  const [mediaError, setMediaError] = useState<string | null>(null);
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
@@ -102,20 +103,50 @@ export function CallDialog({
   function handleMediaError(error: Error) {
     console.error('Error accessing media devices:', error);
     
+    // Create more detailed error message based on error type
+    let errorMessage = '';
+    
     // If permission denied or device issues, show appropriate message
     if (error.name === 'NotAllowedError') {
       // Handle permission denied
-      alert(t('You need to allow access to your camera and microphone to make calls.'));
+      errorMessage = t('You need to allow access to your camera and microphone to make calls.');
     } else if (error.name === 'NotFoundError') {
       // Handle no devices found
-      alert(t('No camera or microphone found. Please connect a device and try again.'));
+      errorMessage = t('No camera or microphone found. Please connect a device and try again.');
+    } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
+      // Handle device in use by another application
+      errorMessage = t('Cannot access your camera or microphone. They might be in use by another application.');
+    } else if (error.name === 'OverconstrainedError') {
+      // Handle constraints that cannot be satisfied by the current device
+      errorMessage = t('Your camera does not meet the required specifications. Please try a different camera.');
+    } else if (error.name === 'SecurityError') {
+      // Handle security errors (e.g., insecure origins)
+      errorMessage = t('Media access denied due to security restrictions.');
+    } else if (error.name === 'AbortError') {
+      // Handle when the user agent aborts the operation
+      errorMessage = t('The operation was aborted. Please try again.');
     } else {
       // Handle other errors
-      alert(t('An error occurred while trying to access your camera and microphone.'));
+      errorMessage = t('An error occurred while trying to access your camera and microphone: ') + error.message;
     }
     
-    // Close the dialog
-    onOpenChange(false);
+    // Set error message in state instead of using alert
+    setMediaError(errorMessage);
+    
+    // If we're in a calling state, we need to clean up any partially established call
+    if (remotePeerId && (callState === CallState.CALLING || callState === CallState.CONNECTED)) {
+      endCall(remotePeerId);
+      if (onEnd) {
+        onEnd();
+      }
+    }
+    
+    // Don't close the dialog immediately, so user can see the error
+    // We'll show a close button instead
+    // After 5 seconds, close automatically
+    setTimeout(() => {
+      onOpenChange(false);
+    }, 5000);
   }
 
   // Handle accepting the call
@@ -159,8 +190,12 @@ export function CallDialog({
   const toggleMute = () => {
     if (localStreamRef.current) {
       const audioTracks = localStreamRef.current.getAudioTracks();
-      audioTracks.forEach(track => track.enabled = isMuted);
-      setIsMuted(!isMuted);
+      // When toggling mute, we want to set enabled to the opposite of isMuted
+      // If currently muted (isMuted=true), we want to enable the track (enabled=true)
+      // If currently unmuted (isMuted=false), we want to disable the track (enabled=false)
+      const newMuteState = !isMuted;
+      audioTracks.forEach(track => track.enabled = !newMuteState);
+      setIsMuted(newMuteState);
     }
   };
 
@@ -168,8 +203,12 @@ export function CallDialog({
   const toggleVideo = () => {
     if (localStreamRef.current && callType === CallType.VIDEO) {
       const videoTracks = localStreamRef.current.getVideoTracks();
-      videoTracks.forEach(track => track.enabled = isVideoOff);
-      setIsVideoOff(!isVideoOff);
+      // When toggling video, we want to set enabled to the opposite of isVideoOff
+      // If video is off (isVideoOff=true), we want to enable the track (enabled=true)
+      // If video is on (isVideoOff=false), we want to disable the track (enabled=false)
+      const newVideoOffState = !isVideoOff;
+      videoTracks.forEach(track => track.enabled = !newVideoOffState);
+      setIsVideoOff(newVideoOffState);
     }
   };
 
@@ -197,6 +236,20 @@ export function CallDialog({
         </DialogHeader>
         
         <div className="flex flex-col items-center justify-center py-4 gap-4">
+          {/* Display media error if any */}
+          {mediaError && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative mb-4 w-full" role="alert">
+              <strong className="font-bold">{t('Error')}: </strong>
+              <span className="block sm:inline">{mediaError}</span>
+              <button 
+                className="absolute top-0 bottom-0 right-0 px-4 py-3"
+                onClick={() => onOpenChange(false)}
+              >
+                <span className="text-red-500">×</span>
+              </button>
+            </div>
+          )}
+          
           {/* Display user avatar */}
           <Avatar className="h-24 w-24">
             <AvatarImage src={remoteUser?.avatar || ''} alt={remoteUser?.username || ''} />
@@ -228,6 +281,8 @@ export function CallDialog({
               {/* Remote video (main) */}
               <video 
                 ref={remoteVideoRef} 
+                data-ref="remote-video"
+                id="remote-video"
                 autoPlay 
                 playsInline 
                 className="absolute inset-0 w-full h-full object-cover"
@@ -235,7 +290,9 @@ export function CallDialog({
               
               {/* Local video (small overlay) */}
               <video 
-                ref={localVideoRef} 
+                ref={localVideoRef}
+                data-ref="local-video" 
+                id="local-video"
                 autoPlay 
                 playsInline 
                 muted 

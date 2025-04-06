@@ -19,7 +19,21 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     
     // Connect WebSocket with user ID
     const socket = connectWebSocket(user.id);
-    setConnected(socket.readyState === WebSocket.OPEN);
+    
+    // Track the connection state
+    const checkConnectionState = () => {
+      setConnected(socket.readyState === WebSocket.OPEN);
+    };
+    
+    // Handler for close event to prevent anonymous function issues with removeEventListener
+    const handleClose = () => {
+      setConnected(false);
+    };
+    
+    // Check immediately and add event listener for connection
+    checkConnectionState();
+    socket.addEventListener('open', checkConnectionState);
+    socket.addEventListener('close', handleClose);
 
     console.log(`WebSocket connected for user ${user.id}`);
 
@@ -63,6 +77,11 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     }, user.id);
 
     return () => {
+      // Remove event listeners
+      socket.removeEventListener('open', checkConnectionState);
+      socket.removeEventListener('close', handleClose);
+      
+      // Call the message subscription cleanup
       cleanup();
     };
   }, [toast, user]);

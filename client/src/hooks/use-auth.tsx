@@ -50,6 +50,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.removeItem("isNewRegistration");
         sessionStorage.removeItem("isInOnboardingFlow");
         
+        // Don't clear preferredLanguage during login to preserve user's language preference
+        // preferredLanguage will be set during language selection for new users
+        // but for returning users we want to keep their previously selected language
+        
         return await res.json() as SelectUser;
       } catch (error) {
         console.error("Login error:", error);

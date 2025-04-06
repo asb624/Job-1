@@ -1,6 +1,27 @@
 import SimplePeer from 'simple-peer';
 import { sendToWebsocket } from './websocket';
 
+// Comprehensive polyfills for WebRTC and simple-peer
+// These need to be loaded before any SimplePeer usage
+if (typeof window !== 'undefined') {
+  // Polyfill global
+  if (!window.global) {
+    (window as any).global = window;
+  }
+  
+  // Polyfill process
+  if (!window.process) {
+    (window as any).process = { env: {} };
+  }
+  
+  // Polyfill Buffer
+  if (!window.Buffer) {
+    (window as any).Buffer = {
+      isBuffer: () => false
+    };
+  }
+}
+
 // Define call states
 export enum CallState {
   IDLE = 'idle',
@@ -571,10 +592,37 @@ function setupPeerEvents(peer: any, otherUserId: number, localStream: MediaStrea
     // Create a new audio or video element to play the remote stream
     const remoteStream = stream;
     
-    // Get remote video element (if exists)
-    const remoteVideo = document.getElementById('remote-video') as HTMLVideoElement;
-    if (remoteVideo) {
-      remoteVideo.srcObject = remoteStream;
+    // Find remote video elements by their ref attribute
+    const remoteVideos = document.querySelectorAll('video[data-ref="remote-video"]');
+    if (remoteVideos.length > 0) {
+      console.log('Found remote video elements:', remoteVideos.length);
+      
+      // Convert NodeList to Array to avoid type errors
+      Array.from(remoteVideos).forEach((element) => {
+        // Type cast to HTMLVideoElement
+        const videoElement = element as HTMLVideoElement;
+        if (videoElement && videoElement instanceof HTMLVideoElement) {
+          console.log('Setting remote stream on video element');
+          videoElement.srcObject = remoteStream;
+          
+          // Ensure playback starts
+          videoElement.play().catch(err => {
+            console.error('Error playing remote stream:', err);
+          });
+        }
+      });
+    } else {
+      console.warn('No remote video elements found with data-ref="remote-video"');
+    }
+    
+    // Also look for the legacy ID-based element for backward compatibility
+    const remoteVideoById = document.getElementById('remote-video') as HTMLVideoElement;
+    if (remoteVideoById) {
+      console.log('Found remote video by ID');
+      remoteVideoById.srcObject = remoteStream;
+      remoteVideoById.play().catch(err => {
+        console.error('Error playing remote stream (ID method):', err);
+      });
     }
     
     // Trigger stream event for UI to handle
