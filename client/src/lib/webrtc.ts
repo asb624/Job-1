@@ -4,21 +4,19 @@ import { sendToWebsocket } from './websocket';
 // Comprehensive polyfills for WebRTC and simple-peer
 // These need to be loaded before any SimplePeer usage
 if (typeof window !== 'undefined') {
-  // Polyfill global
-  if (!window.global) {
-    (window as any).global = window;
-  }
+  // Polyfill global - this is required by SimplePeer
+  window.global = window;
   
-  // Polyfill process
+  // Polyfill process - required by some WebRTC dependencies
   if (!window.process) {
-    (window as any).process = { env: {} };
+    window.process = { env: {} } as any;
   }
   
-  // Polyfill Buffer
+  // Polyfill Buffer - required by some WebRTC dependencies
   if (!window.Buffer) {
-    (window as any).Buffer = {
+    window.Buffer = {
       isBuffer: () => false
-    };
+    } as any;
   }
 }
 
