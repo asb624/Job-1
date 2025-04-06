@@ -1,24 +1,8 @@
 import SimplePeer from 'simple-peer';
 import { sendToWebsocket } from './websocket';
 
-// Comprehensive polyfills for WebRTC and simple-peer
-// These need to be loaded before any SimplePeer usage
-if (typeof window !== 'undefined') {
-  // Polyfill global - this is required by SimplePeer
-  window.global = window;
-  
-  // Polyfill process - required by some WebRTC dependencies
-  if (!window.process) {
-    window.process = { env: {} } as any;
-  }
-  
-  // Polyfill Buffer - required by some WebRTC dependencies
-  if (!window.Buffer) {
-    window.Buffer = {
-      isBuffer: () => false
-    } as any;
-  }
-}
+// Note: WebRTC polyfills are loaded in main.tsx
+// This ensures they're available before any imports
 
 // Define call states
 export enum CallState {

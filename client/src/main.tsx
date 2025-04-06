@@ -1,20 +1,18 @@
 // Polyfills for WebRTC libraries (simple-peer)
 if (typeof window !== 'undefined') {
-  // Polyfill global
-  if (!window.global) {
-    (window as any).global = window;
-  }
+  // Explicitly define global on the window object
+  window.global = window;
   
   // Polyfill process
   if (!window.process) {
-    (window as any).process = { env: {} };
+    window.process = { env: {} } as any;
   }
   
   // Polyfill Buffer
   if (!window.Buffer) {
-    (window as any).Buffer = {
+    window.Buffer = {
       isBuffer: () => false
-    };
+    } as any;
   }
 }
 
