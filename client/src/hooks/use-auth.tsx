@@ -71,8 +71,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     onSuccess: (user: SelectUser) => {
       console.log("Login mutation successful, updating query cache");
+      
+      // Set the user in the query cache
       queryClient.setQueryData(["/api/user"], user);
-      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      
+      // We intentionally don't invalidate the query here as that could cause
+      // the auth state to be refreshed before navigation occurs
+      // Instead, we'll manually set the data and let the navigation happen first
+      
       console.log("Login flow complete, auth page will handle redirect");
     },
     onError: (error: Error) => {
@@ -125,8 +131,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     onSuccess: (user: SelectUser) => {
       console.log("Registration mutation successful, updating query cache");
+      
+      // Set the user in the query cache
       queryClient.setQueryData(["/api/user"], user);
-      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      
+      // We intentionally don't invalidate the query here as that could cause
+      // the auth state to be refreshed before navigation occurs
+      // Instead, we'll manually set the data and let the navigation happen first
       
       // NOTE: We don't clear flags for registration success
       // The flags need to persist so the user can be directed to language selection

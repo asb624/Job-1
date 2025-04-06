@@ -12,8 +12,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { insertUserSchema, type InsertUser } from "@shared/schema";
 
 export default function AuthPage() {
-  const [_, setLocation] = useLocation();
+  const [currentLocation, setLocation] = useLocation();
   const { user, loginMutation, registerMutation } = useAuth();
+  
+  // Debug current location 
+  console.log("Auth page rendered at location:", currentLocation);
   
   const loginForm = useForm<InsertUser>({
     resolver: zodResolver(insertUserSchema),
@@ -41,38 +44,49 @@ export default function AuthPage() {
       console.log("preferredLanguage:", localStorage.getItem('preferredLanguage'));
       console.log("onboardingCompleted:", user.onboardingCompleted);
       
-      // Check if this is a new registration
-      const isNewRegistration = localStorage.getItem('isNewRegistration') === 'true';
-      
-      if (isNewRegistration) {
-        console.log("This is a new registration, redirecting to language selection");
-        // For new registrations, direct to language selection
-        // Don't clear the flag here - we need it to persist through the onboarding flow
-        // It will be cleared after onboarding completes
-        setLocation('/language-selection');
-      } else {
-        // For regular logins, check if they ever completed onboarding
-        if (user.onboardingCompleted) {
-          console.log("This is a returning user with completed onboarding, redirecting to dashboard");
-          // If onboarding was previously completed, go directly to dashboard
-          setLocation('/dashboard');
-        } else {
-          // If returning user that never completed onboarding
-          const preferredLanguage = localStorage.getItem('preferredLanguage');
+      // We need to create a function to handle navigation outside the setTimeout
+      // to ensure we're not creating a closure that uses stale values
+      const navigateUser = () => {
+        // Re-check all values to ensure we're using the latest
+        const isNewReg = localStorage.getItem('isNewRegistration') === 'true';
+        const prefLanguage = localStorage.getItem('preferredLanguage');
+        const onboardingDone = user.onboardingCompleted;
+        
+        if (isNewReg) {
+          console.log("AUTH-PAGE: This is a new registration, redirecting to language selection");
+          // For new registrations, direct to language selection
+          // Don't clear the flag here - we need it to persist through the onboarding flow
+          // It will be cleared after onboarding completes
           
-          if (preferredLanguage) {
-            console.log("This is a returning user with incomplete onboarding but has language preference, redirecting to onboarding");
-            // If they have a language preference, continue with onboarding
-            sessionStorage.setItem('isInOnboardingFlow', 'true');
-            setLocation('/onboarding');
+          // Ensure we're in the onboarding flow
+          sessionStorage.setItem('isInOnboardingFlow', 'true');
+          setLocation('/language-selection');
+        } else {
+          // For regular logins, check if they ever completed onboarding
+          if (onboardingDone) {
+            console.log("AUTH-PAGE: This is a returning user with completed onboarding, redirecting to dashboard");
+            // If onboarding was previously completed, go directly to dashboard
+            setLocation('/dashboard');
           } else {
-            console.log("This is a returning user with incomplete onboarding and no language preference, redirecting to language selection");
-            // If they don't have a language preference, start with language selection
-            sessionStorage.setItem('isInOnboardingFlow', 'true');
-            setLocation('/language-selection');
+            // If returning user that never completed onboarding
+            if (prefLanguage) {
+              console.log("AUTH-PAGE: This is a returning user with incomplete onboarding but has language preference, redirecting to onboarding");
+              // If they have a language preference, continue with onboarding
+              sessionStorage.setItem('isInOnboardingFlow', 'true');
+              setLocation('/onboarding');
+            } else {
+              console.log("AUTH-PAGE: This is a returning user with incomplete onboarding and no language preference, redirecting to language selection");
+              // If they don't have a language preference, start with language selection
+              sessionStorage.setItem('isInOnboardingFlow', 'true');
+              setLocation('/language-selection');
+            }
           }
         }
-      }
+      };
+      
+      // Use a longer timeout to ensure state updates are processed
+      // This helps avoid potential race conditions with React's rendering cycle
+      setTimeout(navigateUser, 500);
     }
   }, [user, setLocation]);
 

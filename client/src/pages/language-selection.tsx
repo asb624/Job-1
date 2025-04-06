@@ -72,15 +72,21 @@ export default function LanguageSelectionPage() {
       setTimeout(() => {
         // Navigate to the onboarding page with our new language
         console.log("Language selection - navigating to onboarding page");
+        // Make sure the onboarding flow flag is set
+        sessionStorage.setItem("isInOnboardingFlow", "true");
+        // Use a slightly longer timeout to ensure all state updates are processed
         navigate("/onboarding");
-      }, 300);
+      }, 500);
     } catch (error) {
       console.error("Language selection - error changing language:", error);
       // Navigate anyway as this is non-critical
       sessionStorage.setItem("isInOnboardingFlow", "true");
       localStorage.setItem("preferredLanguage", selectedLanguage);
       console.log("Language selection - fallback navigation to onboarding page");
-      navigate("/onboarding");
+      // Use a timeout for navigation to ensure state updates are processed
+      setTimeout(() => {
+        navigate("/onboarding");
+      }, 500);
     }
   };
 
