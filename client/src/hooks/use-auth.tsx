@@ -101,10 +101,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     onSuccess: (user: SelectUser) => {
       queryClient.setQueryData(["/api/user"], user);
       
-      // Make sure we clear any registration flags for login
-      // This ensures returning users don't go through onboarding
-      localStorage.removeItem("isNewRegistration");
-      sessionStorage.removeItem("isInOnboardingFlow");
+      // NOTE: We don't clear flags for registration success
+      // The flags need to persist so the user can be directed to language selection
+      // and then onboarding
+      
+      // The flags will be cleared after onboarding completes
+      // or in the login mutation (for returning users)
       
       // We'll handle redirection in the auth page component instead
       // to properly maintain session context
