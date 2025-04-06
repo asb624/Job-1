@@ -185,14 +185,14 @@
     "kilometers_away": "{{distance}}કિમી. દૂર"
   },
   "onboarding": {
-    "Welcome to Job Bazaar": "Welcome to Job Bazaar",
-    "Let's get you started with our platform in just a few simple steps": "Let's get you started with our platform in just a few simple steps",
-    "Step": "Step",
-    "of": "of",
-    "What brings you to Job Bazaar?": "What brings you to Job Bazaar?",
-    "Select your primary role to help us personalize your experience": "Select your primary role to help us personalize your experience",
-    "Looking for Services": "Looking for Services",
-    "Offering Services": "Offering Services",
+    "Welcome to Job Bazaar": "જોબ બજારમાં આપનું સ્વાગત છે",
+    "Let's get you started with our platform in just a few simple steps": "ચાલો તમને અમારા પ્લેટફોર્મ પર માત્ર થોડા સરળ પગલાંમાં શરૂ કરીએ",
+    "Step": "પગલું",
+    "of": "ના",
+    "What brings you to Job Bazaar?": "તમને જોબ બજારમાં શું લાવે છે?",
+    "Select your primary role to help us personalize your experience": "તમારા અનુભવને વ્યક્તિગત બનાવવામાં અમારી સહાય કરવા માટે તમારી પ્રાથમિક ભૂમિકા પસંદ કરો",
+    "Looking for Services": "સેવાઓ શોધી રહ્યા છીએ",
+    "Offering Services": "સેવાઓ આપી રહ્યા છીએ",
     "Find Skilled Service Providers": "Find Skilled Service Providers",
     "Browse through profiles of skilled professionals ready to help with your requirements": "Browse through profiles of skilled professionals ready to help with your requirements",
     "Post Your Requirements": "Post Your Requirements",
@@ -201,8 +201,8 @@
     "List your skills and services to attract potential clients in your area": "List your skills and services to attract potential clients in your area",
     "Apply for Requirements": "Apply for Requirements",
     "Browse open requirements and offer your services to clients in need": "Browse open requirements and offer your services to clients in need",
-    "Next": "Next",
-    "Back": "Back",
+    "Next": "આગળ",
+    "Back": "પાછળ",
     "Key Platform Features": "Key Platform Features",
     "Discover what makes Job Bazaar special": "Discover what makes Job Bazaar special",
     "Multilingual Support": "Multilingual Support",
@@ -221,6 +221,6 @@
     "Explore available services in your area": "Explore available services in your area",
     "Post Requirement": "Post Requirement",
     "Share your needs and find the right help": "Share your needs and find the right help",
-    "Get Started": "Get Started"
+    "Get Started": "શરૂ કરો"
   }
 }
